@@ -116,6 +116,22 @@ function safeColor(c, fallback) {
   return (c && /^#[0-9a-fA-F]{3,8}$/.test(c.trim())) ? c.trim() : fallback
 }
 
+// Fetch a remote image (following redirects, e.g. Commons Special:FilePath) and
+// return it as a data URI so satori embeds it directly — no second fetch, no
+// redirect/size-detection failure. Returns null on any problem (poster then
+// renders without the photo rather than 500ing).
+async function imageDataUri(src) {
+  if (!src) return null
+  try {
+    const r = await fetch(src, { redirect: 'follow' })
+    if (!r.ok) return null
+    const ct = r.headers.get('content-type') || ''
+    if (!ct.startsWith('image/')) return null
+    const buf = Buffer.from(await r.arrayBuffer())
+    return `data:${ct};base64,${buf.toString('base64')}`
+  } catch { return null }
+}
+
 function formatKickoff(isoStr) {
   if (!isoStr) return ''
   try {
@@ -247,6 +263,8 @@ function PosterElement({ match, planId, going, lowdownOverride, tvOverride }) {
       ? h('img', {
           src: archiveSrc,
           alt: '',
+          width: W,
+          height: H,
           style: {
             position: 'absolute',
             top: 0, left: 0, right: 0, bottom: 0,
@@ -566,6 +584,13 @@ export default async function handler(req, res) {
   try { match = await getMatch(id) }
   catch (err) { res.status(500).send('Data fetch failed: ' + err.message); return }
   if (!match) { res.status(404).send(`Match not found: ${id}`); return }
+
+  // Embed the archive photo as a data URI (handles Commons redirects); drop it
+  // gracefully if it can't be fetched so the poster always renders.
+  if (match.archive && match.archive.src) {
+    const du = await imageDataUri(match.archive.src)
+    match = { ...match, archive: du ? { ...match.archive, src: du } : null }
+  }
 
   try { await loadFonts() } catch (err) { console.warn('Font load warning:', err.message) }
 
