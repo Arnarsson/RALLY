@@ -111,10 +111,10 @@ function FormPips({ form }) {
 }
 function FormLegend() {
   return (
-    <span className="inline-flex items-center gap-2 text-[9px] uppercase tracking-[0.14em] text-cream/35">
+    <span className="inline-flex items-center gap-1.5 text-[8px] uppercase tracking-wide text-cream/30">
       {['W', 'D', 'L'].map((r) => (
-        <span key={r} className="inline-flex items-center gap-1">
-          <span className="w-1.5 h-1.5 rounded-full" style={{ background: FORM_COLOR[r] }} />{FORM_LABEL[r]}
+        <span key={r} className="inline-flex items-center gap-0.5" title={FORM_LABEL[r]}>
+          <span className="w-1 h-1 rounded-full" style={{ background: FORM_COLOR[r] }} />{r}
         </span>
       ))}
     </span>
@@ -154,19 +154,40 @@ function MatchStatusLine({ m }) {
 
 // Match artwork built from the actual teams — national colours (from ESPN) +
 // flags. Always matches the game on screen, never a random stock photo.
+// Crisp flag images (flagcdn) from a flag emoji — sharper than emoji and
+// consistent across platforms (emoji flags don't render on Windows).
+function flagURL(emoji, team) {
+  if (emoji === '🏴') {
+    const t = (team || '').toLowerCase()
+    if (t.includes('scot')) return 'https://flagcdn.com/h80/gb-sct.png'
+    if (t.includes('wal')) return 'https://flagcdn.com/h80/gb-wls.png'
+    return 'https://flagcdn.com/h80/gb-eng.png'
+  }
+  const cp = [...(emoji || '')].map((c) => c.codePointAt(0))
+  if (cp.length === 2 && cp[0] >= 0x1F1E6 && cp[0] <= 0x1F1FF) {
+    const iso = String.fromCharCode(cp[0] - 0x1F1E6 + 97) + String.fromCharCode(cp[1] - 0x1F1E6 + 97)
+    return `https://flagcdn.com/h80/${iso}.png`
+  }
+  return null
+}
+function FlagImg({ emoji, team, size = 20, className = '' }) {
+  const url = flagURL(emoji, team)
+  if (!url) return <span style={{ fontSize: size }}>{emoji}</span>
+  return <img src={url} alt="" loading="lazy" className={'inline-block rounded-[2px] object-cover align-middle ' + className}
+    style={{ height: size, width: 'auto' }} />
+}
+
 function MatchArt({ m, className = '', credit = false }) {
   const a = m.color_a || '#8ACE00'
-  const b = m.color_b || '#141414'
-  // If we have a real archive photo of this exact fixture, use it — B&W,
-  // grained, tinted in the two teams' colours. Always falls back to the
-  // colour-block art (which still matches the game).
+  const b = m.color_b || '#2A5BFF'
+  // 1) Real archive photo of this fixture — B&W, grained, faintly team-tinted.
   if (m.archive) {
     return (
       <div className={'relative overflow-hidden bg-night ' + className}>
         <img src={m.archive.src} alt="" loading="lazy" className="absolute inset-0 w-full h-full object-cover"
           style={{ filter: 'grayscale(1) contrast(1.06) brightness(0.82)' }} />
         <div className="absolute inset-0 grain opacity-30" />
-        <div className="absolute inset-0" style={{ background: `linear-gradient(112deg, ${a} 0%, transparent 45%, ${b} 100%)`, mixBlendMode: 'overlay', opacity: 0.55 }} />
+        <div className="absolute inset-0" style={{ background: `linear-gradient(112deg, ${a} 0%, transparent 45%, ${b} 100%)`, mixBlendMode: 'overlay', opacity: 0.45 }} />
         <div className="absolute inset-0 bg-gradient-to-t from-night via-night/35 to-night/5" />
         {credit && m.archive.credit && (
           <div className="absolute top-1.5 right-2 text-[8px] uppercase tracking-wide text-cream/40">{m.archive.credit}</div>
@@ -174,15 +195,18 @@ function MatchArt({ m, className = '', credit = false }) {
       </div>
     )
   }
+  // 2) No photo (or first-ever meeting) — a DARK editorial panel that lives in
+  // the same moody, grained family as the B&W photos. Team colours appear only
+  // as faint glows; crisp flags carry the identity. No bright gradient.
   return (
-    <div className={'relative overflow-hidden ' + className}
-      style={{ background: `linear-gradient(112deg, ${a} 0%, ${a} 40%, ${b} 60%, ${b} 100%)` }}>
-      <div className="absolute inset-0 grain opacity-40" />
-      <div className="absolute inset-0 flex items-center justify-between px-8 text-[70px] leading-none select-none opacity-95">
-        <span className="-rotate-6 drop-shadow-xl">{m.flag_a}</span>
-        <span className="rotate-6 drop-shadow-xl">{m.flag_b}</span>
+    <div className={'relative overflow-hidden bg-night ' + className}>
+      <div className="absolute inset-0" style={{ background: `radial-gradient(120% 120% at 0% 0%, ${a} 0%, transparent 50%), radial-gradient(120% 120% at 100% 100%, ${b} 0%, transparent 50%)`, opacity: 0.22 }} />
+      <div className="absolute inset-0 grain opacity-45" />
+      <div className="absolute inset-0 flex items-center justify-between px-9">
+        <FlagImg emoji={m.flag_a} team={m.team_a} size={54} className="-rotate-3 shadow-2xl ring-1 ring-white/10" />
+        <FlagImg emoji={m.flag_b} team={m.team_b} size={54} className="rotate-3 shadow-2xl ring-1 ring-white/10" />
       </div>
-      <div className="absolute inset-0" style={{ background: 'radial-gradient(130% 90% at 50% 0%, transparent 40%, rgba(11,11,11,0.65))' }} />
+      <div className="absolute inset-0" style={{ background: 'radial-gradient(135% 95% at 50% 0%, transparent 30%, rgba(11,11,11,0.80))' }} />
     </div>
   )
 }
@@ -468,9 +492,9 @@ function MatchesScreen({ plans, onOpenMatch }) {
                     {m.marquee && <div className="text-[10px] font-bold tracking-[0.2em] text-pink mb-3">★ BIG ONE</div>}
                     <div className="flex items-end justify-between gap-3">
                       <div className="font-display uppercase leading-[0.95] text-xl">
-                        <div>{m.flag_a} {m.team_a}</div>
+                        <div className="flex items-center gap-2"><FlagImg emoji={m.flag_a} team={m.team_a} size={17} /> {m.team_a}</div>
                         <div className="text-cream/40 text-xs my-0.5">versus</div>
-                        <div>{m.flag_b} {m.team_b}</div>
+                        <div className="flex items-center gap-2"><FlagImg emoji={m.flag_b} team={m.team_b} size={17} /> {m.team_b}</div>
                       </div>
                       <KickClock m={m} />
                     </div>
@@ -512,9 +536,9 @@ function MatchScreen({ match, plans, onBack, onOpenPlan, onCreate }) {
           <div className="text-[11px] uppercase tracking-[0.18em] text-cream/80 mt-2"><MatchStatusLine m={match} /></div>
           {match.venue && <div className="text-[11px] text-cream/55 mt-1">📍 {match.venue}</div>}
           {(match.form_a || match.form_b) && (
-            <div className="mt-3">
-              <div className="flex items-center gap-2 mb-1.5">
-                <span className="text-[9px] font-bold uppercase tracking-[0.2em] text-cream/40">Recent form · last 5</span>
+            <div className="mt-3 inline-block rounded-xl bg-white/[0.04] border border-white/[0.06] px-3 py-2">
+              <div className="flex items-center gap-3 mb-1.5">
+                <span className="text-[9px] font-bold uppercase tracking-[0.2em] text-cream/35">Form · last 5</span>
                 <FormLegend />
               </div>
               <div className="flex items-center gap-4 text-[10px] uppercase tracking-[0.16em] text-cream/55">
@@ -538,6 +562,7 @@ function MatchScreen({ match, plans, onBack, onOpenPlan, onCreate }) {
         )}
 
         <HeadToHead match={match} m={match} />
+        <WinProbBar m={match} />
 
         <div className="flex items-end justify-between mb-3">
           <h2 className="font-display text-2xl uppercase leading-none">Spots</h2>
@@ -566,6 +591,31 @@ function MatchScreen({ match, plans, onBack, onOpenPlan, onCreate }) {
       </div>
 
       <StickyBar><Pill onClick={onCreate} className="w-full">+ Start a watch plan</Pill></StickyBar>
+    </div>
+  )
+}
+
+// Win-probability bar — model output (penaltyblog in production). Renders only
+// when probabilities exist, so it's dormant until the prediction worker fills them.
+function WinProbBar({ m }) {
+  if (m.prob_a == null || m.prob_b == null) return null
+  const pa = Math.round(m.prob_a * 100)
+  const pd = m.prob_draw != null ? Math.round(m.prob_draw * 100) : 0
+  const pb = Math.round(m.prob_b * 100)
+  return (
+    <div className="mb-6">
+      <div className="flex items-center justify-between text-[9px] font-bold uppercase tracking-[0.2em] text-cream/40 mb-1.5">
+        <span>Win probability</span>
+        <span className="text-cream/30">{m.prob_source === 'illustrative' ? 'model · illustrative' : 'model'}</span>
+      </div>
+      <div className="flex h-2.5 rounded-full overflow-hidden">
+        <div style={{ width: pa + '%', background: m.color_a || '#8ACE00' }} />
+        <div style={{ width: pd + '%', background: '#3a3a3a' }} />
+        <div style={{ width: pb + '%', background: m.color_b || '#2A5BFF' }} />
+      </div>
+      <div className="flex items-center justify-between text-[10px] font-bold mt-1.5 text-cream/70">
+        <span>{m.team_a} {pa}%</span><span className="text-cream/40">Draw {pd}%</span><span>{pb}% {m.team_b}</span>
+      </div>
     </div>
   )
 }

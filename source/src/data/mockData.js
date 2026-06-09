@@ -107,6 +107,8 @@ const EDITORIAL = [
     kickoff: '2026-06-11T21:00', stage: 'Group A · Opening match', day: 'OPENING NIGHT · THU 11 JUN', featured: true,
     tv: [{ name: 'TV 2', free: false }],
     h2h: { last: '2010 World Cup', score: '1–1', note: 'the opening match in Johannesburg' },
+    // Illustrative until the penaltyblog worker fills real model output.
+    prob_a: 0.46, prob_draw: 0.28, prob_b: 0.26, prob_source: 'illustrative',
     // Real archive photo of THAT match (Wikimedia Commons, CC BY 2.0).
     archive: {
       src: 'https://upload.wikimedia.org/wikipedia/commons/thumb/c/c0/First_game_of_the_2010_FIFA_World_Cup%2C_South_Africa_vs_Mexico.jpg/960px-First_game_of_the_2010_FIFA_World_Cup%2C_South_Africa_vs_Mexico.jpg',

@@ -92,8 +92,13 @@ The same European feed that powers scores powers the personality.
   the browser voice. Feed it live data — form, head-to-head, lineups, injuries,
   API-Football **predictions** and **odds** — and generate a genuinely smart,
   funny 30-second hype clip per match, in a custom **ElevenLabs** RALLY voice.
-- **Win-probability & momentum.** API-Football predictions/odds → the win-prob bar
-  on match detail; live momentum during the game.
+- **Win-probability & momentum.** Real model output, not just bookmaker odds. A
+  nightly **penaltyblog** worker (`worker/predict.py`) fits a Dixon-Coles model on
+  recent results (FBref / Understat xG / Club Elo) and writes home/draw/away
+  probabilities to Supabase `predictions`; the app renders the win-prob bar from
+  them (the component already ships, dormant until data arrives). Same numbers
+  grade the **Super Predictor** leaderboard, so it's a real baseline, not vibes.
+  API-Football odds/predictions add live in-game momentum.
 - **Predictions that mean something.** Users pick winners; results grade against
   real outcomes → the **Super Predictor** leaderboard becomes legitimate, not
   decorative.
