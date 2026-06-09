@@ -484,6 +484,8 @@ export default function App() {
   // a fresh reward lands (someone joined their RALLY).
   const [discounts, setDiscounts] = useState([])
   const [referralNudge, setReferralNudge] = useState(null)
+  // ADD-TO-HOME-SCREEN — one-time iOS-Safari install hint (see InstallHint).
+  const [installHint, setInstallHint] = useState(false)
 
   // SHARE LOOP — a guest arriving via a shared link (/p/<id> or ?p=<id>). We
   // capture the planId once on mount and route straight to that plan after
@@ -591,6 +593,20 @@ export default function App() {
     setGuestRouted(true)
   }, [guestPlanId, guestRouted, splash, onboarded, plans])
 
+  // ADD-TO-HOME-SCREEN — surface the install hint only once the user is actually
+  // in the app (past splash + onboarding), and only for iOS Safari users who
+  // aren't already installed. The short delay keeps it from popping in mid-render
+  // so it reads as a gentle nudge, not a jarring banner ad.
+  useEffect(() => {
+    if (splash || !onboarded || !shouldShowA2HS()) return
+    const t = setTimeout(() => setInstallHint(true), 2500)
+    return () => clearTimeout(t)
+  }, [splash, onboarded])
+  const dismissInstallHint = () => {
+    setInstallHint(false)
+    try { localStorage.setItem(A2HS_KEY, '1') } catch { /* file:// — fine, it just re-checks next session */ }
+  }
+
   const resolve = (id) => (id === myId ? profile : (userById(id) || profile))
   const view = stack[stack.length - 1]
   const push = (v) => setStack((s) => [...s, v])
@@ -672,6 +688,7 @@ export default function App() {
         {share && <ShareModal plan={share} refCode={myReferralCode(myId)} onClose={() => setShare(null)} />}
         {beer && <BuyBeerModal onClose={() => setBeer(false)} />}
         {referralNudge && <ReferralNudge kind={referralNudge} onClose={() => setReferralNudge(null)} />}
+        {installHint && !referralNudge && <InstallHint onClose={dismissInstallHint} />}
       </>}>
         <Suspense fallback={<div className="min-h-[40vh]" />}>{screen}</Suspense>
       </PhoneFrame>
@@ -956,6 +973,62 @@ function ReferralNudge({ kind, onClose }) {
           <div className="font-display text-sm uppercase tracking-wide text-lime">{head}</div>
           <div className="text-xs text-cream/70 mt-0.5 leading-snug">{body}</div>
         </div>
+      </div>
+    </div>
+  )
+}
+
+// --- add-to-home-screen hint ----------------------------------------------
+// iOS Safari shows NO native install prompt, so most users never "Add to Home
+// Screen" and PWA adoption dies on the vine. This is a tasteful, one-time, in-
+// voice nudge that only fires for iOS Safari users who aren't already installed.
+// Dismissal is remembered in localStorage so it never nags twice.
+const A2HS_KEY = 'rally_a2hs_dismissed'
+
+// True only when: iOS device + actual Safari (not Chrome/Firefox-on-iOS, which
+// use CriOS/FxiOS and can't "Add to Home Screen" the same way) + NOT already
+// running as an installed standalone app.
+function shouldShowA2HS() {
+  try {
+    if (localStorage.getItem(A2HS_KEY)) return false
+  } catch { /* no localStorage (file://) — fall through, still gate on UA */ }
+  const ua = window.navigator.userAgent || ''
+  const isIOS = /iPhone|iPad|iPod/.test(ua)
+  const isSafari = !/CriOS|FxiOS|EdgiOS|OPiOS/.test(ua)   // exclude in-app/other browsers
+  const standalone =
+    window.matchMedia?.('(display-mode: standalone)').matches ||
+    window.navigator.standalone === true
+  return isIOS && isSafari && !standalone
+}
+
+// The iOS share glyph (square with an up-arrow) — the exact icon users tap.
+function ShareGlyph({ className = '' }) {
+  return (
+    <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden className={className}
+      fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M12 3v12" />
+      <path d="m8 7 4-4 4 4" />
+      <path d="M6 12H5a2 2 0 0 0-2 2v5a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-5a2 2 0 0 0-2-2h-1" />
+    </svg>
+  )
+}
+
+function InstallHint({ onClose }) {
+  return (
+    <div className="fixed inset-x-0 bottom-24 z-[55] flex justify-center px-4 pointer-events-none">
+      <div className="pointer-events-auto w-full max-w-[360px] rounded-2xl border-2 border-lime/60 bg-panel/95 backdrop-blur p-3.5 flex items-start gap-3 animate-pop shadow-xl">
+        <span className="shrink-0 mt-0.5 text-lime"><ShareGlyph /></span>
+        <div className="flex-1">
+          <div className="font-display text-sm uppercase tracking-wide text-lime">Keep us on you</div>
+          <div className="text-xs text-cream/70 mt-0.5 leading-snug">
+            Tap <ShareGlyph className="inline-block align-text-bottom text-cream" /> then
+            {' '}<span className="text-cream font-semibold">Add to Home Screen</span> — one tap to the match, every night. We’ll save you a seat.
+          </div>
+        </div>
+        <button onClick={onClose} aria-label="Dismiss"
+          className="shrink-0 -mt-1 -mr-1 h-7 w-7 grid place-items-center rounded-full text-cream/40 hover:text-cream/80 text-lg leading-none">
+          ×
+        </button>
       </div>
     </div>
   )
