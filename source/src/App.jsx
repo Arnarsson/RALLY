@@ -1,24 +1,30 @@
-import { useState, useEffect, createContext, useContext } from 'react'
+import { useState, useEffect, createContext, useContext, lazy, Suspense } from 'react'
 import {
   VIBES, USERS, ME, userById, FLAGS,
-  VENUES, venueById,
+  venueById,
   MATCHES, matchById,
   PLANS as SEED_PLANS,
-  OUTFITS,
   hasSupabase, ensureAuth, saveProfile, hydrateFromSupabase,
   loadPlans, loadPlan, subscribeRealtime, joinPlan, leavePlan, createPlanRow,
-  loadTeamExtras,
-  ratePlayer, unratePlayer, matchRatings, myRatings, playerSlug,
   myReferralCode, ensureReferral, claimReferral, myDiscounts,
 } from './data/mockData.js'
 import { parseShareParams, planShareUrl, planCardUrl, shareText, referralLink } from './data/shareLinks.js'
-import { activeCategories, MAX_PICKS_PER_CATEGORY } from './data/ratingConfig.js'
-import { OUTFIT_IMG } from './data/outfitImages.js'
 import { FLAG_PNG } from './data/flags.js'
 import { HERO_IMG, HERO_GENERIC } from './data/heroImages.js'
 import { SPLASH_IMG } from './data/splashImage.js'
 import { ACTIVE_THEME } from './theme.js'
 import PosterCard from './components/PosterCard'
+
+// Code-split: every screen past Tonight is lazy. The initial chunk only carries
+// the splash + onboarding + Tonight (MatchesScreen), so the critical mobile
+// download that gates first paint stays small. These chunks fetch on demand when
+// you navigate into a match / plan / outfit / leaders. (The standalone single-
+// file build re-inlines them all via vite-plugin-singlefile — see vite.config.)
+const MatchScreen = lazy(() => import('./screens/MatchScreen.jsx'))
+const PlanScreen = lazy(() => import('./screens/PlanScreen.jsx'))
+const CreateScreen = lazy(() => import('./screens/CreateScreen.jsx'))
+const OutfitScreen = lazy(() => import('./screens/OutfitScreen.jsx'))
+const LeadersScreen = lazy(() => import('./screens/LeadersScreen.jsx'))
 
 // ===========================================================================
 // RALLY — editorial football-culture design system, DARK (white on black).
@@ -30,7 +36,7 @@ import PosterCard from './components/PosterCard'
 // use flCard*/flPhoto* helpers below for Floodlight-specific visual treatment.
 // ===========================================================================
 
-const NIGHT = '#0B0B0B'
+export const NIGHT = '#0B0B0B'
 const IS_FLOODLIGHT = ACTIVE_THEME === 'floodlight'
 
 // ---------------------------------------------------------------------------
@@ -136,13 +142,13 @@ function flTeamVars(colorA, colorB) {
 }
 
 const UserCtx = createContext(userById)
-const useResolve = () => useContext(UserCtx)
+export const useResolve = () => useContext(UserCtx)
 
 // Placeholder photography. Real shots (brand shoots / Miinto feed) drop in here.
 // Grayscale to match the brand's B&W documentary look; reliable, no API key.
 const photo = (seed, w = 800, h = 600) => `https://picsum.photos/seed/${seed}/${w}/${h}?grayscale`
 
-function Img({ seed, h = 'h-full', gradient = true, className = '' }) {
+export function Img({ seed, h = 'h-full', gradient = true, className = '' }) {
   return (
     <div className={'relative overflow-hidden bg-panel ' + h + ' ' + className}>
       <img src={photo(seed)} alt="" loading="lazy" className="absolute inset-0 w-full h-full object-cover" />
@@ -153,7 +159,7 @@ function Img({ seed, h = 'h-full', gradient = true, className = '' }) {
 }
 
 // --- helpers ---------------------------------------------------------------
-function Avatar({ user, size = 32, ring = true }) {
+export function Avatar({ user, size = 32, ring = true }) {
   return (
     <div
       className={'relative flex items-center justify-center rounded-full font-bold text-white shrink-0 ' + (ring ? 'ring-2 ring-night' : '')}
@@ -166,7 +172,7 @@ function Avatar({ user, size = 32, ring = true }) {
   )
 }
 
-function AvatarStack({ ids, max = 5, size = 30 }) {
+export function AvatarStack({ ids, max = 5, size = 30 }) {
   const resolve = useResolve()
   const shown = ids.slice(0, max)
   const extra = ids.length - shown.length
@@ -184,7 +190,7 @@ function AvatarStack({ ids, max = 5, size = 30 }) {
   )
 }
 
-function VibeTag({ vibe, small = false }) {
+export function VibeTag({ vibe, small = false }) {
   const v = VIBES[vibe]
   if (!v) return null
   const txt = v.color === '#8ACE00' ? NIGHT : '#FFFFFF'
@@ -206,7 +212,7 @@ function watchURL(name) {
   return null
 }
 
-function TvChips({ tv, small = false }) {
+export function TvChips({ tv, small = false }) {
   if (!tv || !tv.length) return null
   return (
     <div className="flex items-center gap-1.5 flex-wrap">
@@ -239,7 +245,7 @@ function TvChips({ tv, small = false }) {
 // Recent form, e.g. "WWWDD" -> coloured pips.
 const FORM_COLOR = { W: '#8ACE00', D: '#8a8a8a', L: '#FF5A1F' }
 const FORM_LABEL = { W: 'Win', D: 'Draw', L: 'Loss' }
-function FormPips({ form }) {
+export function FormPips({ form }) {
   if (!form) return null
   return (
     <span className="inline-flex items-center gap-0.5 align-middle">
@@ -249,7 +255,7 @@ function FormPips({ form }) {
     </span>
   )
 }
-function FormLegend() {
+export function FormLegend() {
   return (
     <span className="inline-flex items-center gap-1.5 text-[8px] uppercase tracking-wide text-cream/30">
       {['W', 'D', 'L'].map((r) => (
@@ -294,7 +300,7 @@ function KickClock({ m }) {
 }
 
 // One-line match status for detail headers.
-function MatchStatusLine({ m }) {
+export function MatchStatusLine({ m }) {
   if (m.status === 'in') return <span className="text-pink">● LIVE {m.score_a}–{m.score_b} · {m.clock}</span>
   if (m.status === 'post' || m.completed) return <span>full time · {m.score_a}–{m.score_b}</span>
   return <span>kickoff {m.kickoff.slice(11, 16)}</span>
@@ -318,14 +324,14 @@ function flagURL(emoji, team) {
   }
   return null
 }
-function FlagImg({ emoji, team, size = 20, className = '' }) {
+export function FlagImg({ emoji, team, size = 20, className = '' }) {
   const url = flagURL(emoji, team)
   if (!url) return <span style={{ fontSize: size }}>{emoji}</span>
   return <img src={url} alt="" loading="lazy" className={'inline-block rounded-[2px] object-cover align-middle ' + className}
     style={{ height: size, width: 'auto' }} />
 }
 
-function MatchArt({ m, className = '', credit = false }) {
+export function MatchArt({ m, className = '', credit = false }) {
   const a = m.color_a || '#8ACE00'
   const b = m.color_b || '#2A5BFF'
   // 1) Real archive photo of this fixture — B&W, grained, faintly team-tinted.
@@ -381,7 +387,7 @@ function Countdown({ to, max = 72 }) {
   return <span>{d >= 1 ? `in ${d}d ${h % 24}h` : h >= 1 ? `in ${h}h ${mm}m` : `in ${mm}m`}</span>
 }
 
-function Pill({ children, onClick, color = 'lime', className = '' }) {
+export function Pill({ children, onClick, color = 'lime', className = '' }) {
   const map = {
     lime: 'bg-lime text-night',
     ghost: 'bg-panel2 text-cream border border-line',
@@ -395,7 +401,7 @@ function Pill({ children, onClick, color = 'lime', className = '' }) {
 }
 
 // --- AI rundown ------------------------------------------------------------
-function Rundown({ text }) {
+export function Rundown({ text }) {
   const [playing, setPlaying] = useState(false)
   const [open, setOpen] = useState(false)
   const supported = typeof window !== 'undefined' && 'speechSynthesis' in window
@@ -643,7 +649,7 @@ export default function App() {
         {beer && <BuyBeerModal onClose={() => setBeer(false)} />}
         {referralNudge && <ReferralNudge kind={referralNudge} onClose={() => setReferralNudge(null)} />}
       </>}>
-        {screen}
+        <Suspense fallback={<div className="min-h-[40vh]" />}>{screen}</Suspense>
       </PhoneFrame>
     </UserCtx.Provider>
   )
@@ -900,606 +906,6 @@ function MatchesScreen({ plans, onOpenMatch, flag }) {
   )
 }
 
-// --- match (plans) ---------------------------------------------------------
-function MatchScreen({ match, plans, myId, onBack, onOpenPlan, onCreate }) {
-  const matchPlans = plans.filter((p) => p.match_id === match.id).sort((a, b) => b.participant_ids.length - a.participant_ids.length)
-  const [extras, setExtras] = useState(null)
-  const [showPoster, setShowPoster] = useState(false)
-  const topPlan = matchPlans[0] || null
-  useEffect(() => {
-    let alive = true
-    setExtras(null)
-    loadTeamExtras(match.team_a, match.team_b).then((e) => { if (alive) setExtras(e) })
-    return () => { alive = false }
-  }, [match.id])
-  return (
-    <div className="pb-28">
-      <TopBar onBack={onBack} title={match.stage} />
-      <div className="relative">
-        <MatchArt m={match} className="h-56" credit />
-        <div className="absolute inset-0 flex flex-col items-center justify-end text-center px-5 pb-4">
-          <div className="font-display uppercase text-2xl leading-[0.95] drop-shadow">
-            {match.flag_a} {match.team_a} <span className="text-cream/60 text-base">v</span> {match.flag_b} {match.team_b}
-          </div>
-          <div className="text-[11px] uppercase tracking-[0.18em] text-cream/80 mt-2"><MatchStatusLine m={match} /></div>
-          {match.venue && <div className="text-[11px] text-cream/55 mt-1">📍 {match.venue}</div>}
-          <div className="mt-3 flex items-center gap-2 flex-wrap justify-center">
-            <TvChips tv={match.tv} />
-            <button onClick={() => setShowPoster(true)}
-              className="inline-flex items-center gap-1 rounded-full bg-lime text-night font-bold uppercase tracking-wide px-3 py-1 text-[10px] active:scale-95 transition">
-              <span aria-hidden>⬆</span> Share
-            </button>
-          </div>
-        </div>
-      </div>
-      <div className="px-5 pt-5">
-
-        {match.commentary && <Rundown text={match.commentary} />}
-
-        <MatchAnalytics m={match} />
-
-        {match.fun_fact && (
-          <div className="mb-6 border-l-2 border-pink pl-4">
-            <div className="text-[10px] font-bold tracking-[0.2em] uppercase text-pink mb-1">did you know</div>
-            <p className="flourish text-xl leading-snug text-cream/80">{match.fun_fact}</p>
-          </div>
-        )}
-
-        <HeadToHead match={match} m={match} />
-
-        <TeamExtras match={match} extras={extras} />
-
-        <div className="flex items-end justify-between mb-3">
-          <h2 className="font-display text-2xl uppercase leading-none">Spots</h2>
-          <span className="text-[11px] uppercase tracking-wide text-cream/40">{matchPlans.length} plans</span>
-        </div>
-
-        <div className="space-y-3">
-          {matchPlans.map((p) => {
-            const venue = venueById(p.venue_id)
-            return (
-              <button key={p.id} onClick={() => onOpenPlan(p)} className="w-full text-left rounded-2xl bg-panel border border-line p-4 active:scale-[0.98] transition">
-                <div className="flex items-start justify-between gap-2">
-                  <div className="flex items-center gap-2 font-bold text-lg"><span className="text-xl">{venue.emoji}</span>{venue.name}</div>
-                  <VibeTag vibe={p.vibe} small />
-                </div>
-                <div className="text-sm text-cream/45 mt-1">{venue.area} · from {p.time}</div>
-                <div className="flex items-center justify-between mt-3">
-                  <AvatarStack ids={p.participant_ids} />
-                  <span className="text-sm font-bold">{p.participant_ids.length} going →</span>
-                </div>
-              </button>
-            )
-          })}
-          {matchPlans.length === 0 && <div className="text-center text-cream/40 py-10 text-sm">No spots yet. Start one and share it →</div>}
-        </div>
-      </div>
-
-      <StickyBar><Pill onClick={onCreate} className="w-full">+ Start a watch plan</Pill></StickyBar>
-
-      {showPoster && (
-        <div
-          style={{
-            position: 'fixed', inset: 0, zIndex: 99,
-            background: 'rgba(0,0,0,0.82)',
-            display: 'flex', flexDirection: 'column',
-            alignItems: 'center', justifyContent: 'center',
-            gap: 20, padding: 24,
-          }}
-          onClick={() => setShowPoster(false)}
-        >
-          <PosterCard
-            match={match}
-            plan={topPlan}
-            planId={topPlan?.id}
-            width={300}
-          />
-          <button
-            className="rounded-full bg-lime text-night font-bold uppercase tracking-widest py-3.5 px-7 active:scale-[0.98] transition"
-            onClick={async (e) => {
-              e.stopPropagation()
-              const url = `/api/poster/${match.id}.png${topPlan ? `?planId=${topPlan.id}` : ''}`
-              if (navigator.share) {
-                try {
-                  await navigator.share({ url: `https://rally.futbol${url}`, title: `${match.team_a} vs ${match.team_b}` })
-                } catch { /* user cancelled */ }
-              } else {
-                window.open(url, '_blank')
-              }
-            }}
-          >
-            Download / Share
-          </button>
-          <button
-            className="text-cream/50 text-xs uppercase tracking-widest"
-            onClick={() => setShowPoster(false)}
-          >
-            Close
-          </button>
-        </div>
-      )}
-    </div>
-  )
-}
-
-// Match analytics — "the numbers". Win probability + recent-form comparison.
-// Win-prob is a real model when the penaltyblog worker has run, otherwise a
-// form-based estimate. Deeper stats (xG, Elo, standings, live momentum) come
-// from the API-Football / penaltyblog backend (see docs/RALLY-10x-plan.md).
-const formPts = (f) => [...(f || '')].reduce((n, r) => n + (r === 'W' ? 3 : r === 'D' ? 1 : 0), 0)
-function MatchAnalytics({ m }) {
-  const hasProb = m.prob_a != null && m.prob_b != null
-  const hasForm = m.form_a || m.form_b
-  if (!hasProb && !hasForm) return null
-  const pa = Math.round((m.prob_a || 0) * 100), pd = Math.round((m.prob_draw || 0) * 100), pb = Math.round((m.prob_b || 0) * 100)
-  const src = m.prob_source === 'illustrative' ? 'model · demo' : m.prob_source === 'form' ? 'form model' : 'model'
-  const row = (flag, team, form) => (
-    <div className="flex items-center justify-between text-[11px]">
-      <span className="flex items-center gap-1.5"><FlagImg emoji={flag} team={team} size={13} /> {team}</span>
-      <span className="flex items-center gap-2"><FormPips form={form} /><span className="font-bold text-cream/55 w-12 text-right">{formPts(form)} pts</span></span>
-    </div>
-  )
-  return (
-    <div className="rounded-2xl bg-panel border border-line p-4 mb-5">
-      <div className="flex items-center justify-between mb-3">
-        <div className="flourish text-xl leading-none text-lime">the numbers</div>
-        <div className="text-[10px] uppercase tracking-[0.18em] text-cream/40">{hasProb ? src : 'form'}</div>
-      </div>
-      {hasProb && (
-        <div className="mb-1">
-          <div className="text-[9px] font-bold uppercase tracking-[0.2em] text-cream/40 mb-1.5">Win probability</div>
-          <div className="flex h-3 rounded-full overflow-hidden">
-            <div style={{ width: pa + '%', background: m.color_a || '#8ACE00' }} />
-            <div style={{ width: pd + '%', background: '#3a3a3a' }} />
-            <div style={{ width: pb + '%', background: m.color_b || '#2A5BFF' }} />
-          </div>
-          <div className="flex items-center justify-between text-[11px] font-bold mt-1.5">
-            <span className="flex items-center gap-1.5"><FlagImg emoji={m.flag_a} team={m.team_a} size={13} /> {pa}%</span>
-            <span className="text-cream/40">Draw {pd}%</span>
-            <span className="flex items-center gap-1.5">{pb}% <FlagImg emoji={m.flag_b} team={m.team_b} size={13} /></span>
-          </div>
-        </div>
-      )}
-      {hasForm && (
-        <div className="mt-4 pt-4 border-t border-line">
-          <div className="flex items-center justify-between text-[9px] font-bold uppercase tracking-[0.2em] text-cream/40 mb-2">
-            <span>Recent form · last 5</span><FormLegend />
-          </div>
-          <div className="space-y-2">{row(m.flag_a, m.team_a, m.form_a)}{row(m.flag_b, m.team_b, m.form_b)}</div>
-        </div>
-      )}
-    </div>
-  )
-}
-
-// Head-to-head — the teams' shared history (from the API's H2H endpoint).
-// Falls back to a "first meeting" line so it always says something.
-function HeadToHead({ m }) {
-  if (!m.h2h && !m.first_meeting) return null
-  return (
-    <div className="mb-6 border-l-2 pl-4" style={{ borderColor: '#2A5BFF' }}>
-      <div className="text-[10px] font-bold tracking-[0.2em] uppercase mb-1" style={{ color: '#2A5BFF' }}>head to head</div>
-      {m.h2h ? (
-        <p className="flourish text-xl leading-snug text-cream/80">
-          Last met at {m.h2h.last} — {m.flag_a} <span className="not-italic font-display">{m.h2h.score}</span> {m.flag_b}{m.h2h.note ? `, ${m.h2h.note}.` : '.'}
-        </p>
-      ) : (
-        <p className="flourish text-xl leading-snug text-cream/80">First-ever meeting. New history tonight.</p>
-      )}
-    </div>
-  )
-}
-
-// Teams panel — all-time World Cup record (6-stat card) + a collapsible squad
-// (players by position + coach). Data comes from Supabase (squads /
-// team_records). Renders nothing on the demo path or for teams with no data.
-const POS_GROUPS = [['G', 'Goalkeepers'], ['D', 'Defenders'], ['M', 'Midfielders'], ['F', 'Forwards']]
-function WCRecord({ r }) {
-  if (!r || !r.played) return null
-  const cell = (label, val, color) => (
-    <div className="text-center">
-      <div className="text-[7px] font-bold uppercase tracking-wide text-cream/40 leading-tight">{label}</div>
-      <div className="font-display text-lg leading-none mt-1" style={{ color }}>{val}</div>
-    </div>
-  )
-  return (
-    <div className="grid grid-cols-6 gap-1 rounded-xl bg-night border border-line p-3 mt-2">
-      {cell('Played', r.played, '#F4F2EC')}
-      {cell('Wins', r.wins, '#8ACE00')}
-      {cell('Draws', r.draws, '#FF9F1C')}
-      {cell('Losses', r.losses, '#FF5A1F')}
-      {cell('Scored', r.gf, '#FF3E9A')}
-      {cell('Against', r.ga, '#8a8a8a')}
-    </div>
-  )
-}
-// One squad: all-time WC record card + a collapsible squad grouped by position.
-// When `rate` is supplied (backend + active categories + squads present), each
-// player becomes a votable chip in the currently-selected category — you rate
-// the real squad in place, no duplicate player list. Without `rate` the players
-// render as plain read-only text (demo build / no backend).
-function TeamPanel({ team, flag, squad, record, rate }) {
-  const [open, setOpen] = useState(!!rate)   // auto-open when the squad is ratable
-  if (!squad && (!record || !record.played)) return null
-  const players = squad?.players || []
-  const grouped = POS_GROUPS.map(([code, label]) => [label, players.filter((p) => p.pos === code)])
-  const others = players.filter((p) => !['G', 'D', 'M', 'F'].includes(p.pos))
-  if (others.length) grouped.push(['Other', others])
-  return (
-    <div className="rounded-2xl bg-panel border border-line p-4 mb-3">
-      <div className="flex items-center gap-2">
-        <FlagImg emoji={flag} team={team} size={16} />
-        <span className="font-display uppercase text-lg leading-none">{team}</span>
-        {record?.played > 0 && <span className="text-[9px] uppercase tracking-[0.16em] text-cream/40 ml-auto">World Cup record</span>}
-      </div>
-      <WCRecord r={record} />
-      {players.length > 0 && (
-        <>
-          <button onClick={() => setOpen((o) => !o)} className="w-full flex items-center justify-between mt-3 pt-3 border-t border-line text-sm font-bold active:scale-[0.99] transition">
-            <span>{rate ? 'Squad · tap to rate' : 'Squad'} <span className="text-cream/35">· {players.length}</span></span>
-            <span className="text-lime text-lg leading-none">{open ? '−' : '+'}</span>
-          </button>
-          {open && (
-            <div className="mt-3 space-y-3">
-              {grouped.map(([label, ps]) => ps.length > 0 && (
-                <div key={label}>
-                  <div className="text-[9px] font-bold uppercase tracking-[0.2em] text-lime mb-1.5">{label}</div>
-                  {rate ? (
-                    <div className="flex flex-wrap gap-2">
-                      {ps.map((p, i) => {
-                        const id = playerSlug(p.name, team)
-                        const picked = rate.picks.has(id)
-                        const count = rate.counts[id] || 0
-                        const blocked = !picked && rate.atMax
-                        return (
-                          <button key={i} disabled={blocked || rate.busy}
-                            onClick={() => rate.onToggle({ id, team, name: p.name, no: p.no, pos: p.pos })}
-                            className={'inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[13px] border transition active:scale-[0.96] ' +
-                              (picked ? 'bg-lime text-night border-lime font-bold'
-                                : blocked ? 'bg-night text-cream/25 border-line/60 cursor-not-allowed'
-                                : 'bg-night text-cream/80 border-line hover:border-cream/40')}>
-                            {p.no ? <span className={picked ? 'text-night/55' : 'text-cream/35'}>{p.no}</span> : null}
-                            {p.name}
-                            {rate.hasVoted && count > 0 && (
-                              <span className={'ml-0.5 rounded-full px-1.5 text-[10px] font-bold ' +
-                                (picked ? 'bg-night/15 text-night' : 'bg-lime/15 text-lime')}>{count}</span>
-                            )}
-                          </button>
-                        )
-                      })}
-                    </div>
-                  ) : (
-                    <div className="flex flex-wrap gap-x-3 gap-y-1 text-[13px] text-cream/80">
-                      {ps.map((p, i) => <span key={i}>{p.no ? <span className="text-cream/35">{p.no} </span> : null}{p.name}</span>)}
-                    </div>
-                  )}
-                </div>
-              ))}
-              {squad?.coach && <div className="text-[12px] text-cream/50 pt-1 border-t border-line/60 mt-1">Coach · <span className="text-cream/80">{squad.coach}</span></div>}
-            </div>
-          )}
-        </>
-      )}
-    </div>
-  )
-}
-
-// Teams panel — record + squad for both sides, with rating folded IN (social §3).
-// Instead of a separate "Rate the match" list that duplicated every player, the
-// category selector lives here and the squad players themselves are the votable
-// chips. Pick max 3 per category ACROSS both teams (cap is owned here so it's
-// shared); tap again to unpick. Once you've voted in a category the live
-// AGGREGATE tally shows per player (never an individual vote). Rating is gated
-// behind hasSupabase + active categories + squads — otherwise the squad is
-// read-only and the selector is hidden (standalone demo).
-function TeamExtras({ match, extras }) {
-  const cats = activeCategories()
-  const [cat, setCat] = useState(cats[0]?.id)
-  const [mine, setMine] = useState({})       // { [cat]: Set(player_id) }
-  const [tally, setTally] = useState({})      // { [cat]: { [player_id]: count } }
-  const [busy, setBusy] = useState(false)
-
-  const refresh = () => {
-    myRatings(match.id).then((m) => m && setMine(m))
-    matchRatings(match.id).then((t) => t && setTally(t))
-  }
-  useEffect(() => { setMine({}); setTally({}); if (hasSupabase) refresh() }, [match.id])
-
-  if (!extras) return null
-  const { a, b } = extras
-  const has = (t) => t?.squad || (t?.record && t.record.played)
-  if (!has(a) && !has(b)) return null
-
-  // Rating is available only with a backend, active categories, and squads to rate.
-  const anyPlayers = (a?.squad?.players?.length || 0) + (b?.squad?.players?.length || 0) > 0
-  const rating = hasSupabase && cats.length > 0 && anyPlayers
-
-  const myCat = mine[cat] || new Set()
-  const atMax = myCat.size >= MAX_PICKS_PER_CATEGORY
-  const catTally = tally[cat] || {}
-  const hasVoted = myCat.size > 0
-
-  const onToggle = async (p) => {
-    if (busy) return
-    const picked = myCat.has(p.id)
-    if (!picked && atMax) return             // 4th pick blocked
-    setBusy(true)
-    if (picked) await unratePlayer(match.id, p.id, cat)
-    else await ratePlayer(match.id, p.team, p.id, cat)
-    refresh()
-    setBusy(false)
-  }
-
-  const rateFor = rating ? { cat, picks: myCat, counts: catTally, atMax, busy, hasVoted, onToggle } : null
-
-  return (
-    <div className="mb-6">
-      <div className="flex items-end justify-between mb-1">
-        <h2 className="font-display text-2xl uppercase leading-none">Teams</h2>
-        {rating && <span className="text-[10px] uppercase tracking-wide text-cream/40">rate · pick up to {MAX_PICKS_PER_CATEGORY}</span>}
-      </div>
-      {rating && (
-        <>
-          <p className="text-[11px] text-cream/40 mb-3">Tap a player in the squad to rate — anonymous</p>
-          <div className="flex gap-2 mb-2">
-            {cats.map((c) => (
-              <button key={c.id} onClick={() => setCat(c.id)}
-                className={'flex-1 rounded-full px-3 py-2 text-[12px] font-bold uppercase tracking-wide border transition active:scale-[0.97] ' +
-                  (cat === c.id ? 'bg-lime text-night border-lime' : 'bg-panel text-cream/70 border-line')}>
-                <span aria-hidden>{c.emoji}</span> {c.label}
-              </button>
-            ))}
-          </div>
-          <div className="flex items-center justify-between text-[10px] uppercase tracking-[0.16em] text-cream/40 mb-3">
-            <span>{myCat.size} / {MAX_PICKS_PER_CATEGORY} picked</span>
-            {atMax && <span className="text-pink">max reached — tap a pick to swap</span>}
-          </div>
-        </>
-      )}
-      <TeamPanel team={match.team_a} flag={match.flag_a} squad={a?.squad} record={a?.record} rate={rateFor} />
-      <TeamPanel team={match.team_b} flag={match.flag_b} squad={b?.squad} record={b?.record} rate={rateFor} />
-    </div>
-  )
-}
-
-// --- plan detail -----------------------------------------------------------
-function PlanScreen({ plan, joined, onBack, onToggleJoin, onShare }) {
-  const resolve = useResolve()
-  const venue = venueById(plan.venue_id)
-  const match = matchById(plan.match_id)
-  const host = resolve(plan.host_id)
-  return (
-    <div className="pb-28">
-      <TopBar onBack={onBack} title="Watch plan" />
-      <div className="relative">
-        <Img seed={'rally-' + venue.id} h="h-52" />
-        <div className="absolute inset-0 flex flex-col justify-end p-5">
-          <div className="text-[11px] uppercase tracking-[0.16em] text-cream/80">
-            {match.flag_a} {match.team_a} v {match.team_b} {match.flag_b} · {match.kickoff.slice(11, 16)}
-          </div>
-          <h1 className="font-display text-4xl uppercase leading-[0.9] drop-shadow">{venue.name}</h1>
-          <div className="text-sm text-cream/80 mt-1">{venue.area} · from {plan.time}</div>
-        </div>
-      </div>
-      <div className="px-5 pt-4">
-
-        <div className="flex items-center gap-2 mt-1 flex-wrap">
-          <VibeTag vibe={plan.vibe} />
-          {venue.big_screen && <span className="rounded-full px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide bg-panel2 border border-line text-cream/80">📺 Big screen</span>}
-          <TvChips tv={match.tv} />
-        </div>
-
-        {plan.note && <p className="flourish text-xl leading-snug text-cream/80 mt-4">“{plan.note}”</p>}
-
-        <div className="flex items-center gap-2 mt-5 text-sm text-cream/60">
-          <Avatar user={host} size={26} /><span>Hosted by <span className="font-bold text-cream">{host.name}</span></span>
-        </div>
-
-        <div className="rounded-2xl bg-panel border border-line p-4 mt-4">
-          <div className="flex items-center justify-between mb-3">
-            <span className="font-display text-xl uppercase">{plan.participant_ids.length} going</span>
-            <span className="text-[11px] uppercase tracking-wide text-cream/40">~{plan.capacity_hint} spots</span>
-          </div>
-          <div className="flex flex-wrap gap-3">
-            {plan.participant_ids.map((id) => {
-              const u = resolve(id)
-              return (
-                <div key={id} className="flex flex-col items-center gap-1 w-12">
-                  <Avatar user={u} size={40} />
-                  <span className="text-[11px] text-cream/60 truncate w-full text-center">{u.name}</span>
-                </div>
-              )
-            })}
-          </div>
-        </div>
-      </div>
-
-      <StickyBar>
-        <div className="flex gap-3">
-          <Pill onClick={onToggleJoin} color={joined ? 'ghost' : 'lime'} className="flex-1">{joined ? '✓ You’re in' : 'Join this plan'}</Pill>
-          <Pill onClick={onShare} color="pink" className="px-7">Share</Pill>
-        </div>
-      </StickyBar>
-    </div>
-  )
-}
-
-// --- create ----------------------------------------------------------------
-function CreateScreen({ match, onBack, onCreate }) {
-  const [venue_id, setVenue] = useState(VENUES[0].id)
-  const [time, setTime] = useState(match.kickoff.slice(11, 16))
-  const [vibe, setVibe] = useState('chill')
-  const [note, setNote] = useState('')
-  return (
-    <div className="pb-28">
-      <TopBar onBack={onBack} title="Start a plan" />
-      <div className="px-5 space-y-6">
-        <div className="rounded-2xl bg-panel border border-line p-4 text-center">
-          <div className="font-display uppercase text-xl">{match.flag_a} {match.team_a} v {match.team_b} {match.flag_b}</div>
-          <div className="text-[11px] uppercase tracking-[0.16em] text-cream/50 mt-1">kickoff {match.kickoff.slice(11, 16)}</div>
-        </div>
-
-        <div>
-          <label className="text-[11px] font-bold tracking-[0.18em] uppercase text-cream/40">Where?</label>
-          <div className="grid grid-cols-1 gap-2 mt-2">
-            {VENUES.map((v) => (
-              <button key={v.id} onClick={() => setVenue(v.id)}
-                className={'flex items-center gap-3 rounded-2xl p-3 border-2 text-left transition ' +
-                  (venue_id === v.id ? 'border-lime bg-lime/10' : 'border-line bg-panel')}>
-                <span className="text-xl">{v.emoji}</span>
-                <div className="flex-1"><div className="font-bold">{v.name}</div><div className="text-xs text-cream/40">{v.area}</div></div>
-                {venue_id === v.id && <span className="font-bold text-lime">✓</span>}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        <div>
-          <label className="text-[11px] font-bold tracking-[0.18em] uppercase text-cream/40">Meet from</label>
-          <input type="time" value={time} onChange={(e) => setTime(e.target.value)} className="mt-2 w-full bg-panel border-2 border-line rounded-2xl p-3 font-display text-xl text-cream [color-scheme:dark]" />
-        </div>
-
-        <div>
-          <label className="text-[11px] font-bold tracking-[0.18em] uppercase text-cream/40">Vibe</label>
-          <div className="flex flex-wrap gap-2 mt-2">
-            {Object.keys(VIBES).map((k) => {
-              const on = vibe === k
-              const txt = VIBES[k].color === '#8ACE00' ? NIGHT : '#fff'
-              return (
-                <button key={k} onClick={() => setVibe(k)}
-                  className={'rounded-full px-3 py-1.5 text-[11px] font-bold uppercase tracking-wide border-2 transition ' + (on ? 'border-transparent' : 'border-line bg-panel text-cream/50')}
-                  style={on ? { background: VIBES[k].color, color: txt } : {}}>{VIBES[k].label}</button>
-              )
-            })}
-          </div>
-        </div>
-
-        <div>
-          <label className="text-[11px] font-bold tracking-[0.18em] uppercase text-cream/40">Note <span className="normal-case font-normal text-cream/30">(optional)</span></label>
-          <textarea value={note} onChange={(e) => setNote(e.target.value)} rows={3} placeholder="e.g. Pre-drinks from 19:00, look for the green RALLY flag"
-            className="mt-2 w-full bg-panel border-2 border-line rounded-2xl p-3 text-cream placeholder:text-cream/30 resize-none" />
-        </div>
-      </div>
-
-      <StickyBar><Pill onClick={() => onCreate({ match_id: match.id, venue_id, time, vibe, note })} className="w-full">Create & share</Pill></StickyBar>
-    </div>
-  )
-}
-
-// --- outfit (Style for the game · Miinto-ready) ----------------------------
-function OutfitScreen({ discounts = [] }) {
-  const looks = [
-    { img: OUTFIT_IMG.women, who: 'Women', title: 'Matchday looks', price: 'fr. 749 kr' },
-    { img: OUTFIT_IMG.men, who: 'Men', title: 'Matchday looks', price: 'fr. 899 kr' },
-  ]
-  return (
-    <div className="pb-6">
-      <header className="relative mb-5">
-        <div className="relative h-[300px] overflow-hidden bg-night">
-          <img src={OUTFIT_IMG.hero} alt="" className="absolute inset-0 w-full h-full object-cover" />
-          <div className="absolute inset-0 bg-gradient-to-t from-night via-night/30 to-night/10" />
-        </div>
-        <div className="absolute inset-0 flex flex-col justify-between p-5">
-          <div className="flex items-center justify-between text-[11px] font-bold tracking-[0.18em] uppercase text-cream/80">
-            <span>Style for the game</span><span>Unisex</span>
-          </div>
-          <h1 className="font-display text-[42px] leading-[0.86] uppercase drop-shadow">
-            Dress<br />for the<br /><span className="flourish lowercase text-[46px] text-lime">occasion.</span>
-          </h1>
-        </div>
-      </header>
-
-      <div className="px-5">
-        <div className="text-[11px] font-bold tracking-[0.18em] uppercase text-cream/40 mb-3">The looks</div>
-        <div className="grid grid-cols-2 gap-3">
-          {looks.map((l) => (
-            <button key={l.who} className="relative rounded-2xl overflow-hidden text-left active:scale-[0.98] transition h-56">
-              <img src={l.img} alt="" className="absolute inset-0 w-full h-full object-cover" />
-              <div className="absolute inset-0 bg-gradient-to-t from-night/90 via-night/15 to-transparent" />
-              <div className="absolute inset-0 flex flex-col justify-end p-3">
-                <div className="text-[9px] font-bold uppercase tracking-wide text-lime">{l.who}</div>
-                <div className="font-display uppercase text-lg leading-none drop-shadow">{l.title}</div>
-                <div className="text-xs text-cream/80 mt-1">{l.price}</div>
-              </div>
-            </button>
-          ))}
-        </div>
-
-        <div className="text-[11px] font-bold tracking-[0.18em] uppercase text-cream/40 mt-6 mb-3">Essentials</div>
-        <button className="relative w-full rounded-2xl overflow-hidden text-left active:scale-[0.98] transition">
-          <img src={OUTFIT_IMG.essentials} alt="" className="w-full h-44 object-cover" />
-          <div className="absolute inset-0 bg-gradient-to-t from-night/85 via-night/10 to-transparent" />
-          <div className="absolute bottom-3 left-3">
-            <div className="font-display uppercase text-lg leading-none drop-shadow">Jerseys · caps · bags</div>
-            <div className="text-xs text-cream/80 mt-1">from 199 kr</div>
-          </div>
-        </button>
-
-        {/* §2 REFERRAL — the connector's reward. Earned 15% Miinto codes surface
-            here as a small gift, never a coupon dump. Hidden when there are none. */}
-        <RewardCard discounts={discounts} />
-
-        <div className="rounded-2xl border-2 border-line p-4 mt-6 text-center">
-          <div className="text-[11px] uppercase tracking-[0.18em] text-cream/50">Shop the looks · powered by</div>
-          <div className="font-display text-2xl uppercase mt-1">{OUTFITS.partner}</div>
-          <div className="text-xs text-cream/40 mt-1">Live product feed · tap any item to shop</div>
-        </div>
-        <p className="flourish text-center text-lg text-cream/30 mt-5">look the part. find your people.</p>
-      </div>
-    </div>
-  )
-}
-
-// --- §2 reward card --------------------------------------------------------
-// The connector's reward. Renders the earned single-use Miinto codes (15% off,
-// expiring) as a small gift on the Outfit screen. Returns null when there are
-// none (and in demo mode, where `discounts` is always []) so it never nags.
-function RewardCard({ discounts = [] }) {
-  const [copied, setCopied] = useState(null)
-  const live = discounts.filter((d) => !d.redeemed)
-  if (!live.length) return null
-
-  const fmtDate = (s) => {
-    try { return new Date(s).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' }) }
-    catch { return null }
-  }
-  const copy = async (code) => {
-    try { await navigator.clipboard.writeText(code) } catch { /* clipboard blocked */ }
-    setCopied(code); setTimeout(() => setCopied(null), 1600)
-  }
-
-  return (
-    <div className="rounded-2xl border-2 border-lime/60 bg-lime/[0.06] p-4 mt-6">
-      <div className="flex items-center justify-between">
-        <div className="text-[11px] font-bold uppercase tracking-[0.18em] text-lime">Your reward · for the connectors</div>
-        <span className="text-lg">🎟️</span>
-      </div>
-      <p className="text-sm text-cream/70 mt-1 leading-snug">
-        You pulled someone into a RALLY. Here’s <span className="font-bold text-cream">15% off at Miinto</span> — dress the part on us.
-      </p>
-      <div className="mt-3 space-y-2">
-        {live.map((d) => {
-          const exp = fmtDate(d.expires_at)
-          return (
-            <div key={d.code} className="flex items-center gap-2 bg-night/40 border border-line rounded-xl p-2 pl-3">
-              <div className="flex-1 min-w-0">
-                <div className="font-display text-lg uppercase tracking-wide truncate">{d.code}</div>
-                <div className="text-[10px] uppercase tracking-wide text-cream/40">
-                  {d.pct}% · {d.partner || 'Miinto'} · single-use{exp ? ` · ends ${exp}` : ''}
-                </div>
-              </div>
-              <button onClick={() => copy(d.code)}
-                className="shrink-0 rounded-lg bg-lime text-night px-3 py-2 text-[11px] font-bold uppercase tracking-wide active:scale-95 transition">
-                {copied === d.code ? 'Copied ✓' : 'Copy'}
-              </button>
-            </div>
-          )
-        })}
-      </div>
-    </div>
-  )
-}
-
 // --- §2 referral nudge -----------------------------------------------------
 // A one-time toast. Two voices: 'joined' welcomes a fresh INVITEE; 'rewarded'
 // tells the SHARER someone joined their RALLY and points them at their reward.
@@ -1523,59 +929,6 @@ function ReferralNudge({ kind, onClose }) {
           <div className="text-xs text-cream/70 mt-0.5 leading-snug">{body}</div>
         </div>
       </div>
-    </div>
-  )
-}
-
-// --- leaders ---------------------------------------------------------------
-function LeadersScreen({ plans, onBuyBeer }) {
-  const resolve = useResolve()
-  const reach = {}; plans.forEach((p) => { reach[p.host_id] = (reach[p.host_id] || 0) + p.participant_ids.length })
-  const builder = Object.entries(reach).sort((a, b) => b[1] - a[1])[0]
-  const counts = {}; plans.forEach((p) => { counts[p.host_id] = (counts[p.host_id] || 0) + 1 })
-  const host = Object.entries(counts).sort((a, b) => b[1] - a[1])[0]
-  const cards = [
-    { title: 'Community Builder', sub: 'Brings the most people together', color: '#8ACE00', user: resolve(builder[0]), metric: builder[1] + ' people gathered' },
-    { title: 'Social Host', sub: 'Hosts the most watch plans', color: '#FF3E9A', user: resolve(host[0]), metric: host[1] + ' plans hosted' },
-    { title: 'Super Predictor', sub: 'Best match predictions', color: '#2A5BFF', user: resolve('u_005'), metric: '7 / 9 correct' },
-  ]
-  return (
-    <div className="px-5 pb-6">
-      <header className="pt-2 pb-4">
-        <h1 className="font-display text-[42px] leading-[0.88] uppercase">The<br /><span className="flourish lowercase text-[46px] text-lime">leaders</span></h1>
-        <p className="text-sm text-cream/55 mt-3">For the people who bring the city together — not points, not likes. Real-world coordination.</p>
-      </header>
-
-      <div className="space-y-3">
-        {cards.map((c) => {
-          const txt = c.color === '#8ACE00' ? NIGHT : '#fff'
-          return (
-            <div key={c.title} className="rounded-2xl p-4" style={{ background: c.color, color: txt }}>
-              <div className="flex items-center justify-between">
-                <div className="font-display uppercase text-lg leading-none">{c.title}</div>
-                <span className="text-2xl">🏆</span>
-              </div>
-              <div className="text-[11px] uppercase tracking-wide opacity-70 mt-1">{c.sub}</div>
-              <div className="flex items-center gap-3 mt-3">
-                <Avatar user={c.user} size={44} />
-                <div><div className="font-bold">{c.user.name} {c.user.flag}</div><div className="text-sm font-bold opacity-90">{c.metric}</div></div>
-              </div>
-            </div>
-          )
-        })}
-      </div>
-
-      <div className="rounded-2xl border-2 border-line p-4 mt-5 text-center">
-        <div className="text-[11px] uppercase tracking-[0.18em] text-cream/50">Prizes powered by</div>
-        <div className="font-display text-2xl uppercase mt-1">Unisport</div>
-        <div className="text-xs text-cream/40 mt-1">Top 3 in each category win official kit</div>
-      </div>
-
-      <button onClick={onBuyBeer} className="w-full mt-3 rounded-2xl bg-panel border border-line p-4 flex items-center gap-3 active:scale-[0.98] transition">
-        <span className="text-2xl">🍺</span>
-        <div className="text-left flex-1"><div className="font-bold">Buy the makers a beer</div><div className="text-xs text-cream/45">RALLY is free & built by two people.</div></div>
-        <span className="font-bold">→</span>
-      </button>
     </div>
   )
 }
@@ -1688,13 +1041,13 @@ function BuyBeerModal({ onClose }) {
 }
 
 // --- bits ------------------------------------------------------------------
-function StickyBar({ children }) {
+export function StickyBar({ children }) {
   return (
     <div className="absolute bottom-[60px] left-0 right-0 px-5 pb-3 pt-8 bg-gradient-to-t from-night via-night to-transparent">{children}</div>
   )
 }
 
-function TopBar({ onBack, title }) {
+export function TopBar({ onBack, title }) {
   return (
     <div className="flex items-center gap-3 px-5 py-3 sticky top-0 bg-night/90 backdrop-blur z-10">
       <button onClick={onBack} className="w-9 h-9 rounded-full bg-panel border border-line flex items-center justify-center active:scale-90 transition">‹</button>

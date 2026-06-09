@@ -9,6 +9,7 @@
     "channels": "node scripts/fetch-channels.mjs",
     "archive": "node scripts/fetch-archive.mjs",
     "build": "vite build",
+    "build:standalone": "STANDALONE=1 vite build",
     "preview": "vite preview --host",
     "test": "vitest run",
     "images": "node scripts/fetch-images.mjs",
