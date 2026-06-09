@@ -10,7 +10,7 @@
  * deletes every cache that isn't the current version.
  */
 
-const CACHE = 'rally-v1';
+const CACHE = 'rally-v3';
 
 // App shell precached on install. Vite emits hashed asset filenames we can't
 // know up front, so we precache the entry points + PWA assets and let the
@@ -38,11 +38,25 @@ self.addEventListener('install', (event) => {
 self.addEventListener('activate', (event) => {
   event.waitUntil(
     caches.keys()
+      // Delete EVERY old cache (not just non-current) so no stale app shell
+      // can ever be served once a new SW version ships.
       .then((keys) => Promise.all(
         keys.filter((k) => k !== CACHE).map((k) => caches.delete(k)),
       ))
-      .then(() => self.clients.claim()),
+      .then(() => self.clients.claim())
+      // Auto-bust: force-reload every open tab to the fresh build the moment a
+      // new SW takes over — this unsticks a client that was holding a broken
+      // cached version, with no manual refresh needed.
+      .then(() => self.clients.matchAll({ type: 'window' }))
+      .then((clients) => clients.forEach((c) => {
+        try { c.navigate(c.url); } catch (e) { /* navigate unsupported — ignore */ }
+      })),
   );
+});
+
+// Allow the page to tell a waiting SW to take over immediately.
+self.addEventListener('message', (event) => {
+  if (event.data === 'SKIP_WAITING') self.skipWaiting();
 });
 
 self.addEventListener('fetch', (event) => {
