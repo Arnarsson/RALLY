@@ -683,7 +683,7 @@ export default function App() {
 function PhoneFrame({ children, tab, onTab, hideNav = false, footer = null }) {
   return (
     <div className="min-h-[100dvh] w-full flex items-center justify-center sm:py-6">
-      <div className="relative w-full sm:max-w-[400px] h-[100dvh] sm:h-[860px] bg-night grain text-cream overflow-hidden sm:rounded-[42px] sm:border-[10px] sm:border-black sm:shadow-2xl flex flex-col">
+      <div className="relative w-full sm:max-w-[400px] h-[100dvh] sm:h-[860px] sm:max-h-[calc(100dvh-3rem)] bg-night grain text-cream overflow-hidden sm:rounded-[42px] sm:border-[10px] sm:border-black sm:shadow-2xl flex flex-col">
         <div className="hidden sm:flex items-center justify-between px-6 pt-3 pb-1 text-[12px] text-cream/60 font-semibold shrink-0">
           <Clock /><span className="tracking-widest">●●●●</span>
         </div>
