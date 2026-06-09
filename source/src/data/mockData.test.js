@@ -7,7 +7,9 @@ import {
   _key, _formProb, _mapMatchRow,
   loadMatches, loadVenues, loadPlans,
   MATCHES, VENUES,
+  playerSlug, ratePlayer, unratePlayer, matchRatings, myRatings,
 } from './mockData.js'
+import { activeCategories, isCategoryActive, RATING_CATEGORIES, MAX_PICKS_PER_CATEGORY } from './ratingConfig.js'
 
 describe('_key (team-pair matching)', () => {
   it('is order-independent', () => {
@@ -73,5 +75,44 @@ describe('loaders fall back to mock data with no Supabase configured', () => {
     const plans = await loadPlans()
     expect(Array.isArray(plans)).toBe(true)
     expect(Array.isArray(plans[0].participant_ids)).toBe(true)
+  })
+})
+
+describe('match ratings — player_id slug', () => {
+  it('is deterministic — case/spacing-insensitive on (name, team)', () => {
+    expect(playerSlug('Pedri Gonzalez', 'Spain')).toBe(playerSlug('pedri  gonzalez', 'SPAIN'))
+  })
+  it('separates same-name players on different teams', () => {
+    expect(playerSlug('Diego Costa', 'Spain')).not.toBe(playerSlug('Diego Costa', 'Brazil'))
+  })
+})
+
+describe('match ratings — loaders are no-ops without Supabase', () => {
+  it('ratePlayer refuses on the demo path', async () => {
+    expect(await ratePlayer('m1', 'France', 'p1', 'hot')).toEqual({ ok: false, reason: 'demo' })
+  })
+  it('unratePlayer refuses on the demo path', async () => {
+    expect(await unratePlayer('m1', 'p1', 'hot')).toEqual({ ok: false, reason: 'demo' })
+  })
+  it('matchRatings / myRatings return null on the demo path', async () => {
+    expect(await matchRatings('m1')).toBeNull()
+    expect(await myRatings('m1')).toBeNull()
+  })
+})
+
+describe('rating kill-switch (ratingConfig)', () => {
+  it('all three DB-valid categories are present', () => {
+    expect(RATING_CATEGORIES.map((c) => c.id).sort()).toEqual(['best_dressed', 'coolness', 'hot'])
+  })
+  it('cap is 3', () => {
+    expect(MAX_PICKS_PER_CATEGORY).toBe(3)
+  })
+  it('disabling a category drops it from activeCategories', () => {
+    const hot = RATING_CATEGORIES.find((c) => c.id === 'hot')
+    expect(isCategoryActive('hot')).toBe(true)
+    hot.enabled = false
+    expect(isCategoryActive('hot')).toBe(false)
+    expect(activeCategories().some((c) => c.id === 'hot')).toBe(false)
+    hot.enabled = true   // restore for other tests
   })
 })
