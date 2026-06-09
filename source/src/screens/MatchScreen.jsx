@@ -99,8 +99,74 @@ function WCRecord({ r }) {
   )
 }
 
+// A jersey chip — number over surname. In rate mode it's a tappable button that
+// mirrors the list's pick/count states so rating works identically on the pitch.
+const surname = (name) => { const p = String(name || '').trim().split(/\s+/); return p[p.length - 1] || name }
+function Jersey({ p, team, rate }) {
+  const num = p.no ? p.no : ''
+  if (!rate) {
+    return (
+      <div className="flex flex-col items-center w-[52px]">
+        <div className="w-8 h-8 rounded-full bg-night/75 border border-cream/30 flex items-center justify-center text-[11px] font-bold text-cream">{num}</div>
+        <div className="text-[9px] text-cream/90 mt-0.5 w-full text-center truncate">{surname(p.name)}</div>
+      </div>
+    )
+  }
+  const id = playerSlug(p.name, team)
+  const picked = rate.picks.has(id)
+  const count = rate.counts[id] || 0
+  const blocked = !picked && rate.atMax
+  return (
+    <button disabled={blocked || rate.busy} onClick={() => rate.onToggle({ id, team, name: p.name, no: p.no, pos: p.pos })}
+      className="flex flex-col items-center w-[52px] active:scale-[0.94] transition disabled:cursor-not-allowed">
+      <div className={'relative w-8 h-8 rounded-full flex items-center justify-center text-[11px] font-bold border ' +
+        (picked ? 'bg-lime text-night border-lime' : blocked ? 'bg-night/60 text-cream/25 border-line/60' : 'bg-night/75 text-cream border-cream/30')}>
+        {num}
+        {rate.hasVoted && count > 0 && (
+          <span className={'absolute -top-1.5 -right-1.5 rounded-full px-1 text-[9px] font-bold ' + (picked ? 'bg-night text-lime' : 'bg-lime text-night')}>{count}</span>
+        )}
+      </div>
+      <div className={'text-[9px] mt-0.5 w-full text-center truncate ' + (picked ? 'text-lime' : 'text-cream/90')}>{surname(p.name)}</div>
+    </button>
+  )
+}
+
+// The squad laid out on a pitch by position line (FWD top → GK bottom). Full
+// rosters wrap within each band, so it reads as a formation without claiming a
+// starting XI the data doesn't carry.
+function FormationPitch({ grouped, team, rate }) {
+  // bands top→bottom: Forwards, Midfielders, Defenders, then Goalkeepers + Other
+  const byLabel = Object.fromEntries(grouped.map(([l, ps]) => [l, ps]))
+  const bands = [
+    byLabel['Forwards'] || [],
+    byLabel['Midfielders'] || [],
+    byLabel['Defenders'] || [],
+    [...(byLabel['Goalkeepers'] || []), ...(byLabel['Other'] || [])],
+  ].filter((b) => b.length)
+  return (
+    <div className="relative rounded-xl overflow-hidden border border-line"
+      style={{ background: 'linear-gradient(180deg,#0e4524 0%,#0a3119 50%,#082813 100%)' }}>
+      {/* pitch markings */}
+      <div className="absolute inset-0 pointer-events-none">
+        <div className="absolute left-0 right-0 top-1/2 h-px bg-cream/15" />
+        <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-16 h-16 rounded-full border border-cream/15" />
+        <div className="absolute left-1/2 -translate-x-1/2 top-0 w-24 h-7 border border-cream/15 border-t-0" />
+        <div className="absolute left-1/2 -translate-x-1/2 bottom-0 w-24 h-7 border border-cream/15 border-b-0" />
+      </div>
+      <div className="relative flex flex-col justify-between gap-3 py-4 px-2 min-h-[280px]">
+        {bands.map((ps, bi) => (
+          <div key={bi} className="flex flex-wrap justify-center gap-x-2 gap-y-2">
+            {ps.map((p, i) => <Jersey key={i} p={p} team={team} rate={rate} />)}
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+}
+
 function TeamPanel({ team, flag, squad, record, rate }) {
   const [open, setOpen] = useState(!!rate)
+  const [pitch, setPitch] = useState(true)
   if (!squad && (!record || !record.played)) return null
   const players = squad?.players || []
   const grouped = POS_GROUPS.map(([code, label]) => [label, players.filter((p) => p.pos === code)])
@@ -122,6 +188,17 @@ function TeamPanel({ team, flag, squad, record, rate }) {
           </button>
           {open && (
             <div className="mt-3 space-y-3">
+              <div className="flex items-center justify-between -mt-1">
+                {rate && <span className="text-[10px] uppercase tracking-wide text-cream/40">tap a shirt to rate</span>}
+                <div className="inline-flex rounded-full border border-line overflow-hidden text-[10px] font-bold uppercase tracking-wide ml-auto">
+                  <button onClick={() => setPitch(true)} className={'px-3 py-1 ' + (pitch ? 'bg-lime text-night' : 'text-cream/50')}>Pitch</button>
+                  <button onClick={() => setPitch(false)} className={'px-3 py-1 ' + (!pitch ? 'bg-lime text-night' : 'text-cream/50')}>List</button>
+                </div>
+              </div>
+              {pitch ? (
+                <FormationPitch grouped={grouped} team={team} rate={rate} />
+              ) : (
+              <>
               {grouped.map(([label, ps]) => ps.length > 0 && (
                 <div key={label}>
                   <div className="text-[9px] font-bold uppercase tracking-[0.2em] text-lime mb-1.5">{label}</div>
@@ -156,6 +233,8 @@ function TeamPanel({ team, flag, squad, record, rate }) {
                   )}
                 </div>
               ))}
+              </>
+              )}
               {squad?.coach && <div className="text-[12px] text-cream/50 pt-1 border-t border-line/60 mt-1">Coach · <span className="text-cream/80">{squad.coach}</span></div>}
             </div>
           )}
