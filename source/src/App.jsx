@@ -472,9 +472,11 @@ export default function App() {
     } catch { /* no-op (file:// / no localStorage) */ }
   }, [])
 
-  // A guest arriving on a shared link skips the splash so the invite lands fast.
+  // A guest arriving on a shared link gets a shorter — but still visible — splash
+  // so the brand moment lands before we route them to the invite. (600ms flashed
+  // by so fast it read as "no splash"; 1500ms is perceptible yet still snappy.)
   useEffect(() => {
-    const t = setTimeout(() => setSplash(false), guestPlanId ? 600 : 2200)
+    const t = setTimeout(() => setSplash(false), guestPlanId ? 1500 : 2200)
     return () => clearTimeout(t)
   }, [guestPlanId])
 
