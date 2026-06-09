@@ -60,16 +60,15 @@ function whenWord(match) {
 }
 
 // SOUL-voice description for the unfurl — "the burn": forwardable, from the bar.
-function describe({ teamA, teamB, venue, host, going, when }) {
+// Host names are arbitrary (often the "You" placeholder), so we never stamp them
+// into a possessive — the match, venue and going-count carry it.
+function describe({ teamA, teamB, venue, going, when }) {
   const at = venue ? ` at ${venue}` : ''
-  const tail = "Get down here — don't watch it alone."
+  const game = `${teamA} v ${teamB}`
   if (going != null && going > 1) {
-    return `${going} already in${at} for ${teamA} v ${teamB} ${when}. Grab a spot — don't watch it alone.`
+    return `${going} already in${at} for ${game} ${when}. Grab a spot — don't watch it alone.`
   }
-  if (host) {
-    return `${host}'s rounding up a crew for ${teamA} v ${teamB}${at} ${when}. ${tail}`
-  }
-  return `A spot's open for ${teamA} v ${teamB}${at} ${when}. ${tail}`
+  return `${game}${at} ${when}. We're getting a room together — get down here, don't watch it alone.`
 }
 
 function page({ title, description, image, canonical }) {
