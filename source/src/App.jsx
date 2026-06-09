@@ -7,6 +7,7 @@ import {
   OUTFITS,
 } from './data/mockData.js'
 import { OUTFIT_IMG } from './data/outfitImages.js'
+import { FLAG_PNG } from './data/flags.js'
 
 // ===========================================================================
 // RALLY — editorial football-culture design system, DARK (white on black).
@@ -171,16 +172,16 @@ function MatchStatusLine({ m }) {
 // Crisp flag images (flagcdn) from a flag emoji — sharper than emoji and
 // consistent across platforms (emoji flags don't render on Windows).
 function flagURL(emoji, team) {
+  // Prefer the bundled flag (no network); fall back to the CDN, then emoji.
   if (emoji === '🏴') {
     const t = (team || '').toLowerCase()
-    if (t.includes('scot')) return 'https://flagcdn.com/h80/gb-sct.png'
-    if (t.includes('wal')) return 'https://flagcdn.com/h80/gb-wls.png'
-    return 'https://flagcdn.com/h80/gb-eng.png'
+    const k = t.includes('scot') ? 'gb-sct' : t.includes('wal') ? 'gb-wls' : 'gb-eng'
+    return FLAG_PNG[k] || `https://flagcdn.com/h40/${k}.png`
   }
   const cp = [...(emoji || '')].map((c) => c.codePointAt(0))
   if (cp.length === 2 && cp[0] >= 0x1F1E6 && cp[0] <= 0x1F1FF) {
     const iso = String.fromCharCode(cp[0] - 0x1F1E6 + 97) + String.fromCharCode(cp[1] - 0x1F1E6 + 97)
-    return `https://flagcdn.com/h80/${iso}.png`
+    return FLAG_PNG[iso] || `https://flagcdn.com/h40/${iso}.png`
   }
   return null
 }
