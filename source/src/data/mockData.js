@@ -22,7 +22,9 @@ export { hasSupabase }
 export const LIVE_FIXTURES = LIVE_DATA.fixtures
 export const FIXTURES_SOURCE = LIVE_DATA.source
 const _norm = (s) => (s || '').toLowerCase().replace(/[^a-z]/g, '')
-const _key = (a, b) => [_norm(a), _norm(b)].sort().join('-')
+// Order-independent team-pair key — the join that survives kickoff-time shifts
+// and matches fixtures across the schedule/channel/live/seed paths.
+export const _key = (a, b) => [_norm(a), _norm(b)].sort().join('-')
 const _liveByKey = {}
 for (const f of LIVE_FIXTURES) _liveByKey[_key(f.team_a, f.team_b)] = f
 
@@ -162,7 +164,7 @@ const EDITORIAL = [
 // Dixon-Coles model (penaltyblog) replaces this in production; until then every
 // match shows a data-derived estimate instead of a blank.
 const _formPts = (f) => [...(f || '')].reduce((n, r) => n + (r === 'W' ? 3 : r === 'D' ? 1 : 0), 0)
-function _formProb(fa, fb) {
+export function _formProb(fa, fb) {
   if (!fa || !fb) return null
   const a = _formPts(fa) + 1.5, b = _formPts(fb) + 1.5, draw = 0.26
   const pa = +((1 - draw) * a / (a + b)).toFixed(3)
@@ -285,7 +287,7 @@ export const PLANS = [
 
 // A Supabase `matches` row already carries our column names; just fill the
 // win-prob fallback so the bar is never blank, and normalise the local kickoff.
-function _mapMatchRow(r) {
+export function _mapMatchRow(r) {
   const needProb = r.prob_a == null || r.prob_b == null
   const fp = needProb ? _formProb(r.form_a, r.form_b) : null
   return {
