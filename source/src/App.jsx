@@ -77,20 +77,33 @@ function VibeTag({ vibe, small = false }) {
   )
 }
 
+// Where to watch a channel live (Danish streaming services).
+function watchURL(name) {
+  if (!name) return null
+  if (/^DR/i.test(name)) return 'https://www.dr.dk/drtv/kategorier/sport/fodbold'
+  if (/TV ?2/i.test(name)) return 'https://play.tv2.dk'
+  return null
+}
+
 function TvChips({ tv, small = false }) {
   if (!tv || !tv.length) return null
   return (
     <div className="flex items-center gap-1.5 flex-wrap">
-      {tv.map((c) => (
-        <span
-          key={c.name}
-          className={'inline-flex items-center gap-1 rounded-full font-bold uppercase tracking-wide ' +
-            (small ? 'px-2 py-0.5 text-[9px]' : 'px-2.5 py-1 text-[10px]') + ' ' +
-            (c.free ? 'bg-lime text-night' : 'border border-current/25 text-current opacity-70')}
-        >
-          {c.name}{c.free ? ' · free' : ''}
-        </span>
-      ))}
+      {tv.map((c) => {
+        const url = watchURL(c.name)
+        const cls = 'inline-flex items-center gap-1 rounded-full font-bold uppercase tracking-wide ' +
+          (small ? 'px-2 py-0.5 text-[9px]' : 'px-2.5 py-1 text-[10px]') + ' ' +
+          (c.free ? 'bg-lime text-night' : 'border border-current/25 text-current opacity-80')
+        const text = `${c.name}${c.free ? ' · free' : ''}`
+        if (!url) return <span key={c.name} className={cls}>{text}</span>
+        return (
+          <a key={c.name} href={url} target="_blank" rel="noreferrer"
+            onClick={(e) => e.stopPropagation()}
+            className={cls + ' active:scale-95 transition'} title={'Watch live · ' + c.name}>
+            <span aria-hidden className="text-[0.8em] leading-none">▶</span>{text}
+          </a>
+        )
+      })}
     </div>
   )
 }
@@ -484,8 +497,9 @@ function MatchesScreen({ plans, onOpenMatch }) {
               const hot = m.featured || m.marquee
               const border = m.featured ? 'border-lime' : m.marquee ? 'border-pink' : 'border-line'
               return (
-                <button key={m.id} onClick={() => onOpenMatch(m)}
-                  className={'relative overflow-hidden w-full text-left rounded-3xl p-5 border text-cream active:scale-[0.98] transition ' + (hot ? '' : 'bg-panel ') + border}>
+                <div key={m.id} role="button" tabIndex={0} onClick={() => onOpenMatch(m)}
+                  onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') onOpenMatch(m) }}
+                  className={'relative overflow-hidden w-full text-left rounded-3xl p-5 border text-cream cursor-pointer active:scale-[0.98] transition ' + (hot ? '' : 'bg-panel ') + border}>
                   {hot && (<><div className="absolute inset-0"><MatchArt m={m} className="w-full h-full" /></div><div className="absolute inset-0 bg-night/55" /></>)}
                   <div className="relative">
                     {m.featured && <div className="text-[10px] font-bold tracking-[0.2em] text-lime mb-3">★ OPENING MATCH</div>}
@@ -508,7 +522,7 @@ function MatchesScreen({ plans, onOpenMatch }) {
                       ) : <div className="text-xs text-cream/40">be the first →</div>}
                     </div>
                   </div>
-                </button>
+                </div>
               )
             })}
           </div>
