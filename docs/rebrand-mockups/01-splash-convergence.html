@@ -1,0 +1,221 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>RALLY — Convergence splash (reference mockup)</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Archivo:wght@900&family=Instrument+Serif:ital@1&family=Inter:wght@600&display=swap');
+  :root{
+    --ink:#070708;        /* charged near-black */
+    --ink2:#0B0B0D;
+    --bone:#EDE7D8;       /* bone */
+    --lime:#8ACE00;       /* the living hue — kept from SKILL.md */
+    --ember:#FF4D2E;      /* the rarer accent — marks the singular event */
+    --muted:#5A5A52;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  html,body{height:100%}
+  body{
+    background:var(--ink);
+    color:var(--bone);
+    font-family:'Inter',system-ui,sans-serif;
+    -webkit-font-smoothing:antialiased;
+    overflow:hidden;
+  }
+  /* phone frame */
+  .stage{
+    position:fixed;inset:0;
+    display:grid;place-items:center;
+    background:
+      radial-gradient(140% 90% at 62% 30%, #101013 0%, #08080A 55%, #050506 100%);
+  }
+  .phone{
+    position:relative;
+    width:390px;height:780px;
+    border-radius:46px;
+    background:var(--ink);
+    box-shadow:0 0 0 10px #141416, 0 40px 120px rgba(0,0,0,.7);
+    overflow:hidden;
+  }
+  canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
+
+  /* instrumentation: registration rings around the focal node */
+  .rings{position:absolute;inset:0;pointer-events:none}
+  .ring{
+    position:absolute;left:50%;top:42%;
+    border:1px solid rgba(237,231,216,.07);
+    border-radius:50%;transform:translate(-50%,-50%);
+  }
+  .ring.r1{width:120px;height:120px}
+  .ring.r2{width:240px;height:240px;border-color:rgba(237,231,216,.05)}
+  .ring.r3{width:400px;height:400px;border-color:rgba(237,231,216,.035)}
+  .ring.tick{
+    width:74px;height:74px;
+    border:1px solid rgba(138,206,0,.5);
+    border-top-color:transparent;border-left-color:transparent;
+  }
+
+  /* the focal node — one lime charge */
+  .node{
+    position:absolute;left:50%;top:42%;transform:translate(-50%,-50%);
+    width:11px;height:11px;border-radius:50%;
+    background:var(--lime);
+    box-shadow:0 0 14px 3px rgba(138,206,0,.65), 0 0 40px 10px rgba(138,206,0,.22);
+  }
+
+  /* type as a rare gesture */
+  .type{
+    position:absolute;left:0;right:0;top:53%;
+    text-align:center;padding:0 28px;
+  }
+  .word{
+    font-family:'Archivo',sans-serif;font-weight:900;
+    font-size:74px;letter-spacing:-.02em;line-height:.9;
+    color:var(--bone);
+  }
+  .whisper{
+    font-family:'Instrument Serif',serif;font-style:italic;
+    font-size:22px;color:var(--muted);margin-top:16px;letter-spacing:.01em;
+    line-height:1.5;
+  }
+  .whisper em{color:var(--lime);font-style:italic}
+  .whisper .br{display:block}
+
+  /* clinical margin labels — the notation of a careful hand */
+  .label{
+    position:absolute;font-family:'Inter',sans-serif;font-weight:600;
+    font-size:9px;letter-spacing:.22em;text-transform:uppercase;
+    color:rgba(237,231,216,.30);
+  }
+  .l-tl{left:22px;top:26px}
+  .l-tr{right:22px;top:26px;text-align:right}
+  .l-bl{left:22px;bottom:26px}
+  .l-br{right:22px;bottom:26px;text-align:right;color:rgba(255,77,46,.55)}
+  .coord{position:absolute;left:50%;top:42%;transform:translate(14px,-30px);
+    font-family:'Inter';font-weight:600;font-size:9px;letter-spacing:.18em;
+    color:rgba(138,206,0,.55)}
+
+  .note{
+    position:fixed;left:50%;bottom:16px;transform:translateX(-50%);
+    font-family:'Inter';font-size:11px;letter-spacing:.16em;text-transform:uppercase;
+    color:#3a3a36;
+  }
+</style>
+</head>
+<body>
+<div class="stage">
+  <div class="phone">
+    <canvas id="c"></canvas>
+
+    <div class="rings">
+      <div class="ring r3"></div>
+      <div class="ring r2"></div>
+      <div class="ring r1"></div>
+      <div class="ring tick"></div>
+    </div>
+    <div class="node"></div>
+    <div class="coord">52.5200° N · 13.4050° E</div>
+
+    <div class="type">
+      <div class="word">RALLY</div>
+      <div class="whisper"><span class="br">find your game.</span><span class="br"><em>find your people.</em></span></div>
+    </div>
+
+    <div class="label l-tl">FIG. 01 — THE GATHERING</div>
+    <div class="label l-tr">N = 1,148</div>
+    <div class="label l-bl">CONVERGENCE / PLATE</div>
+    <div class="label l-br">● TONIGHT</div>
+  </div>
+</div>
+<div class="note">reference mockup — not final</div>
+
+<script>
+const cv = document.getElementById('c');
+const ctx = cv.getContext('2d');
+const DPR = 2;
+function size(){ cv.width = 390*DPR; cv.height = 780*DPR; ctx.setTransform(DPR,0,0,DPR,0,0); }
+size();
+
+// focal node in css px (matches .node at 50%,42%)
+const fx = 390*0.5, fy = 780*0.42;
+
+// Field of marks: each a short stroke, leaning toward the focal node.
+// Thin at edges, accumulate toward the core, leave the node ringed in stillness.
+// Seeded so the field reads as a CROWD (clustered, organic) not a sunburst.
+let seed = 20260609;
+function rnd(){ seed = (seed*1664525 + 1013904223) % 4294967296; return seed/4294967296; }
+function gauss(){ return (rnd()+rnd()+rnd()+rnd()-2)/2; }
+
+const marks = [];
+const N = 1148;
+// a handful of "knots" where people bunch up — gives organic density
+const knots = [];
+for(let k=0;k<9;k++){
+  const a = rnd()*Math.PI*2;
+  const rr = 90 + rnd()*360;
+  knots.push({x: fx + Math.cos(a)*rr*0.96, y: fy + Math.sin(a)*rr, w: 16+rnd()*46});
+}
+let made=0, guard=0;
+while(made<N && guard<N*8){
+  guard++;
+  let x,y;
+  if(rnd()<0.62){ // most marks belong to a knot (clustering)
+    const kn = knots[(rnd()*knots.length)|0];
+    x = kn.x + gauss()*kn.w*2.0;
+    y = kn.y + gauss()*kn.w*2.0;
+  } else {        // scattered loners thinning to the edges
+    const a = rnd()*Math.PI*2;
+    const r = 70 + Math.pow(rnd(),0.5)*470;
+    x = fx + Math.cos(a)*r*0.92;
+    y = fy + Math.sin(a)*r;
+  }
+  const d = Math.hypot(fx-x, fy-y);
+  if(d < 58) continue;                 // keep the node ringed in stillness
+  if(x< -10||x>400||y< -10||y>790) continue;
+  marks.push({x,y});
+  made++;
+}
+
+function draw(){
+  ctx.clearRect(0,0,390,780);
+  ctx.fillStyle = '#070708';
+  ctx.fillRect(0,0,390,780);
+
+  for(const m of marks){
+    const dx = fx - m.x, dy = fy - m.y;
+    const d = Math.hypot(dx,dy);
+    const a = Math.atan2(dy,dx);
+    // mark length: longer near core, plus tiny per-mark rotation jitter
+    const len = 3 + (1 - Math.min(d/470,1))*9;
+    const jit = (rnd()-0.5)*0.14;        // each mark rotated a degree
+    const ca = a + jit;
+    // closeness to node = more charge; distant = recede to near-black bone
+    const t = 1 - Math.min(d/470,1);          // 0 edge .. 1 core
+    // most marks bone/muted; a rationed few near the core glow lime
+    let col;
+    if (t > 0.74 && rnd() < 0.5) {
+      col = `rgba(138,206,0,${0.35 + t*0.5})`;        // the living hue, rationed
+    } else {
+      const v = 0.10 + t*0.55;                          // bone, fading at edges
+      col = `rgba(237,231,216,${v})`;
+    }
+    ctx.strokeStyle = col;
+    ctx.lineWidth = 0.8 + t*1.0;
+    ctx.lineCap = 'round';
+    ctx.beginPath();
+    ctx.moveTo(m.x, m.y);
+    ctx.lineTo(m.x + Math.cos(ca)*len, m.y + Math.sin(ca)*len);
+    ctx.stroke();
+  }
+
+  // one rarer accent: a single ember mark, the singular event, off the node
+  ctx.fillStyle = '#FF4D2E';
+  ctx.beginPath();
+  ctx.arc(fx+58, fy-96, 2.3, 0, Math.PI*2);
+  ctx.fill();
+}
+draw();
+</script>
+</body>
+</html>
