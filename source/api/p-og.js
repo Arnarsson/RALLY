@@ -129,6 +129,7 @@ export default async function handler(req, res) {
           goingCount(planId),
         ])
         const match = Array.isArray(matchRows) && matchRows.length ? matchRows[0] : null
+        if (debug) { debug.matchRows = matchRows; debug.venueRows = venueRows; debug.going = going }
         if (match && match.team_a && match.team_b) {
           const venue = Array.isArray(venueRows) && venueRows.length ? venueRows[0].name : null
           const host = Array.isArray(hostRows) && hostRows.length ? hostRows[0].name : null
