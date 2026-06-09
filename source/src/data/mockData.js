@@ -13,6 +13,8 @@
 // ---------------------------------------------------------------------------
 
 import LIVE_DATA from './fixtures.json'
+import { supabase, hasSupabase } from '../lib/supabase.js'
+export { hasSupabase }
 
 // Real 2026 World Cup fixtures pulled from ESPN's hidden API.
 // See scripts/fetch-fixtures.mjs. In production this table is kept fresh by a
@@ -270,3 +272,144 @@ export const PLANS = [
     capacity_hint: 10,
   },
 ]
+
+// ---------------------------------------------------------------------------
+// SUPABASE DATA LAYER
+// Everything above is the mock/seed used by the standalone file:// demo and as
+// a fallback. When VITE_SUPABASE_* are set (`hasSupabase`), the loaders below
+// read the SAME shape from Postgres. `hydrateFromSupabase()` mutates the
+// exported arrays in place so the existing matchById/venueById/userById helpers
+// (imported directly by child components) transparently see live data — no
+// prop-threading, no UI rewrite. Realtime keeps scores + going-counts in sync.
+// ---------------------------------------------------------------------------
+
+// A Supabase `matches` row already carries our column names; just fill the
+// win-prob fallback so the bar is never blank, and normalise the local kickoff.
+function _mapMatchRow(r) {
+  const needProb = r.prob_a == null || r.prob_b == null
+  const fp = needProb ? _formProb(r.form_a, r.form_b) : null
+  return {
+    ...r,
+    kickoff: r.kickoff_local || r.kickoff || r.kickoff_utc || null,
+    prob_a: r.prob_a ?? fp?.a ?? null,
+    prob_draw: r.prob_draw ?? fp?.draw ?? null,
+    prob_b: r.prob_b ?? fp?.b ?? null,
+    prob_source: r.prob_source || (fp ? 'form' : null),
+  }
+}
+
+export async function loadMatches() {
+  if (!hasSupabase) return MATCHES
+  const { data, error } = await supabase.from('matches').select('*').order('kickoff_utc')
+  if (error || !data || !data.length) return MATCHES
+  return data.map(_mapMatchRow)
+    .sort((a, b) => (a.kickoff_utc || '').localeCompare(b.kickoff_utc || ''))
+}
+
+export async function loadVenues() {
+  if (!hasSupabase) return VENUES
+  const { data, error } = await supabase.from('venues').select('*')
+  if (error || !data || !data.length) return VENUES
+  return data
+}
+
+export async function loadUsers() {
+  if (!hasSupabase) return USERS
+  const { data, error } = await supabase.from('profiles').select('*')
+  if (error || !data || !data.length) return USERS
+  return data
+}
+
+// plans + plan_participants → the UI's { ...plan, participant_ids: [] } shape.
+export async function loadPlans() {
+  if (!hasSupabase) return PLANS
+  const { data, error } = await supabase
+    .from('plans')
+    .select('id, match_id, venue_id, host_id, time, vibe, note, capacity_hint, plan_participants(user_id)')
+    .order('created_at', { ascending: true })
+  if (error || !data) return PLANS
+  return data.map((p) => ({
+    id: p.id, match_id: p.match_id, venue_id: p.venue_id, host_id: p.host_id,
+    time: p.time, vibe: p.vibe, note: p.note || '', capacity_hint: p.capacity_hint,
+    participant_ids: (p.plan_participants || []).map((pp) => pp.user_id),
+  }))
+}
+
+// Replace array CONTENTS in place (keeps the const binding the helpers close over).
+function _replace(arr, next) { arr.length = 0; for (const x of next) arr.push(x) }
+
+// Pull matches/venues/users into the live arrays; returns fresh plans for state.
+// Returns null when Supabase isn't configured (demo path is untouched).
+export async function hydrateFromSupabase() {
+  if (!hasSupabase) return null
+  const [m, v, u, plans] = await Promise.all([
+    loadMatches(), loadVenues(), loadUsers(), loadPlans(),
+  ])
+  _replace(MATCHES, m)
+  _replace(VENUES, v)
+  _replace(USERS, u)
+  return { plans }
+}
+
+// Anonymous auth gives every device a real auth.uid() that satisfies the RLS
+// owner checks (auth.uid() = host_id / user_id) — enough for persistent plans
+// and cross-device going-counts without provider config. Phone/Apple/Google can
+// be layered on later by swapping this one call. Enable "Anonymous sign-ins" in
+// Supabase Auth settings. Returns { id, profile } or null.
+export async function ensureAuth() {
+  if (!hasSupabase) return null
+  let { data: { user } } = await supabase.auth.getUser()
+  if (!user) {
+    const { data, error } = await supabase.auth.signInAnonymously()
+    if (error) return null
+    user = data?.user
+  }
+  if (!user) return null
+  const { data: prof } = await supabase.from('profiles').select('*').eq('id', user.id).maybeSingle()
+  return { id: user.id, profile: prof || null }
+}
+
+// Persist the onboarding profile (id = auth uid) so it survives + is shareable.
+export async function saveProfile(id, p) {
+  if (!hasSupabase || !id) return
+  await supabase.from('profiles').upsert(
+    { id, name: p.name || 'You', flag: p.flag || '🇩🇰', color: p.color || '#8ACE00' },
+    { onConflict: 'id' },
+  )
+}
+
+// Join / leave a plan → plan_participants row. Realtime echoes it to all devices.
+export async function joinPlan(planId, userId) {
+  if (!hasSupabase) return
+  await supabase.from('plan_participants').upsert(
+    { plan_id: planId, user_id: userId }, { onConflict: 'plan_id,user_id' },
+  )
+}
+export async function leavePlan(planId, userId) {
+  if (!hasSupabase) return
+  await supabase.from('plan_participants').delete().eq('plan_id', planId).eq('user_id', userId)
+}
+
+// Create a plan (host auto-joins). Returns the new plan id, or null on the demo path.
+export async function createPlanRow({ match_id, venue_id, host_id, time, vibe, note, capacity_hint }) {
+  if (!hasSupabase) return null
+  const { data, error } = await supabase
+    .from('plans')
+    .insert({ match_id, venue_id, host_id, time, vibe, note: note || '', capacity_hint: capacity_hint ?? 30 })
+    .select('id').single()
+  if (error || !data) return null
+  await joinPlan(data.id, host_id)
+  return data.id
+}
+
+// Live scores (matches) + going-counts (plan_participants). `onChange(kind)` is
+// called after each relevant change so the app can re-pull and re-render.
+export function subscribeRealtime(onChange) {
+  if (!hasSupabase) return () => {}
+  const ch = supabase
+    .channel('rally-live')
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'matches' }, () => onChange('matches'))
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'plan_participants' }, () => onChange('plans'))
+    .subscribe()
+  return () => { try { supabase.removeChannel(ch) } catch {} }
+}

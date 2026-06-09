@@ -5,6 +5,8 @@ import {
   MATCHES, matchById,
   PLANS as SEED_PLANS,
   OUTFITS,
+  hasSupabase, ensureAuth, saveProfile, hydrateFromSupabase,
+  loadPlans, subscribeRealtime, joinPlan, leavePlan, createPlanRow,
 } from './data/mockData.js'
 import { OUTFIT_IMG } from './data/outfitImages.js'
 import { FLAG_PNG } from './data/flags.js'
@@ -134,6 +136,13 @@ function FormLegend() {
       ))}
     </span>
   )
+}
+
+// Realtime clock for the desktop phone-frame status bar (hidden on real phones).
+function Clock() {
+  const [t, setT] = useState(() => new Date())
+  useEffect(() => { const id = setInterval(() => setT(new Date()), 20000); return () => clearInterval(id) }, [])
+  return <span>{t.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false })}</span>
 }
 
 // Kickoff time, or live score + minute, or full-time score — right side of a card.
@@ -305,29 +314,69 @@ export default function App() {
   const [share, setShare] = useState(null)
   const [beer, setBeer] = useState(false)
   const [splash, setSplash] = useState(true)
+  const [, setRev] = useState(0)            // bump to re-render after live hydration
+
+  // Identity: the Supabase auth uid once signed in, else the mock "me".
+  const myId = profile?.id || ME.id
 
   useEffect(() => {
     const t = setTimeout(() => setSplash(false), 2200)
     return () => clearTimeout(t)
   }, [])
 
-  const resolve = (id) => (id === ME.id ? profile : (userById(id) || profile))
+  // Backend bootstrap — no-op on the standalone demo (hasSupabase === false).
+  // Anonymous auth → profile, hydrate the live arrays in place, then subscribe
+  // to realtime so scores + going-counts stay live across devices.
+  useEffect(() => {
+    if (!hasSupabase) return
+    let unsub = () => {}
+    let alive = true
+    ;(async () => {
+      const auth = await ensureAuth()
+      if (auth && alive) setProfile((p) => ({ ...p, id: auth.id, ...(auth.profile || {}) }))
+      const res = await hydrateFromSupabase()
+      if (res && alive) { setPlans(res.plans); setRev((r) => r + 1) }
+      unsub = subscribeRealtime(async (kind) => {
+        if (!alive) return
+        if (kind === 'plans') setPlans(await loadPlans())
+        else { await hydrateFromSupabase(); setRev((r) => r + 1) }
+      })
+    })()
+    return () => { alive = false; unsub() }
+  }, [])
+
+  // Open every pushed view at the top (so a match detail never starts mid-page).
+  useEffect(() => {
+    const el = document.getElementById('rally-scroll')
+    if (el) el.scrollTo({ top: 0 })
+  }, [stack])
+
+  const resolve = (id) => (id === myId ? profile : (userById(id) || profile))
   const view = stack[stack.length - 1]
   const push = (v) => setStack((s) => [...s, v])
   const back = () => setStack((s) => (s.length > 1 ? s.slice(0, -1) : s))
   const resetTo = (v) => setStack([v])
   const goTab = (t) => { setTab(t); resetTo(t === 'tonight' ? { name: 'matches' } : t === 'outfit' ? { name: 'outfit' } : { name: 'leaders' }) }
 
-  const isJoined = (plan) => plan.participant_ids.includes(ME.id)
-  const toggleJoin = (planId) => setPlans((ps) => ps.map((p) => {
-    if (p.id !== planId) return p
-    const joined = p.participant_ids.includes(ME.id)
-    return { ...p, participant_ids: joined ? p.participant_ids.filter((id) => id !== ME.id) : [...p.participant_ids, ME.id] }
-  }))
+  const isJoined = (plan) => plan.participant_ids.includes(myId)
+  const toggleJoin = (planId) => {
+    let willJoin = false
+    setPlans((ps) => ps.map((p) => {
+      if (p.id !== planId) return p
+      const joined = p.participant_ids.includes(myId)
+      willJoin = !joined
+      return { ...p, participant_ids: joined ? p.participant_ids.filter((id) => id !== myId) : [...p.participant_ids, myId] }
+    }))
+    if (hasSupabase) (willJoin ? joinPlan : leavePlan)(planId, myId)   // realtime echoes to others
+  }
   const createPlan = ({ match_id, venue_id, time, vibe, note }) => {
     const id = 'p_' + Math.random().toString(36).slice(2, 7)
-    const plan = { id, match_id, venue_id, host_id: ME.id, time, vibe, note: note || '', participant_ids: [ME.id], capacity_hint: 30 }
+    const plan = { id, match_id, venue_id, host_id: myId, time, vibe, note: note || '', participant_ids: [myId], capacity_hint: 30 }
     setPlans((ps) => [plan, ...ps])
+    if (hasSupabase) {
+      createPlanRow({ match_id, venue_id, host_id: myId, time, vibe, note, capacity_hint: 30 })
+        .then((realId) => { if (realId) setPlans((ps) => ps.map((p) => (p.id === id ? { ...p, id: realId } : p))) })
+    }
     resetTo({ name: 'matches' }); push({ name: 'match', matchId: match_id }); push({ name: 'plan', planId: id })
     return plan
   }
@@ -336,7 +385,7 @@ export default function App() {
   if (!onboarded) {
     return (
       <PhoneFrame hideNav>
-        <ProfileSetup onDone={(p) => { if (p) setProfile({ ...ME, ...p }); setOnboarded(true) }} />
+        <ProfileSetup onDone={(p) => { if (p) { const next = { ...profile, ...p }; setProfile(next); saveProfile(myId, next) } setOnboarded(true) }} />
       </PhoneFrame>
     )
   }
@@ -375,10 +424,10 @@ function PhoneFrame({ children, tab, onTab, hideNav = false, footer = null }) {
   return (
     <div className="min-h-[100dvh] w-full flex items-center justify-center sm:py-6">
       <div className="relative w-full sm:max-w-[400px] h-[100dvh] sm:h-[860px] bg-night grain text-cream overflow-hidden sm:rounded-[42px] sm:border-[10px] sm:border-black sm:shadow-2xl flex flex-col">
-        <div className="flex items-center justify-between px-6 pt-3 pb-1 text-[12px] text-cream/60 font-semibold shrink-0">
-          <span>21:47</span><span className="tracking-widest">●●●●</span>
+        <div className="hidden sm:flex items-center justify-between px-6 pt-3 pb-1 text-[12px] text-cream/60 font-semibold shrink-0">
+          <Clock /><span className="tracking-widest">●●●●</span>
         </div>
-        <div className="flex-1 overflow-y-auto no-scrollbar">{children}</div>
+        <div id="rally-scroll" className="flex-1 overflow-y-auto no-scrollbar">{children}</div>
         {!hideNav && (
           <nav className="shrink-0 grid grid-cols-3 border-t border-line bg-panel">
             <TabButton active={tab === 'tonight'} onClick={() => onTab('tonight')} label="Tonight" />
@@ -423,15 +472,15 @@ function ProfileSetup({ onDone }) {
   const [name, setName] = useState('')
   const [flag, setFlag] = useState('🇩🇰')
   return (
-    <div className="flex flex-col h-full px-6 py-4">
-      <div className="pt-5">
+    <div className="flex flex-col h-full px-6 py-3">
+      <div className="pt-2">
         <div className="text-[11px] font-bold tracking-[0.2em] uppercase text-cream/40">Welcome to RALLY</div>
-        <h1 className="font-display text-[34px] leading-[0.92] uppercase mt-3">
-          Find your<br /><span className="flourish lowercase text-[40px] text-purple">game.</span> Find<br />your <span className="flourish lowercase text-[40px] text-pink">people.</span>
+        <h1 className="font-display text-[30px] leading-[0.92] uppercase mt-2">
+          Find your<br /><span className="flourish lowercase text-[36px] text-purple">game.</span> Find<br />your <span className="flourish lowercase text-[36px] text-pink">people.</span>
         </h1>
       </div>
 
-      <div className="mt-7 space-y-6">
+      <div className="mt-4 space-y-4">
         <div>
           <label className="text-[11px] font-bold tracking-[0.18em] uppercase text-cream/40">Your name</label>
           <input autoFocus value={name} onChange={(e) => setName(e.target.value)} placeholder="e.g. Tjalli"
@@ -456,9 +505,9 @@ function ProfileSetup({ onDone }) {
         </div>
       </div>
 
-      <div className="mt-auto pt-6 space-y-2">
+      <div className="mt-auto pt-4 space-y-1.5">
         <Pill onClick={() => onDone({ name: name.trim() || 'You', flag })} className="w-full text-lg">Let’s go →</Pill>
-        <button onClick={() => onDone(null)} className="w-full text-cream/40 text-sm py-2">Skip for now</button>
+        <button onClick={() => onDone(null)} className="w-full text-cream/40 text-sm py-1.5">Skip for now</button>
       </div>
     </div>
   )
