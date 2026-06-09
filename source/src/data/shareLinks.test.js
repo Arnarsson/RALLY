@@ -104,7 +104,7 @@ describe('shareText', () => {
     expect(title).toMatch(/RALLY/)
     expect(text).toContain('Brazil v Morocco')
     expect(text).toContain('at Reffen')
-    expect(text).toMatch(/find your people/i)
+    expect(text).toMatch(/don’t watch it alone/i)
   })
   it('degrades gracefully without a venue', () => {
     expect(shareText({ teamA: 'USA', teamB: 'Paraguay' }).text).toContain('USA v Paraguay')

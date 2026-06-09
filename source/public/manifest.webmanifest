@@ -1,7 +1,7 @@
 {
   "name": "RALLY",
   "short_name": "RALLY",
-  "description": "Find watch parties, join groups & never watch alone.",
+  "description": "The best seat isn't the stadium — it's a packed bar with your lot. Find tonight's match, grab a spot, get down there.",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#0B0B0B",

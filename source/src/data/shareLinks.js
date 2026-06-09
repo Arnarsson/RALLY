@@ -91,10 +91,15 @@ export function planCardUrl(matchId, planId, going) {
   return `${SHARE_ORIGIN}/api/poster/${encodeURIComponent(matchId)}.png${q ? `?${q}` : ''}`
 }
 
-// SOUL-voice share copy for navigator.share. Keeps it an invitation, not an ad.
+// SOUL-voice share copy for navigator.share — "the burn": ammo for the group
+// chat, written by the cocky-but-warm mate who's already at the bar. Speaks from
+// the room ("we", "get down here"), never an ad. The URL rides separately.
 export function shareText({ teamA, teamB, venue }) {
   const match = [teamA, teamB].filter(Boolean).join(' v ')
   const where = venue ? ` at ${venue}` : ''
-  const game = match ? `Come watch ${match}${where} with us` : `Come watch the match${where} with us`
-  return { title: 'RALLY — find your people', text: `${game} — find your game, find your people.` }
+  const text = match
+    ? `We’re on ${match}${where} tonight. Get down here — don’t watch it alone.`
+    : `Tonight’s match${where}, your lot, one room. Get down here — don’t watch it alone.`
+  const title = match ? `RALLY — ${match} tonight` : 'RALLY — get down here'
+  return { title, text }
 }
