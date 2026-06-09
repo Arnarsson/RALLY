@@ -48,8 +48,13 @@ RALLY/
     └── vite.config.js       # react + vite-plugin-singlefile
 ```
 
-(Supabase Edge Functions — `live-scores`, `sync-fixtures`, `sync-squads` — and the
-`/api/poster/[id].png` route also live in `source/`.)
+(Supabase Edge Functions — `live-scores`, `sync-fixtures`, `sync-squads` — also
+live in `source/`. So do the serverless/edge bits for sharing: the poster route
+`source/api/poster/[id].png` (`@vercel/og`; 630×1120 portrait, or 1200×630
+landscape with `?format=og`), the per-plan OG renderer `source/api/p-og.js`, and
+`source/middleware.js` — the Edge middleware that routes link-preview crawlers on
+`/p/<id>` to `p-og` while humans pass through to the SPA. The brand share card is
+`source/public/og-image.png`.)
 
 ## Deployment (LIVE)
 
@@ -153,8 +158,16 @@ Edge Function fills these in real time and Realtime pushes them to the cards.
   synced to Supabase). No-photo matches use a dark editorial team-colour panel,
   never a stock image.
 - **Plans + poster** — join/create plans (persistent, shared); a Share sheet with
-  an in-app **`PosterCard`** plus a generated Open Graph image at
-  `/api/poster/[id].png` (`@vercel/og`) for social.
+  an in-app **`PosterCard`** plus a generated poster at `/api/poster/[id].png`
+  (`@vercel/og`) — 630×1120 portrait, or a 1200×630 landscape share card via
+  `?format=og`.
+- **Per-plan share unfurls** — `/p/<id>` rewrites to the SPA, so an Edge
+  middleware (`middleware.js`) routes link-preview crawlers to `api/p-og.js`,
+  which emits per-plan OG/Twitter tags in **SOUL voice** (match · venue · "N
+  going") with the landscape poster as the image; humans pass through untouched.
+  Site-wide OG meta + the splash + the lime "gathering" mark all follow the same
+  voice/brand. The §2 referral RPC (`claim_referral`) is coded but **not yet
+  applied to live Supabase** — the discount loop is dormant until it is.
 - **Watch links** — the TV-channel chips deep-link to where to stream:
   DR1/DR2 → DRTV, TV 2 family → TV 2 Play (broadcaster hub).
 - **Outfit** — uses the real brand-board shoot (hero couple, Women/Men looks,

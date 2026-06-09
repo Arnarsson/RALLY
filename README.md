@@ -60,7 +60,16 @@ fallback.
 - **Head-to-head** — a "last met" line (or "first-ever meeting").
 - **AI "lowdown"** — a 30-second hype script per match (browser voice today).
 - **Matchday poster** — an in-app Share sheet (`PosterCard`) plus a generated
-  Open Graph image at `/api/poster/[id].png` (`@vercel/og`) for social shares.
+  image at `/api/poster/[id].png` (`@vercel/og`): a 630×1120 portrait poster, or a
+  1200×630 landscape share card (`?format=og`). Team-colour glow, the lime mark,
+  flags, the lowdown, "N going".
+- **Per-plan share unfurls** — when a friend pastes a `/p/<id>` link, an Edge
+  middleware routes link-preview crawlers to `/api/p-og`, which names the actual
+  match, venue and headcount in RALLY's voice with the landscape poster as the
+  image. Humans pass straight through to the app.
+- **Voice everywhere** — the splash, share copy, OG/Twitter meta and posters are
+  all written in the SOUL.md voice (the cocky-but-warm football mate), never
+  brand-deck plumbing.
 - **Floodlight theme** — a neon-on-deep-ink look (lime / pink / violet / cyan,
   team-colour card spines, halftone grain). One-line toggle in `src/theme.js`
   (`ACTIVE_THEME`) flips back to the `classic` look.
@@ -133,7 +142,8 @@ Then copy `dist/index.html` to `../RALLY — open me.html` to refresh the standa
 
 React 18 · Vite 5 · Tailwind 3 · `vite-plugin-singlefile` (front-end) ·
 **Supabase** (Postgres + RLS + Realtime + Edge Functions + `pg_cron`) ·
-`@vercel/og` for the poster image. Front-end on Vercel (project `rally`,
+`@vercel/og` for the poster image · `@vercel/edge` middleware + a serverless
+`p-og` route for per-plan share unfurls. Front-end on Vercel (project `rally`,
 www.rally.futbol); backend on Supabase.
 
 ## Data sources & licensing
