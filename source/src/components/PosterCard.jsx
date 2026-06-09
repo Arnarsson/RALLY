@@ -139,9 +139,9 @@ export default function PosterCard({ match = {}, plan, planId, width = 340, styl
   const venueName = plan?.venue?.name || match.venue?.split('·')[0]?.trim() || ''
   const goingCount = plan?.participants?.length ?? null
 
-  // Plan URL slug
-  const planSlug = planId || (venueName ? venueName.toLowerCase().replace(/[^a-z0-9]/g, '-').replace(/-+/g, '-').replace(/^-|-$/g, '') : null)
-  const footerUrl = planSlug ? `rally.futbol/p/${planSlug}` : 'rally.futbol'
+  // Footer URL — always the clean root. The shareable /p/<id> link lives in the
+  // message, not stamped across the poster (a raw UUID reads like a bug).
+  const footerUrl = 'rally.futbol'
 
   // When line: compose "tonight · 21:00 · Reffen" or "THU 11 JUN · 21:00"
   const whenParts = []
@@ -243,13 +243,24 @@ export default function PosterCard({ match = {}, plan, planId, width = 340, styl
 
         {/* TOP — brand + tag */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-          <div style={{
-            fontFamily: "'Archivo Black', sans-serif",
-            fontSize: Math.round(W * 0.053),
-            letterSpacing: '-0.02em',
-            color: TEXT,
-          }}>
-            RALLY<span style={{ color: PINK }}>.</span>
+          <div style={{ display: 'flex', alignItems: 'center' }}>
+            <div style={{
+              fontFamily: "'Archivo Black', sans-serif",
+              fontSize: Math.round(W * 0.053),
+              letterSpacing: '-0.02em',
+              color: TEXT,
+            }}>
+              RALLY
+            </div>
+            {/* the gathering node — the new mark (lime, ringed), echoing the logo */}
+            <div style={{
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              marginLeft: Math.round(W * 0.026),
+              width: Math.round(W * 0.05), height: Math.round(W * 0.05),
+              borderRadius: 999, border: `${Math.max(1.5, W * 0.005)}px solid rgba(168,255,0,0.45)`,
+            }}>
+              <div style={{ width: Math.round(W * 0.022), height: Math.round(W * 0.022), borderRadius: 999, background: LIME }} />
+            </div>
           </div>
           <div style={{
             fontFamily: "'Archivo Black', sans-serif",

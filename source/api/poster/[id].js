@@ -213,9 +213,14 @@ function firstTvName(match) {
   return typeof t === 'string' ? t : t?.name || null
 }
 
+// Truncate on a word boundary so the lowdown never cuts mid-word ("quarter-f…").
 function truncate(str, max = 120) {
   if (!str) return ''
-  return str.length > max ? str.slice(0, max - 1) + '…' : str
+  if (str.length <= max) return str
+  const cut = str.slice(0, max)
+  const at = cut.lastIndexOf(' ')
+  const body = at > max * 0.5 ? cut.slice(0, at) : cut
+  return body.replace(/[\s.,;:!?–—-]+$/, '') + '…'
 }
 
 // Approximate colour-mix as a hex with alpha channel (satori does not support
@@ -281,8 +286,9 @@ function PosterElement({ match, planId, going, lowdownOverride, tvOverride, even
   const prob = winProb(match)
   const tvChannel = tvOverride || firstTvName(match)
 
-  const planSlug = planId || (event && event.id) || null
-  const footerUrl = planSlug ? `rally.futbol/p/${planSlug}` : 'rally.futbol'
+  // Footer is always the clean root — the /p/<id> link rides in the message, not
+  // stamped across the poster (a raw UUID wraps and reads like a bug).
+  const footerUrl = 'rally.futbol'
 
   // When-line: in event mode it's the venue + time invite; otherwise the
   // day/kickoff line as before.
@@ -393,17 +399,32 @@ function PosterElement({ match, planId, going, lowdownOverride, tvOverride, even
         { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' } },
         h(
           'div',
-          {
-            style: {
-              fontFamily: 'Archivo Black',
-              fontSize: 34,
-              letterSpacing: '-0.02em',
-              color: TEXT,
-              display: 'flex',
+          { style: { display: 'flex', alignItems: 'center' } },
+          h(
+            'div',
+            {
+              style: {
+                fontFamily: 'Archivo Black',
+                fontSize: 34,
+                letterSpacing: '-0.02em',
+                color: TEXT,
+                display: 'flex',
+              },
             },
-          },
-          'RALLY',
-          h('span', { style: { color: PINK } }, '.'),
+            'RALLY',
+          ),
+          // the gathering node — the new mark (lime, ringed), echoing the logo
+          h(
+            'div',
+            {
+              style: {
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                marginLeft: 11, width: 19, height: 19, borderRadius: 999,
+                border: `2px solid ${blendHex(LIME, 0.45)}`,
+              },
+            },
+            h('div', { style: { width: 8, height: 8, borderRadius: 999, background: LIME } }),
+          ),
         ),
         h(
           'div',
@@ -651,6 +672,176 @@ function PosterElement({ match, planId, going, lowdownOverride, tvOverride, even
   )
 }
 
+// ── landscape OG variant (1200×630) ───────────────────────────────────────────
+// Same data, same Floodlight look as the portrait poster — but laid out for a
+// link-unfurl card (Twitter summary_large_image, OG, Slack/iMessage). The match
+// is the hero; the photo bleeds right, text sits in a dark left column.
+
+function pill(label, bg, color, border) {
+  return h(
+    'div',
+    {
+      style: {
+        fontFamily: 'Inter', fontSize: 15, fontWeight: 800, letterSpacing: '0.12em',
+        textTransform: 'uppercase', padding: '8px 13px', borderRadius: 999,
+        background: bg, color, display: 'flex', ...(border ? { border } : {}),
+      },
+    },
+    label,
+  )
+}
+
+function PosterOGElement({ match, planId, going, lowdownOverride, tvOverride, event }) {
+  const teamA = match.team_a || 'Team A'
+  const teamB = match.team_b || 'Team B'
+  const flagA = match.flag_a || ''
+  const flagB = match.flag_b || ''
+  const colorA = safeColor(match.color_a, '#006847')
+  const colorB = safeColor(match.color_b, '#c8102e')
+
+  const kickoffStr = formatKickoff(match.kickoff)
+  const dayLabel = match.day || ''
+  const tonight = isTonight(match.kickoff)
+  const isLive = match.status === 'in'
+
+  const isEvent = !!(event && (event.venue || event.host || event.going != null))
+  const eventTime = (event && event.time) || kickoffStr
+  const eventGoing = event && event.going != null ? event.going : (going != null ? Number(going) : null)
+
+  let tag = 'UPCOMING'
+  if (isEvent && !isLive) tag = 'WATCH PARTY'
+  else if (isLive) tag = `LIVE ${match.clock || ''}`
+  else if (match.status === 'post') tag = 'FULL TIME'
+  else if (tonight) tag = 'TONIGHT'
+  else if (dayLabel) tag = dayLabel
+
+  const archiveSrc = match.archive?.src || null
+  const lowdown = truncate(lowdownOverride || match.lowdown || match.commentary || match.h2h || '', 132)
+  const prob = winProb(match)
+  const tvChannel = tvOverride || firstTvName(match)
+
+  let whenLine
+  if (isEvent) {
+    const parts = []
+    if (event.venue) parts.push(event.venue)
+    if (eventTime) parts.push(`from ${eventTime}`)
+    whenLine = parts.join(' · ')
+  } else {
+    const wp = []
+    if (tonight) wp.push('tonight')
+    else if (dayLabel) wp.push(dayLabel)
+    if (kickoffStr) wp.push(kickoffStr)
+    whenLine = wp.join(' · ')
+  }
+
+  const glowA = blendHex(colorA, 0.55)
+  const glowB = blendHex(colorB, 0.50)
+  const OW = 1200, OH = 630
+
+  return h(
+    'div',
+    {
+      style: {
+        position: 'relative', width: OW, height: OH, background: INK,
+        display: 'flex', fontFamily: 'Inter, sans-serif', overflow: 'hidden',
+      },
+    },
+
+    archiveSrc
+      ? h('img', {
+          src: archiveSrc, width: OW, height: OH,
+          style: {
+            position: 'absolute', top: 0, left: 0, width: OW, height: OH,
+            objectFit: 'cover', objectPosition: '50% 26%',
+            filter: 'grayscale(1) contrast(1.08)',
+          },
+        })
+      : null,
+
+    // left-weighted scrim so the text column stays legible over the photo
+    h('div', {
+      style: {
+        position: 'absolute', top: 0, left: 0, width: OW, height: OH,
+        background: 'linear-gradient(90deg, rgba(11,11,11,0.95) 0%, rgba(11,11,11,0.88) 42%, rgba(11,11,11,0.5) 70%, rgba(11,11,11,0.18) 100%)',
+      },
+    }),
+    h('div', {
+      style: {
+        position: 'absolute', top: 0, left: 0, width: OW, height: OH,
+        background: 'linear-gradient(180deg, rgba(11,11,11,0.18) 0%, rgba(11,11,11,0) 32%, rgba(11,11,11,0.55) 100%)',
+      },
+    }),
+
+    h('div', { style: { position: 'absolute', top: -90, left: -90, width: 560, height: 360, background: `radial-gradient(ellipse at 30% 30%, ${glowA}, transparent 65%)`, opacity: 0.6 } }),
+    h('div', { style: { position: 'absolute', top: -90, right: -90, width: 560, height: 360, background: `radial-gradient(ellipse at 70% 30%, ${glowB}, transparent 65%)`, opacity: 0.5 } }),
+
+    h(
+      'div',
+      {
+        style: {
+          position: 'absolute', top: 0, left: 0, width: 840, height: OH,
+          padding: 54, display: 'flex', flexDirection: 'column', justifyContent: 'space-between',
+        },
+      },
+
+      // TOP — brand + tag
+      h(
+        'div',
+        { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: 732 } },
+        h(
+          'div',
+          { style: { display: 'flex', alignItems: 'center' } },
+          h('div', { style: { fontFamily: 'Archivo Black', fontSize: 30, letterSpacing: '-0.02em', color: TEXT, display: 'flex' } }, 'RALLY'),
+          h(
+            'div',
+            { style: { display: 'flex', alignItems: 'center', justifyContent: 'center', marginLeft: 10, width: 17, height: 17, borderRadius: 999, border: `2px solid ${blendHex(LIME, 0.45)}` } },
+            h('div', { style: { width: 7, height: 7, borderRadius: 999, background: LIME } }),
+          ),
+        ),
+        h('div', { style: { fontFamily: 'Archivo Black', fontSize: 15, letterSpacing: '0.18em', padding: '8px 14px', borderRadius: 999, background: isLive ? PINK : LIME, color: isLive ? '#ffffff' : INK, display: 'flex' } }, tag),
+      ),
+
+      // BOTTOM — match block
+      h(
+        'div',
+        { style: { display: 'flex', flexDirection: 'column' } },
+        h('div', { style: { fontSize: 44, letterSpacing: '0.18em', marginBottom: 6, lineHeight: 1 } }, `${flagA} ${flagB}`),
+        h('div', { style: { fontFamily: 'Archivo Black', fontSize: 60, lineHeight: 0.9, letterSpacing: '-0.02em', color: TEXT, textTransform: 'uppercase', display: 'flex' } }, teamA),
+        h(
+          'div',
+          { style: { display: 'flex', alignItems: 'center', margin: '2px 0' } },
+          h('span', { style: { fontFamily: 'Instrument Serif', fontStyle: 'italic', fontSize: 38, color: LIME, lineHeight: 1 } }, 'versus'),
+        ),
+        h('div', { style: { fontFamily: 'Archivo Black', fontSize: 60, lineHeight: 0.9, letterSpacing: '-0.02em', color: TEXT, textTransform: 'uppercase', display: 'flex' } }, teamB),
+
+        whenLine
+          ? h('div', { style: { fontFamily: 'Instrument Serif', fontStyle: 'italic', fontSize: 30, color: PAPER, marginTop: 14, opacity: 0.95, display: 'flex' } }, whenLine)
+          : null,
+
+        lowdown
+          ? h('div', { style: { fontSize: 19, lineHeight: 1.4, color: '#e8e8e2', marginTop: 12, maxWidth: 700, display: 'flex', flexWrap: 'wrap' } }, lowdown)
+          : null,
+
+        h(
+          'div',
+          { style: { display: 'flex', flexWrap: 'wrap', gap: 10, marginTop: 18 } },
+          eventGoing != null && eventGoing > 0 ? pill(`${eventGoing} GOING`, isEvent ? PINK : 'transparent', isEvent ? '#ffffff' : '#dcdcd6', isEvent ? null : '1.5px solid rgba(255,255,255,0.18)') : null,
+          isEvent && event.host ? pill(`HOST ${event.host}`, 'transparent', '#dcdcd6', '1.5px solid rgba(255,255,255,0.18)') : null,
+          prob ? pill(`${prob.pct}% ${prob.label}`, LIME, INK, null) : null,
+          tvChannel ? pill(`▶ ${tvChannel}`, 'transparent', CYAN, `1.5px solid ${blendHex(CYAN, 0.45)}`) : null,
+        ),
+
+        h(
+          'div',
+          { style: { marginTop: 20, display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: 732, borderTop: '1px solid rgba(255,255,255,0.12)', paddingTop: 16 } },
+          h('div', { style: { fontFamily: 'Archivo Black', fontSize: 22, color: TEXT, textTransform: 'uppercase', display: 'flex' } }, 'JOIN THE RALLY →'),
+          h('div', { style: { fontSize: 18, color: MUT, letterSpacing: '0.04em', display: 'flex' } }, 'rally.futbol'),
+        ),
+      ),
+    ),
+  )
+}
+
 // ── handler ───────────────────────────────────────────────────────────────────
 
 export default async function handler(req, res) {
@@ -664,6 +855,9 @@ export default async function handler(req, res) {
   const going = q.going || null
   const lowdownParam = q.lowdown || null
   const tvParam = q.tv || null
+  // format=og → 1200×630 landscape unfurl card; default → 630×1120 portrait poster.
+  const fmt = String(q.format || (q.og ? 'og' : '')).toLowerCase()
+  const landscape = fmt === 'og' || fmt === 'landscape'
 
   let match
   try { match = await getMatch(id) }
@@ -692,9 +886,10 @@ export default async function handler(req, res) {
   if (fontInstrumentSerifItalic) fonts.push({ name: 'Instrument Serif', data: fontInstrumentSerifItalic, weight: 400, style: 'italic' })
 
   try {
+    const props = { match, planId, going, lowdownOverride: lowdownParam, tvOverride: tvParam, event }
     const ir = new ImageResponse(
-      PosterElement({ match, planId, going, lowdownOverride: lowdownParam, tvOverride: tvParam, event }),
-      { width: W, height: H, fonts },
+      landscape ? PosterOGElement(props) : PosterElement(props),
+      { width: landscape ? 1200 : W, height: landscape ? 630 : H, fonts },
     )
     const buf = Buffer.from(await ir.arrayBuffer())
     res.setHeader('Content-Type', 'image/png')
