@@ -20,9 +20,35 @@ export function registerSW() {
   if (!import.meta.env || !import.meta.env.PROD) return;
   if (window.location.protocol === 'file:') return;
 
+  // Auto-bust: when a new service worker takes control, reload ONCE to the fresh
+  // build. This unsticks a client holding a broken cached version after a deploy
+  // — no manual hard-refresh required.
+  let reloaded = false;
+  navigator.serviceWorker.addEventListener('controllerchange', () => {
+    if (reloaded) return;
+    reloaded = true;
+    window.location.reload();
+  });
+
   window.addEventListener('load', () => {
     navigator.serviceWorker
       .register('/sw.js')
+      .then((reg) => {
+        // Proactively check for a newer SW on load and every 30 min, so an open
+        // tab picks up a deploy without waiting for a navigation.
+        reg.update().catch(() => {});
+        setInterval(() => reg.update().catch(() => {}), 30 * 60 * 1000);
+        if (reg.waiting) reg.waiting.postMessage('SKIP_WAITING');
+        reg.addEventListener('updatefound', () => {
+          const sw = reg.installing;
+          if (!sw) return;
+          sw.addEventListener('statechange', () => {
+            if (sw.state === 'installed' && navigator.serviceWorker.controller) {
+              sw.postMessage('SKIP_WAITING');
+            }
+          });
+        });
+      })
       .catch((err) => {
         // Non-fatal: the app works without offline support.
         console.warn('[RALLY] SW registration failed:', err);
