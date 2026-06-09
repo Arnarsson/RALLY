@@ -472,7 +472,7 @@ function MatchesScreen({ plans, onOpenMatch }) {
       <div className="px-5">
 
       <div className="flex items-center gap-2 text-[10px] uppercase tracking-[0.18em] text-cream/40 mb-4">
-        <span className="w-1.5 h-1.5 rounded-full bg-lime" />{MATCHES.length} fixtures · live schedule from ESPN
+        <span className="w-1.5 h-1.5 rounded-full bg-lime" />{MATCHES.length} fixtures · live schedule
       </div>
 
       {days.map((day) => (
@@ -536,15 +536,10 @@ function MatchScreen({ match, plans, onBack, onOpenPlan, onCreate }) {
           <div className="text-[11px] uppercase tracking-[0.18em] text-cream/80 mt-2"><MatchStatusLine m={match} /></div>
           {match.venue && <div className="text-[11px] text-cream/55 mt-1">📍 {match.venue}</div>}
           {(match.form_a || match.form_b) && (
-            <div className="mt-3 inline-block rounded-xl bg-white/[0.04] border border-white/[0.06] px-3 py-2">
-              <div className="flex items-center gap-3 mb-1.5">
-                <span className="text-[9px] font-bold uppercase tracking-[0.2em] text-cream/35">Form · last 5</span>
-                <FormLegend />
-              </div>
-              <div className="flex items-center gap-4 text-[10px] uppercase tracking-[0.16em] text-cream/55">
-                <span className="flex items-center gap-1.5">{match.team_a} <FormPips form={match.form_a} /></span>
-                <span className="flex items-center gap-1.5"><FormPips form={match.form_b} /> {match.team_b}</span>
-              </div>
+            <div className="mt-3 inline-flex items-center gap-4 rounded-xl bg-white/[0.04] border border-white/[0.06] px-3 py-2 text-[10px] uppercase tracking-[0.16em] text-cream/55">
+              <span className="flex items-center gap-1.5">{match.team_a} <FormPips form={match.form_a} /></span>
+              <FormLegend />
+              <span className="flex items-center gap-1.5"><FormPips form={match.form_b} /> {match.team_b}</span>
             </div>
           )}
           <div className="mt-3"><TvChips tv={match.tv} /></div>
