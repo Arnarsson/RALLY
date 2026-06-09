@@ -1,0 +1,2277 @@
+{
+  "source": "ESPN site API (fifa.world/scoreboard)",
+  "league": "fifa.world",
+  "fetched_at": "2026-06-09T06:15:34.344Z",
+  "timezone": "Europe/Copenhagen",
+  "count": 72,
+  "fixtures": [
+    {
+      "id": "wc_760415",
+      "espn_id": "760415",
+      "team_a": "Mexico",
+      "flag_a": "🇲🇽",
+      "color_a": "#006847",
+      "form_a": "WWWDD",
+      "team_b": "South Africa",
+      "flag_b": "🇿🇦",
+      "color_b": "#087d5a",
+      "form_b": "WDLDL",
+      "kickoff": "2026-06-11T21:00",
+      "kickoff_utc": "2026-06-11T19:00Z",
+      "day": "THU 11 JUN",
+      "stage": "Group Stage",
+      "venue": "Estadio Banorte · Mexico City",
+      "tv": [
+        {
+          "name": "TV 2",
+          "free": false
+        }
+      ],
+      "status": "pre",
+      "status_detail": "Scheduled",
+      "clock": "0'",
+      "completed": false,
+      "score_a": null,
+      "score_b": null,
+      "tv_source": "guide:sample",
+      "archive": {
+        "src": "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c0/First_game_of_the_2010_FIFA_World_Cup%2C_South_Africa_vs_Mexico.jpg/1280px-First_game_of_the_2010_FIFA_World_Cup%2C_South_Africa_vs_Mexico.jpg",
+        "credit": "2010 World Cup - Shine 2010 · CC BY 2.0",
+        "license": "CC BY 2.0",
+        "source": "https://commons.wikimedia.org/wiki/File:First_game_of_the_2010_FIFA_World_Cup,_South_Africa_vs_Mexico.jpg"
+      }
+    },
+    {
+      "id": "wc_760414",
+      "espn_id": "760414",
+      "team_a": "South Korea",
+      "flag_a": "🇰🇷",
+      "color_a": "#ce2028",
+      "form_a": "WWLLW",
+      "team_b": "Czechia",
+      "flag_b": "🇨🇿",
+      "color_b": "#d7141a",
+      "form_b": "WWWWW",
+      "kickoff": "2026-06-12T04:00",
+      "kickoff_utc": "2026-06-12T02:00Z",
+      "day": "FRI 12 JUN",
+      "stage": "Group Stage",
+      "venue": "Estadio Akron · Guadalajara",
+      "tv": [
+        {
+          "name": "TV 2 Sport X",
+          "free": false
+        }
+      ],
+      "status": "pre",
+      "status_detail": "Scheduled",
+      "clock": "0'",
+      "completed": false,
+      "score_a": null,
+      "score_b": null,
+      "tv_source": "guide:sample"
+    },
+    {
+      "id": "wc_760416",
+      "espn_id": "760416",
+      "team_a": "Canada",
+      "flag_a": "🇨🇦",
+      "color_a": "#ed2224",
+      "form_a": "DWDDW",
+      "team_b": "Bosnia-Herz",
+      "flag_b": "🇧🇦",
+      "color_b": "#112855",
+      "form_b": "DDWWD",
+      "kickoff": "2026-06-12T21:00",
+      "kickoff_utc": "2026-06-12T19:00Z",
+      "day": "FRI 12 JUN",
+      "stage": "Group Stage",
+      "venue": "BMO Field · Toronto",
+      "tv": [
+        {
+          "name": "DR1",
+          "free": true
+        }
+      ],
+      "status": "pre",
+      "status_detail": "Scheduled",
+      "clock": "0'",
+      "completed": false,
+      "score_a": null,
+      "score_b": null,
+      "tv_source": "guide:sample"
+    },
+    {
+      "id": "wc_760417",
+      "espn_id": "760417",
+      "team_a": "USA",
+      "flag_a": "🇺🇸",
+      "color_a": "#213065",
+      "form_a": "LWLLW",
+      "team_b": "Paraguay",
+      "flag_b": "🇵🇾",
+      "color_b": "#ea2300",
+      "form_b": "WLWWL",
+      "kickoff": "2026-06-13T03:00",
+      "kickoff_utc": "2026-06-13T01:00Z",
+      "day": "SAT 13 JUN",
+      "stage": "Group Stage",
+      "venue": "SoFi Stadium · Inglewood, California",
+      "tv": [
+        {
+          "name": "TV 2 Sport X",
+          "free": false
+        }
+      ],
+      "status": "pre",
+      "status_detail": "Scheduled",
+      "clock": "0'",
+      "completed": false,
+      "score_a": null,
+      "score_b": null,
+      "tv_source": "guide:sample",
+      "archive": {
+        "src": "https://upload.wikimedia.org/wikipedia/commons/3/31/Usa_team_v_paraguay.jpg",
+        "credit": "Unknown author Unknown author · Public domain",
+        "license": "Public domain",
+        "source": "https://commons.wikimedia.org/wiki/File:Usa_team_v_paraguay.jpg"
+      }
+    },
+    {
+      "id": "wc_760420",
+      "espn_id": "760420",
+      "team_a": "Qatar",
+      "flag_a": "🇶🇦",
+      "color_a": "#691a40",
+      "form_a": "DLLWD",
+      "team_b": "Switzerland",
+      "flag_b": "🇨🇭",
+      "color_b": "#d72b2c",
+      "form_b": "DWDLD",
+      "kickoff": "2026-06-13T21:00",
+      "kickoff_utc": "2026-06-13T19:00Z",
+      "day": "SAT 13 JUN",
+      "stage": "Group Stage",
+      "venue": "Levi's Stadium · Santa Clara, California",
+      "tv": [
+        {
+          "name": "DR1",
+          "free": true
+        }
+      ],
+      "status": "pre",
+      "status_detail": "Scheduled",
+      "clock": "0'",
+      "completed": false,
+      "score_a": null,
+      "score_b": null,
+      "tv_source": "guide:sample"
+    },
+    {
+      "id": "wc_760419",
+      "espn_id": "760419",
+      "team_a": "Brazil",
+      "flag_a": "🇧🇷",
+      "color_a": "#fee000",
+      "form_a": "WWWLD",
+      "team_b": "Morocco",
+      "flag_b": "🇲🇦",
+      "color_b": "#009060",
+      "form_b": "DWWWD",
+      "kickoff": "2026-06-14T00:00",
+      "kickoff_utc": "2026-06-13T22:00Z",
+      "day": "SUN 14 JUN",
+      "stage": "Group Stage",
+      "venue": "MetLife Stadium · East Rutherford, New Jersey",
+      "tv": [
+        {
+          "name": "TV 2 Sport X",
+          "free": false
+        }
+      ],
+      "status": "pre",
+      "status_detail": "Scheduled",
+      "clock": "0'",
+      "completed": false,
+      "score_a": null,
+      "score_b": null,
+      "tv_source": "guide:sample"
+    },
+    {
+      "id": "wc_760418",
+      "espn_id": "760418",
+      "team_a": "Haiti",
+      "flag_a": "🇭🇹",
+      "color_a": "#0033a0",
+      "form_a": "LWDLW",
+      "team_b": "Scotland",
+      "flag_b": "🏴",
+      "color_b": "#1a2d69",
+      "form_b": "WWLLW",
+      "kickoff": "2026-06-14T03:00",
+      "kickoff_utc": "2026-06-14T01:00Z",
+      "day": "SUN 14 JUN",
+      "stage": "Group Stage",
+      "venue": "Gillette Stadium · Foxborough, Massachusetts",
+      "tv": [
+        {
+          "name": "DR1",
+          "free": true
+        }
+      ],
+      "status": "pre",
+      "status_detail": "Scheduled",
+      "clock": "0'",
+      "completed": false,
+      "score_a": null,
+      "score_b": null,
+      "tv_source": "guide:sample",
+      "archive": {
+        "src": "https://upload.wikimedia.org/wikipedia/commons/thumb/d/d8/Scoreboard_at_San_Francisco_Bay_Area_Stadium.jpg/1280px-Scoreboard_at_San_Francisco_Bay_Area_Stadium.jpg",
+        "credit": "Mxn · CC BY-SA 4.0",
+        "license": "CC BY-SA 4.0",
+        "source": "https://commons.wikimedia.org/wiki/File:Scoreboard_at_San_Francisco_Bay_Area_Stadium.jpg"
+      }
+    },
+    {
+      "id": "wc_760421",
+      "espn_id": "760421",
+      "team_a": "Australia",
+      "flag_a": "🇦🇺",
+      "color_a": "#2a2d7c",
+      "form_a": "DLWWL",
+      "team_b": "Türkiye",
+      "flag_b": "🇹🇷",
+      "color_b": "#ffffff",
+      "form_b": "WWWWD",
+      "kickoff": "2026-06-14T06:00",
+      "kickoff_utc": "2026-06-14T04:00Z",
+      "day": "SUN 14 JUN",
+      "stage": "Group Stage",
+      "venue": "BC Place · Vancouver",
+      "tv": [
+        {
+          "name": "DR1",
+          "free": true
+        }
+      ],
+      "status": "pre",
+      "status_detail": "Scheduled",
+      "clock": "0'",
+      "completed": false,
+      "score_a": null,
+      "score_b": null,
+      "tv_source": "guide:sample",
+      "archive": {
+        "src": "https://upload.wikimedia.org/wikipedia/commons/0/07/Joe_Pearce_%281912%29.jpeg",
+        "credit": "Anonymous photographer · Public domain",
+        "license": "Public domain",
+        "source": "https://commons.wikimedia.org/wiki/File:Joe_Pearce_(1912).jpeg"
+      }
+    },
+    {
+      "id": "wc_760422",
+      "espn_id": "760422",
+      "team_a": "Germany",
+      "flag_a": "🇩🇪",
+      "color_a": "#000000",
+      "form_a": "WWWWW",
+      "team_b": "Curaçao",
+      "flag_b": "🇨🇼",
+      "color_b": "#0537e4",
+      "form_b": "WLLLD",
+      "kickoff": "2026-06-14T19:00",
+      "kickoff_utc": "2026-06-14T17:00Z",
+      "day": "SUN 14 JUN",
+      "stage": "Group Stage",
+      "venue": "NRG Stadium · Houston, Texas",
+      "tv": [
+        {
+          "name": "DR1",
+          "free": true
+        }
+      ],
+      "status": "pre",
+      "status_detail": "Scheduled",
+      "clock": "0'",
+      "completed": false,
+      "score_a": null,
+      "score_b": null,
+      "tv_source": "guide:sample"
+    },
+    {
+      "id": "wc_760425",
+      "espn_id": "760425",
+      "team_a": "Netherlands",
+      "flag_a": "🇳🇱",
+      "color_a": "#fb5d00",
+      "form_a": "WLDWW",
+      "team_b": "Japan",
+      "flag_b": "🇯🇵",
+      "color_b": "#ed1c24",
+      "form_b": "WWWWW",
+      "kickoff": "2026-06-14T22:00",
+      "kickoff_utc": "2026-06-14T20:00Z",
+      "day": "SUN 14 JUN",
+      "stage": "Group Stage",
+      "venue": "AT&T Stadium · Arlington, Texas",
+      "tv": [
+        {
+          "name": "TV 2",
+          "free": false
+        }
+      ],
+      "status": "pre",
+      "status_detail": "Scheduled",
+      "clock": "0'",
+      "completed": false,
+      "score_a": null,
+      "score_b": null,
+      "tv_source": "guide:sample",
+      "archive": {
+        "src": "https://upload.wikimedia.org/wikipedia/commons/thumb/9/9c/FIFA_World_Cup_2010_Netherlands_Japan.jpg/1280px-FIFA_World_Cup_2010_Netherlands_Japan.jpg",
+        "credit": "Patrick de Laive · CC BY-SA 2.0",
+        "license": "CC BY-SA 2.0",
+        "source": "https://commons.wikimedia.org/wiki/File:FIFA_World_Cup_2010_Netherlands_Japan.jpg"
+      }
+    },
+    {
+      "id": "wc_760423",
+      "espn_id": "760423",
+      "team_a": "Ivory Coast",
+      "flag_a": "🇨🇮",
+      "color_a": "#d48c00",
+      "form_a": "WWWLW",
+      "team_b": "Ecuador",
+      "flag_b": "🇪🇨",
+      "color_b": "#ffdd00",
+      "form_b": "WWDDW",
+      "kickoff": "2026-06-15T01:00",
+      "kickoff_utc": "2026-06-14T23:00Z",
+      "day": "MON 15 JUN",
+      "stage": "Group Stage",
+      "venue": "Lincoln Financial Field · Philadelphia, Pennsylvania",
+      "tv": [
+        {
+          "name": "DR1",
+          "free": true
+        }
+      ],
+      "status": "pre",
+      "status_detail": "Scheduled",
+      "clock": "0'",
+      "completed": false,
+      "score_a": null,
+      "score_b": null,
+      "tv_source": "guide:sample"
+    },
+    {
+      "id": "wc_760424",
+      "espn_id": "760424",
+      "team_a": "Sweden",
+      "flag_a": "🇸🇪",
+      "color_a": "#fecb00",
+      "form_a": "DLWWD",
+      "team_b": "Tunisia",
+      "flag_b": "🇹🇳",
+      "color_b": "#D20300",
+      "form_b": "LLDWL",
+      "kickoff": "2026-06-15T04:00",
+      "kickoff_utc": "2026-06-15T02:00Z",
+      "day": "MON 15 JUN",
+      "stage": "Group Stage",
+      "venue": "Estadio BBVA · Guadalupe",
+      "tv": [
+        {
+          "name": "DR1",
+          "free": true
+        }
+      ],
+      "status": "pre",
+      "status_detail": "Scheduled",
+      "clock": "0'",
+      "completed": false,
+      "score_a": null,
+      "score_b": null,
+      "tv_source": "guide:sample",
+      "archive": {
+        "src": "https://upload.wikimedia.org/wikipedia/commons/thumb/1/15/Amor_Layouni_%28H%C3%A4cken_vs_Qaraba%C4%9F%2C_UEFA_Europa_League%2C_5_October_2023%29.jpg/1280px-Amor_Layouni_%28H%C3%A4cken_vs_Qaraba%C4%9F%2C_UEFA_Europa_League%2C_5_October_2023%29.jpg",
+        "credit": "Amanda Aikioniemi · Public domain",
+        "license": "Public domain",
+        "source": "https://commons.wikimedia.org/wiki/File:Amor_Layouni_(H%C3%A4cken_vs_Qaraba%C4%9F,_UEFA_Europa_League,_5_October_2023).jpg"
+      }
+    },
+    {
+      "id": "wc_760428",
+      "espn_id": "760428",
+      "team_a": "Spain",
+      "flag_a": "🇪🇸",
+      "color_a": "#c60b1e",
+      "form_a": "WDDWD",
+      "team_b": "Cape Verde",
+      "flag_b": "🇨🇻",
+      "color_b": "#0000ff",
+      "form_b": "WWLLL",
+      "kickoff": "2026-06-15T18:00",
+      "kickoff_utc": "2026-06-15T16:00Z",
+      "day": "MON 15 JUN",
+      "stage": "Group Stage",
+      "venue": "Mercedes-Benz Stadium · Atlanta, Georgia",
+      "tv": [
+        {
+          "name": "TV 2 Sport X",
+          "free": false
+        }
+      ],
+      "status": "pre",
+      "status_detail": "Scheduled",
+      "clock": "0'",
+      "completed": false,
+      "score_a": null,
+      "score_b": null,
+      "tv_source": "guide:sample"
+    },
+    {
+      "id": "wc_760426",
+      "espn_id": "760426",
+      "team_a": "Belgium",
+      "flag_a": "🇧🇪",
+      "color_a": "#ef3340",
+      "form_a": "WWDWW",
+      "team_b": "Egypt",
+      "flag_b": "🇪🇬",
+      "color_b": "#D20300",
+      "form_b": "LWDWL",
+      "kickoff": "2026-06-15T21:00",
+      "kickoff_utc": "2026-06-15T19:00Z",
+      "day": "MON 15 JUN",
+      "stage": "Group Stage",
+      "venue": "Lumen Field · Seattle, Washington",
+      "tv": [
+        {
+          "name": "TV 2",
+          "free": false
+        }
+      ],
+      "status": "pre",
+      "status_detail": "Scheduled",
+      "clock": "0'",
+      "completed": false,
+      "score_a": null,
+      "score_b": null,
+      "tv_source": "guide:sample"
+    },
+    {
+      "id": "wc_760429",
+      "espn_id": "760429",
+      "team_a": "Saudi Arabia",
+      "flag_a": "🇸🇦",
+      "color_a": "#dddddd",
+      "form_a": "WLLLL",
+      "team_b": "Uruguay",
+      "flag_b": "🇺🇾",
+      "color_b": "#003da5",
+      "form_b": "DDLDW",
+      "kickoff": "2026-06-16T00:00",
+      "kickoff_utc": "2026-06-15T22:00Z",
+      "day": "TUE 16 JUN",
+      "stage": "Group Stage",
+      "venue": "Hard Rock Stadium · Miami Gardens, Florida",
+      "tv": [
+        {
+          "name": "TV2 Sport",
+          "free": false
+        }
+      ],
+      "status": "pre",
+      "status_detail": "Scheduled",
+      "clock": "0'",
+      "completed": false,
+      "score_a": null,
+      "score_b": null,
+      "tv_source": "estimated",
+      "archive": {
+        "src": "https://upload.wikimedia.org/wikipedia/commons/thumb/0/0e/Partido_Arabia_Saudita_-_Uruguay_01.jpg/1280px-Partido_Arabia_Saudita_-_Uruguay_01.jpg",
+        "credit": "Fadesga · CC BY-SA 4.0",
+        "license": "CC BY-SA 4.0",
+        "source": "https://commons.wikimedia.org/wiki/File:Partido_Arabia_Saudita_-_Uruguay_01.jpg"
+      }
+    },
+    {
+      "id": "wc_760427",
+      "espn_id": "760427",
+      "team_a": "Iran",
+      "flag_a": "🇮🇷",
+      "color_a": "#da0000",
+      "form_a": "WWWLL",
+      "team_b": "New Zealand",
+      "flag_b": "🇳🇿",
+      "color_b": "#273476",
+      "form_b": "LLWLL",
+      "kickoff": "2026-06-16T03:00",
+      "kickoff_utc": "2026-06-16T01:00Z",
+      "day": "TUE 16 JUN",
+      "stage": "Group Stage",
+      "venue": "SoFi Stadium · Inglewood, California",
+      "tv": [
+        {
+          "name": "TV2 Sport",
+          "free": false
+        }
+      ],
+      "status": "pre",
+      "status_detail": "Scheduled",
+      "clock": "0'",
+      "completed": false,
+      "score_a": null,
+      "score_b": null,
+      "tv_source": "estimated",
+      "archive": {
+        "src": "https://upload.wikimedia.org/wikipedia/commons/thumb/d/d0/Hammer_DeRoburt_Invite_%2814615214235%29.jpg/1280px-Hammer_DeRoburt_Invite_%2814615214235%29.jpg",
+        "credit": "Archives New Zealand from New Zealand · CC BY-SA 2.0",
+        "license": "CC BY-SA 2.0",
+        "source": "https://commons.wikimedia.org/wiki/File:Hammer_DeRoburt_Invite_(14615214235).jpg"
+      }
+    },
+    {
+      "id": "wc_760432",
+      "espn_id": "760432",
+      "team_a": "France",
+      "flag_a": "🇫🇷",
+      "color_a": "#0c2fff",
+      "form_a": "WLWWW",
+      "team_b": "Senegal",
+      "flag_b": "🇸🇳",
+      "color_b": "#00853f",
+      "form_b": "LWWWW",
+      "kickoff": "2026-06-16T21:00",
+      "kickoff_utc": "2026-06-16T19:00Z",
+      "day": "TUE 16 JUN",
+      "stage": "Group Stage",
+      "venue": "MetLife Stadium · East Rutherford, New Jersey",
+      "tv": [
+        {
+          "name": "DR1",
+          "free": true
+        }
+      ],
+      "status": "pre",
+      "status_detail": "Scheduled",
+      "clock": "0'",
+      "completed": false,
+      "score_a": null,
+      "score_b": null,
+      "tv_source": "guide:sample",
+      "archive": {
+        "src": "https://upload.wikimedia.org/wikipedia/commons/thumb/c/ca/2000%EB%85%84%EB%8C%80_%EC%B4%88%EB%B0%98_%EC%84%9C%EC%9A%B8%EC%86%8C%EB%B0%A9_%EC%86%8C%EB%B0%A9%EA%B3%B5%EB%AC%B4%EC%9B%90%28%EC%86%8C%EB%B0%A9%EA%B4%80%29_%ED%99%9C%EB%8F%99_%EC%82%AC%EC%A7%84_%EC%86%8C%EB%B0%A9%EC%95%88%EC%A0%84%EA%B7%BC%EB%AC%B4-1.jpg/1280px-2000%EB%85%84%EB%8C%80_%EC%B4%88%EB%B0%98_%EC%84%9C%EC%9A%B8%EC%86%8C%EB%B0%A9_%EC%86%8C%EB%B0%A9%EA%B3%B5%EB%AC%B4%EC%9B%90%28%EC%86%8C%EB%B0%A9%EA%B4%80%29_%ED%99%9C%EB%8F%99_%EC%82%AC%EC%A7%84_%EC%86%8C%EB%B0%A9%EC%95%88%EC%A0%84%EA%B7%BC%EB%AC%B4-1.jpg",
+        "credit": "서울특별시 소방재난본부 · CC BY-SA 4.0",
+        "license": "CC BY-SA 4.0",
+        "source": "https://commons.wikimedia.org/wiki/File:2000%EB%85%84%EB%8C%80_%EC%B4%88%EB%B0%98_%EC%84%9C%EC%9A%B8%EC%86%8C%EB%B0%A9_%EC%86%8C%EB%B0%A9%EA%B3%B5%EB%AC%B4%EC%9B%90(%EC%86%8C%EB%B0%A9%EA%B4%80)_%ED%99%9C%EB%8F%99_%EC%82%AC%EC%A7%84_%EC%86%8C%EB%B0%A9%EC%95%88%EC%A0%84%EA%B7%BC%EB%AC%B4-1.jpg"
+      }
+    },
+    {
+      "id": "wc_760430",
+      "espn_id": "760430",
+      "team_a": "Iraq",
+      "flag_a": "🏴",
+      "color_a": "#00843d",
+      "form_a": "DWWWD",
+      "team_b": "Norway",
+      "flag_b": "🇳🇴",
+      "color_b": "#ef2b2d",
+      "form_b": "DWDLW",
+      "kickoff": "2026-06-17T00:00",
+      "kickoff_utc": "2026-06-16T22:00Z",
+      "day": "WED 17 JUN",
+      "stage": "Group Stage",
+      "venue": "Gillette Stadium · Foxborough, Massachusetts",
+      "tv": [
+        {
+          "name": "TV2 Sport",
+          "free": false
+        }
+      ],
+      "status": "pre",
+      "status_detail": "Scheduled",
+      "clock": "0'",
+      "completed": false,
+      "score_a": null,
+      "score_b": null,
+      "tv_source": "estimated",
+      "archive": {
+        "src": "https://upload.wikimedia.org/wikipedia/commons/e/e6/USMC-08957.jpg",
+        "credit": "Wikimedia Commons · Public domain",
+        "license": "Public domain",
+        "source": "https://commons.wikimedia.org/wiki/File:USMC-08957.jpg"
+      }
+    },
+    {
+      "id": "wc_760433",
+      "espn_id": "760433",
+      "team_a": "Argentina",
+      "flag_a": "🇦🇷",
+      "color_a": "#74acdf",
+      "form_a": "WWWWW",
+      "team_b": "Algeria",
+      "flag_b": "🇩🇿",
+      "color_b": "#5bbd19",
+      "form_b": "WDWLW",
+      "kickoff": "2026-06-17T03:00",
+      "kickoff_utc": "2026-06-17T01:00Z",
+      "day": "WED 17 JUN",
+      "stage": "Group Stage",
+      "venue": "GEHA Field at Arrowhead Stadium · Kansas City, Missouri",
+      "tv": [
+        {
+          "name": "TV2 Sport",
+          "free": false
+        }
+      ],
+      "status": "pre",
+      "status_detail": "Scheduled",
+      "clock": "0'",
+      "completed": false,
+      "score_a": null,
+      "score_b": null,
+      "tv_source": "estimated",
+      "archive": {
+        "src": "https://upload.wikimedia.org/wikipedia/commons/b/b8/Argentina_algeria_calderon.jpg",
+        "credit": "Unknown author Unknown author · Public domain",
+        "license": "Public domain",
+        "source": "https://commons.wikimedia.org/wiki/File:Argentina_algeria_calderon.jpg"
+      }
+    },
+    {
+      "id": "wc_760431",
+      "espn_id": "760431",
+      "team_a": "Austria",
+      "flag_a": "🏴",
+      "color_a": "#d72b2c",
+      "form_a": "WWWDW",
+      "team_b": "Jordan",
+      "flag_b": "🇯🇴",
+      "color_b": "#E70000",
+      "form_b": "LLDDD",
+      "kickoff": "2026-06-17T06:00",
+      "kickoff_utc": "2026-06-17T04:00Z",
+      "day": "WED 17 JUN",
+      "stage": "Group Stage",
+      "venue": "Levi's Stadium · Santa Clara, California",
+      "tv": [
+        {
+          "name": "TV2 Sport",
+          "free": false
+        }
+      ],
+      "status": "pre",
+      "status_detail": "Scheduled",
+      "clock": "0'",
+      "completed": false,
+      "score_a": null,
+      "score_b": null,
+      "tv_source": "estimated",
+      "archive": {
+        "src": "https://upload.wikimedia.org/wikipedia/commons/b/bf/U-19_EC-Qualifikation_Austria_vs._France_2013-06-10_%28104%29.jpg",
+        "credit": "Steindy ( talk ) 22:54, 13 June 2013 (UTC) · CC BY-SA 3.0",
+        "license": "CC BY-SA 3.0",
+        "source": "https://commons.wikimedia.org/wiki/File:U-19_EC-Qualifikation_Austria_vs._France_2013-06-10_(104).jpg"
+      }
+    },
+    {
+      "id": "wc_760435",
+      "espn_id": "760435",
+      "team_a": "Portugal",
+      "flag_a": "🇵🇹",
+      "color_a": "#da291c",
+      "form_a": "WWDWL",
+      "team_b": "Congo DR",
+      "flag_b": "🏴",
+      "color_b": "#418fde",
+      "form_b": "DWWLW",
+      "kickoff": "2026-06-17T19:00",
+      "kickoff_utc": "2026-06-17T17:00Z",
+      "day": "WED 17 JUN",
+      "stage": "Group Stage",
+      "venue": "NRG Stadium · Houston, Texas",
+      "tv": [
+        {
+          "name": "TV2 Sport",
+          "free": false
+        }
+      ],
+      "status": "pre",
+      "status_detail": "Scheduled",
+      "clock": "0'",
+      "completed": false,
+      "score_a": null,
+      "score_b": null,
+      "tv_source": "estimated"
+    },
+    {
+      "id": "wc_760437",
+      "espn_id": "760437",
+      "team_a": "England",
+      "flag_a": "🏴",
+      "color_a": "#ffffff",
+      "form_a": "WLDWW",
+      "team_b": "Croatia",
+      "flag_b": "🇭🇷",
+      "color_b": "#ff0000",
+      "form_b": "WLLWW",
+      "kickoff": "2026-06-17T22:00",
+      "kickoff_utc": "2026-06-17T20:00Z",
+      "day": "WED 17 JUN",
+      "stage": "Group Stage",
+      "venue": "AT&T Stadium · Arlington, Texas",
+      "tv": [
+        {
+          "name": "TV 2",
+          "free": false
+        }
+      ],
+      "status": "pre",
+      "status_detail": "Scheduled",
+      "clock": "0'",
+      "completed": false,
+      "score_a": null,
+      "score_b": null,
+      "tv_source": "guide:sample",
+      "archive": {
+        "src": "https://upload.wikimedia.org/wikipedia/commons/3/3f/Raheem_Sterling_2018.jpg",
+        "credit": "Антон Зайцев · CC BY-SA 3.0",
+        "license": "CC BY-SA 3.0",
+        "source": "https://commons.wikimedia.org/wiki/File:Raheem_Sterling_2018.jpg"
+      }
+    },
+    {
+      "id": "wc_760434",
+      "espn_id": "760434",
+      "team_a": "Ghana",
+      "flag_a": "🇬🇭",
+      "color_a": "#ce2931",
+      "form_a": "DLLLL",
+      "team_b": "Panama",
+      "flag_b": "🇵🇦",
+      "color_b": "#d21034",
+      "form_b": "DWLWD",
+      "kickoff": "2026-06-18T01:00",
+      "kickoff_utc": "2026-06-17T23:00Z",
+      "day": "THU 18 JUN",
+      "stage": "Group Stage",
+      "venue": "BMO Field · Toronto",
+      "tv": [
+        {
+          "name": "TV2 Sport",
+          "free": false
+        }
+      ],
+      "status": "pre",
+      "status_detail": "Scheduled",
+      "clock": "0'",
+      "completed": false,
+      "score_a": null,
+      "score_b": null,
+      "tv_source": "estimated"
+    },
+    {
+      "id": "wc_760436",
+      "espn_id": "760436",
+      "team_a": "Uzbekistan",
+      "flag_a": "🇺🇿",
+      "color_a": "#0081d6",
+      "form_a": "LLWWD",
+      "team_b": "Colombia",
+      "flag_b": "🇨🇴",
+      "color_b": "#fbd632",
+      "form_b": "WWLLW",
+      "kickoff": "2026-06-18T04:00",
+      "kickoff_utc": "2026-06-18T02:00Z",
+      "day": "THU 18 JUN",
+      "stage": "Group Stage",
+      "venue": "Estadio Banorte · Mexico City",
+      "tv": [
+        {
+          "name": "TV2 Sport",
+          "free": false
+        }
+      ],
+      "status": "pre",
+      "status_detail": "Scheduled",
+      "clock": "0'",
+      "completed": false,
+      "score_a": null,
+      "score_b": null,
+      "tv_source": "estimated"
+    },
+    {
+      "id": "wc_760438",
+      "espn_id": "760438",
+      "team_a": "Czechia",
+      "flag_a": "🇨🇿",
+      "color_a": "#d7141a",
+      "form_a": "WWWWW",
+      "team_b": "South Africa",
+      "flag_b": "🇿🇦",
+      "color_b": "#087d5a",
+      "form_b": "WDLDL",
+      "kickoff": "2026-06-18T18:00",
+      "kickoff_utc": "2026-06-18T16:00Z",
+      "day": "THU 18 JUN",
+      "stage": "Group Stage",
+      "venue": "Mercedes-Benz Stadium · Atlanta, Georgia",
+      "tv": [
+        {
+          "name": "TV2 Sport",
+          "free": false
+        }
+      ],
+      "status": "pre",
+      "status_detail": "Scheduled",
+      "clock": "0'",
+      "completed": false,
+      "score_a": null,
+      "score_b": null,
+      "tv_source": "estimated"
+    },
+    {
+      "id": "wc_760439",
+      "espn_id": "760439",
+      "team_a": "Switzerland",
+      "flag_a": "🇨🇭",
+      "color_a": "#d72b2c",
+      "form_a": "DWDLD",
+      "team_b": "Bosnia-Herz",
+      "flag_b": "🇧🇦",
+      "color_b": "#112855",
+      "form_b": "DDWWD",
+      "kickoff": "2026-06-18T21:00",
+      "kickoff_utc": "2026-06-18T19:00Z",
+      "day": "THU 18 JUN",
+      "stage": "Group Stage",
+      "venue": "SoFi Stadium · Inglewood, California",
+      "tv": [
+        {
+          "name": "TV2 Sport",
+          "free": false
+        }
+      ],
+      "status": "pre",
+      "status_detail": "Scheduled",
+      "clock": "0'",
+      "completed": false,
+      "score_a": null,
+      "score_b": null,
+      "tv_source": "estimated"
+    },
+    {
+      "id": "wc_760440",
+      "espn_id": "760440",
+      "team_a": "Canada",
+      "flag_a": "🇨🇦",
+      "color_a": "#ed2224",
+      "form_a": "DWDDW",
+      "team_b": "Qatar",
+      "flag_b": "🇶🇦",
+      "color_b": "#691a40",
+      "form_b": "DLLWD",
+      "kickoff": "2026-06-19T00:00",
+      "kickoff_utc": "2026-06-18T22:00Z",
+      "day": "FRI 19 JUN",
+      "stage": "Group Stage",
+      "venue": "BC Place · Vancouver",
+      "tv": [
+        {
+          "name": "TV2 Sport",
+          "free": false
+        }
+      ],
+      "status": "pre",
+      "status_detail": "Scheduled",
+      "clock": "0'",
+      "completed": false,
+      "score_a": null,
+      "score_b": null,
+      "tv_source": "estimated",
+      "archive": {
+        "src": "https://upload.wikimedia.org/wikipedia/commons/6/68/Eden_Hazard_WC2022.jpg",
+        "credit": "Hossein Zohrevand · CC BY 4.0",
+        "license": "CC BY 4.0",
+        "source": "https://commons.wikimedia.org/wiki/File:Eden_Hazard_WC2022.jpg"
+      }
+    },
+    {
+      "id": "wc_760441",
+      "espn_id": "760441",
+      "team_a": "Mexico",
+      "flag_a": "🇲🇽",
+      "color_a": "#006847",
+      "form_a": "WWWDD",
+      "team_b": "South Korea",
+      "flag_b": "🇰🇷",
+      "color_b": "#ce2028",
+      "form_b": "WWLLW",
+      "kickoff": "2026-06-19T03:00",
+      "kickoff_utc": "2026-06-19T01:00Z",
+      "day": "FRI 19 JUN",
+      "stage": "Group Stage",
+      "venue": "Estadio Akron · Guadalajara",
+      "tv": [
+        {
+          "name": "TV2 Sport",
+          "free": false
+        }
+      ],
+      "status": "pre",
+      "status_detail": "Scheduled",
+      "clock": "0'",
+      "completed": false,
+      "score_a": null,
+      "score_b": null,
+      "tv_source": "estimated",
+      "archive": {
+        "src": "https://upload.wikimedia.org/wikipedia/commons/thumb/d/db/Cor%C3%A9ia_do_Sul_x_M%C3%A9xico_-_Futebol_masculino_-_Olimp%C3%ADada_Rio_2016_%2828899235235%29.jpg/1280px-Cor%C3%A9ia_do_Sul_x_M%C3%A9xico_-_Futebol_masculino_-_Olimp%C3%ADada_Rio_2016_%2828899235235%29.jpg",
+        "credit": "Agência Brasília · CC BY 2.0",
+        "license": "CC BY 2.0",
+        "source": "https://commons.wikimedia.org/wiki/File:Cor%C3%A9ia_do_Sul_x_M%C3%A9xico_-_Futebol_masculino_-_Olimp%C3%ADada_Rio_2016_(28899235235).jpg"
+      }
+    },
+    {
+      "id": "wc_760442",
+      "espn_id": "760442",
+      "team_a": "USA",
+      "flag_a": "🇺🇸",
+      "color_a": "#213065",
+      "form_a": "LWLLW",
+      "team_b": "Australia",
+      "flag_b": "🇦🇺",
+      "color_b": "#2a2d7c",
+      "form_b": "DLWWL",
+      "kickoff": "2026-06-19T21:00",
+      "kickoff_utc": "2026-06-19T19:00Z",
+      "day": "FRI 19 JUN",
+      "stage": "Group Stage",
+      "venue": "Lumen Field · Seattle, Washington",
+      "tv": [
+        {
+          "name": "TV2 Sport",
+          "free": false
+        }
+      ],
+      "status": "pre",
+      "status_detail": "Scheduled",
+      "clock": "0'",
+      "completed": false,
+      "score_a": null,
+      "score_b": null,
+      "tv_source": "estimated",
+      "archive": {
+        "src": "https://upload.wikimedia.org/wikipedia/commons/7/78/Columbia_Park_Boys_Club_Field_Australian_Football_Team.png",
+        "credit": "San Francisco Examiner · Public domain",
+        "license": "Public domain",
+        "source": "https://commons.wikimedia.org/wiki/File:Columbia_Park_Boys_Club_Field_Australian_Football_Team.png"
+      }
+    },
+    {
+      "id": "wc_760445",
+      "espn_id": "760445",
+      "team_a": "Scotland",
+      "flag_a": "🏴",
+      "color_a": "#1a2d69",
+      "form_a": "WWLLW",
+      "team_b": "Morocco",
+      "flag_b": "🇲🇦",
+      "color_b": "#009060",
+      "form_b": "DWWWD",
+      "kickoff": "2026-06-20T00:00",
+      "kickoff_utc": "2026-06-19T22:00Z",
+      "day": "SAT 20 JUN",
+      "stage": "Group Stage",
+      "venue": "Gillette Stadium · Foxborough, Massachusetts",
+      "tv": [
+        {
+          "name": "TV2 Sport",
+          "free": false
+        }
+      ],
+      "status": "pre",
+      "status_detail": "Scheduled",
+      "clock": "0'",
+      "completed": false,
+      "score_a": null,
+      "score_b": null,
+      "tv_source": "estimated"
+    },
+    {
+      "id": "wc_760444",
+      "espn_id": "760444",
+      "team_a": "Brazil",
+      "flag_a": "🇧🇷",
+      "color_a": "#fee000",
+      "form_a": "WWWLD",
+      "team_b": "Haiti",
+      "flag_b": "🇭🇹",
+      "color_b": "#0033a0",
+      "form_b": "LWDLW",
+      "kickoff": "2026-06-20T02:30",
+      "kickoff_utc": "2026-06-20T00:30Z",
+      "day": "SAT 20 JUN",
+      "stage": "Group Stage",
+      "venue": "Lincoln Financial Field · Philadelphia, Pennsylvania",
+      "tv": [
+        {
+          "name": "TV2 Sport",
+          "free": false
+        }
+      ],
+      "status": "pre",
+      "status_detail": "Scheduled",
+      "clock": "0'",
+      "completed": false,
+      "score_a": null,
+      "score_b": null,
+      "tv_source": "estimated"
+    },
+    {
+      "id": "wc_760443",
+      "espn_id": "760443",
+      "team_a": "Türkiye",
+      "flag_a": "🇹🇷",
+      "color_a": "#ffffff",
+      "form_a": "WWWWD",
+      "team_b": "Paraguay",
+      "flag_b": "🇵🇾",
+      "color_b": "#ea2300",
+      "form_b": "WLWWL",
+      "kickoff": "2026-06-20T05:00",
+      "kickoff_utc": "2026-06-20T03:00Z",
+      "day": "SAT 20 JUN",
+      "stage": "Group Stage",
+      "venue": "Levi's Stadium · Santa Clara, California",
+      "tv": [
+        {
+          "name": "TV2 Sport",
+          "free": false
+        }
+      ],
+      "status": "pre",
+      "status_detail": "Scheduled",
+      "clock": "0'",
+      "completed": false,
+      "score_a": null,
+      "score_b": null,
+      "tv_source": "estimated"
+    },
+    {
+      "id": "wc_760447",
+      "espn_id": "760447",
+      "team_a": "Netherlands",
+      "flag_a": "🇳🇱",
+      "color_a": "#fb5d00",
+      "form_a": "WLDWW",
+      "team_b": "Sweden",
+      "flag_b": "🇸🇪",
+      "color_b": "#fecb00",
+      "form_b": "DLWWD",
+      "kickoff": "2026-06-20T19:00",
+      "kickoff_utc": "2026-06-20T17:00Z",
+      "day": "SAT 20 JUN",
+      "stage": "Group Stage",
+      "venue": "NRG Stadium · Houston, Texas",
+      "tv": [
+        {
+          "name": "DR1",
+          "free": true
+        }
+      ],
+      "status": "pre",
+      "status_detail": "Scheduled",
+      "clock": "0'",
+      "completed": false,
+      "score_a": null,
+      "score_b": null,
+      "tv_source": "guide:sample"
+    },
+    {
+      "id": "wc_760448",
+      "espn_id": "760448",
+      "team_a": "Germany",
+      "flag_a": "🇩🇪",
+      "color_a": "#000000",
+      "form_a": "WWWWW",
+      "team_b": "Ivory Coast",
+      "flag_b": "🇨🇮",
+      "color_b": "#d48c00",
+      "form_b": "WWWLW",
+      "kickoff": "2026-06-20T22:00",
+      "kickoff_utc": "2026-06-20T20:00Z",
+      "day": "SAT 20 JUN",
+      "stage": "Group Stage",
+      "venue": "BMO Field · Toronto",
+      "tv": [
+        {
+          "name": "TV2 Sport",
+          "free": false
+        }
+      ],
+      "status": "pre",
+      "status_detail": "Scheduled",
+      "clock": "0'",
+      "completed": false,
+      "score_a": null,
+      "score_b": null,
+      "tv_source": "estimated"
+    },
+    {
+      "id": "wc_760446",
+      "espn_id": "760446",
+      "team_a": "Ecuador",
+      "flag_a": "🇪🇨",
+      "color_a": "#ffdd00",
+      "form_a": "WWDDW",
+      "team_b": "Curaçao",
+      "flag_b": "🇨🇼",
+      "color_b": "#0537e4",
+      "form_b": "WLLLD",
+      "kickoff": "2026-06-21T02:00",
+      "kickoff_utc": "2026-06-21T00:00Z",
+      "day": "SUN 21 JUN",
+      "stage": "Group Stage",
+      "venue": "GEHA Field at Arrowhead Stadium · Kansas City, Missouri",
+      "tv": [
+        {
+          "name": "TV2 Sport",
+          "free": false
+        }
+      ],
+      "status": "pre",
+      "status_detail": "Scheduled",
+      "clock": "0'",
+      "completed": false,
+      "score_a": null,
+      "score_b": null,
+      "tv_source": "estimated"
+    },
+    {
+      "id": "wc_760449",
+      "espn_id": "760449",
+      "team_a": "Tunisia",
+      "flag_a": "🇹🇳",
+      "color_a": "#D20300",
+      "form_a": "LLDWL",
+      "team_b": "Japan",
+      "flag_b": "🇯🇵",
+      "color_b": "#ed1c24",
+      "form_b": "WWWWW",
+      "kickoff": "2026-06-21T06:00",
+      "kickoff_utc": "2026-06-21T04:00Z",
+      "day": "SUN 21 JUN",
+      "stage": "Group Stage",
+      "venue": "Estadio BBVA · Guadalupe",
+      "tv": [
+        {
+          "name": "TV2 Sport",
+          "free": false
+        }
+      ],
+      "status": "pre",
+      "status_detail": "Scheduled",
+      "clock": "0'",
+      "completed": false,
+      "score_a": null,
+      "score_b": null,
+      "tv_source": "estimated"
+    },
+    {
+      "id": "wc_760453",
+      "espn_id": "760453",
+      "team_a": "Spain",
+      "flag_a": "🇪🇸",
+      "color_a": "#c60b1e",
+      "form_a": "WDDWD",
+      "team_b": "Saudi Arabia",
+      "flag_b": "🇸🇦",
+      "color_b": "#dddddd",
+      "form_b": "WLLLL",
+      "kickoff": "2026-06-21T18:00",
+      "kickoff_utc": "2026-06-21T16:00Z",
+      "day": "SUN 21 JUN",
+      "stage": "Group Stage",
+      "venue": "Mercedes-Benz Stadium · Atlanta, Georgia",
+      "tv": [
+        {
+          "name": "TV2 Sport",
+          "free": false
+        }
+      ],
+      "status": "pre",
+      "status_detail": "Scheduled",
+      "clock": "0'",
+      "completed": false,
+      "score_a": null,
+      "score_b": null,
+      "tv_source": "estimated"
+    },
+    {
+      "id": "wc_760451",
+      "espn_id": "760451",
+      "team_a": "Belgium",
+      "flag_a": "🇧🇪",
+      "color_a": "#ef3340",
+      "form_a": "WWDWW",
+      "team_b": "Iran",
+      "flag_b": "🇮🇷",
+      "color_b": "#da0000",
+      "form_b": "WWWLL",
+      "kickoff": "2026-06-21T21:00",
+      "kickoff_utc": "2026-06-21T19:00Z",
+      "day": "SUN 21 JUN",
+      "stage": "Group Stage",
+      "venue": "SoFi Stadium · Inglewood, California",
+      "tv": [
+        {
+          "name": "TV2 Sport",
+          "free": false
+        }
+      ],
+      "status": "pre",
+      "status_detail": "Scheduled",
+      "clock": "0'",
+      "completed": false,
+      "score_a": null,
+      "score_b": null,
+      "tv_source": "estimated"
+    },
+    {
+      "id": "wc_760450",
+      "espn_id": "760450",
+      "team_a": "Uruguay",
+      "flag_a": "🇺🇾",
+      "color_a": "#003da5",
+      "form_a": "DDLDW",
+      "team_b": "Cape Verde",
+      "flag_b": "🇨🇻",
+      "color_b": "#0000ff",
+      "form_b": "WWLLL",
+      "kickoff": "2026-06-22T00:00",
+      "kickoff_utc": "2026-06-21T22:00Z",
+      "day": "MON 22 JUN",
+      "stage": "Group Stage",
+      "venue": "Hard Rock Stadium · Miami Gardens, Florida",
+      "tv": [
+        {
+          "name": "TV2 Sport",
+          "free": false
+        }
+      ],
+      "status": "pre",
+      "status_detail": "Scheduled",
+      "clock": "0'",
+      "completed": false,
+      "score_a": null,
+      "score_b": null,
+      "tv_source": "estimated"
+    },
+    {
+      "id": "wc_760452",
+      "espn_id": "760452",
+      "team_a": "New Zealand",
+      "flag_a": "🇳🇿",
+      "color_a": "#273476",
+      "form_a": "LLWLL",
+      "team_b": "Egypt",
+      "flag_b": "🇪🇬",
+      "color_b": "#D20300",
+      "form_b": "LWDWL",
+      "kickoff": "2026-06-22T03:00",
+      "kickoff_utc": "2026-06-22T01:00Z",
+      "day": "MON 22 JUN",
+      "stage": "Group Stage",
+      "venue": "BC Place · Vancouver",
+      "tv": [
+        {
+          "name": "TV2 Sport",
+          "free": false
+        }
+      ],
+      "status": "pre",
+      "status_detail": "Scheduled",
+      "clock": "0'",
+      "completed": false,
+      "score_a": null,
+      "score_b": null,
+      "tv_source": "estimated"
+    },
+    {
+      "id": "wc_760456",
+      "espn_id": "760456",
+      "team_a": "Argentina",
+      "flag_a": "🇦🇷",
+      "color_a": "#74acdf",
+      "form_a": "WWWWW",
+      "team_b": "Austria",
+      "flag_b": "🏴",
+      "color_b": "#d72b2c",
+      "form_b": "WWWDW",
+      "kickoff": "2026-06-22T19:00",
+      "kickoff_utc": "2026-06-22T17:00Z",
+      "day": "MON 22 JUN",
+      "stage": "Group Stage",
+      "venue": "AT&T Stadium · Arlington, Texas",
+      "tv": [
+        {
+          "name": "TV2 Sport",
+          "free": false
+        }
+      ],
+      "status": "pre",
+      "status_detail": "Scheduled",
+      "clock": "0'",
+      "completed": false,
+      "score_a": null,
+      "score_b": null,
+      "tv_source": "estimated"
+    },
+    {
+      "id": "wc_760457",
+      "espn_id": "760457",
+      "team_a": "France",
+      "flag_a": "🇫🇷",
+      "color_a": "#0c2fff",
+      "form_a": "WLWWW",
+      "team_b": "Iraq",
+      "flag_b": "🏴",
+      "color_b": "#00843d",
+      "form_b": "DWWWD",
+      "kickoff": "2026-06-22T23:00",
+      "kickoff_utc": "2026-06-22T21:00Z",
+      "day": "MON 22 JUN",
+      "stage": "Group Stage",
+      "venue": "Lincoln Financial Field · Philadelphia, Pennsylvania",
+      "tv": [
+        {
+          "name": "TV2 Sport",
+          "free": false
+        }
+      ],
+      "status": "pre",
+      "status_detail": "Scheduled",
+      "clock": "0'",
+      "completed": false,
+      "score_a": null,
+      "score_b": null,
+      "tv_source": "estimated"
+    },
+    {
+      "id": "wc_760454",
+      "espn_id": "760454",
+      "team_a": "Norway",
+      "flag_a": "🇳🇴",
+      "color_a": "#ef2b2d",
+      "form_a": "DWDLW",
+      "team_b": "Senegal",
+      "flag_b": "🇸🇳",
+      "color_b": "#00853f",
+      "form_b": "LWWWW",
+      "kickoff": "2026-06-23T02:00",
+      "kickoff_utc": "2026-06-23T00:00Z",
+      "day": "TUE 23 JUN",
+      "stage": "Group Stage",
+      "venue": "MetLife Stadium · East Rutherford, New Jersey",
+      "tv": [
+        {
+          "name": "TV2 Sport",
+          "free": false
+        }
+      ],
+      "status": "pre",
+      "status_detail": "Scheduled",
+      "clock": "0'",
+      "completed": false,
+      "score_a": null,
+      "score_b": null,
+      "tv_source": "estimated"
+    },
+    {
+      "id": "wc_760455",
+      "espn_id": "760455",
+      "team_a": "Jordan",
+      "flag_a": "🇯🇴",
+      "color_a": "#E70000",
+      "form_a": "LLDDD",
+      "team_b": "Algeria",
+      "flag_b": "🇩🇿",
+      "color_b": "#5bbd19",
+      "form_b": "WDWLW",
+      "kickoff": "2026-06-23T05:00",
+      "kickoff_utc": "2026-06-23T03:00Z",
+      "day": "TUE 23 JUN",
+      "stage": "Group Stage",
+      "venue": "Levi's Stadium · Santa Clara, California",
+      "tv": [
+        {
+          "name": "TV2 Sport",
+          "free": false
+        }
+      ],
+      "status": "pre",
+      "status_detail": "Scheduled",
+      "clock": "0'",
+      "completed": false,
+      "score_a": null,
+      "score_b": null,
+      "tv_source": "estimated"
+    },
+    {
+      "id": "wc_760461",
+      "espn_id": "760461",
+      "team_a": "Portugal",
+      "flag_a": "🇵🇹",
+      "color_a": "#da291c",
+      "form_a": "WWDWL",
+      "team_b": "Uzbekistan",
+      "flag_b": "🇺🇿",
+      "color_b": "#0081d6",
+      "form_b": "LLWWD",
+      "kickoff": "2026-06-23T19:00",
+      "kickoff_utc": "2026-06-23T17:00Z",
+      "day": "TUE 23 JUN",
+      "stage": "Group Stage",
+      "venue": "NRG Stadium · Houston, Texas",
+      "tv": [
+        {
+          "name": "TV2 Sport",
+          "free": false
+        }
+      ],
+      "status": "pre",
+      "status_detail": "Scheduled",
+      "clock": "0'",
+      "completed": false,
+      "score_a": null,
+      "score_b": null,
+      "tv_source": "estimated"
+    },
+    {
+      "id": "wc_760458",
+      "espn_id": "760458",
+      "team_a": "England",
+      "flag_a": "🏴",
+      "color_a": "#ffffff",
+      "form_a": "WLDWW",
+      "team_b": "Ghana",
+      "flag_b": "🇬🇭",
+      "color_b": "#ce2931",
+      "form_b": "DLLLL",
+      "kickoff": "2026-06-23T22:00",
+      "kickoff_utc": "2026-06-23T20:00Z",
+      "day": "TUE 23 JUN",
+      "stage": "Group Stage",
+      "venue": "Gillette Stadium · Foxborough, Massachusetts",
+      "tv": [
+        {
+          "name": "TV2 Sport",
+          "free": false
+        }
+      ],
+      "status": "pre",
+      "status_detail": "Scheduled",
+      "clock": "0'",
+      "completed": false,
+      "score_a": null,
+      "score_b": null,
+      "tv_source": "estimated"
+    },
+    {
+      "id": "wc_760460",
+      "espn_id": "760460",
+      "team_a": "Panama",
+      "flag_a": "🇵🇦",
+      "color_a": "#d21034",
+      "form_a": "DWLWD",
+      "team_b": "Croatia",
+      "flag_b": "🇭🇷",
+      "color_b": "#ff0000",
+      "form_b": "WLLWW",
+      "kickoff": "2026-06-24T01:00",
+      "kickoff_utc": "2026-06-23T23:00Z",
+      "day": "WED 24 JUN",
+      "stage": "Group Stage",
+      "venue": "BMO Field · Toronto",
+      "tv": [
+        {
+          "name": "TV2 Sport",
+          "free": false
+        }
+      ],
+      "status": "pre",
+      "status_detail": "Scheduled",
+      "clock": "0'",
+      "completed": false,
+      "score_a": null,
+      "score_b": null,
+      "tv_source": "estimated"
+    },
+    {
+      "id": "wc_760459",
+      "espn_id": "760459",
+      "team_a": "Colombia",
+      "flag_a": "🇨🇴",
+      "color_a": "#fbd632",
+      "form_a": "WWLLW",
+      "team_b": "Congo DR",
+      "flag_b": "🏴",
+      "color_b": "#418fde",
+      "form_b": "DWWLW",
+      "kickoff": "2026-06-24T04:00",
+      "kickoff_utc": "2026-06-24T02:00Z",
+      "day": "WED 24 JUN",
+      "stage": "Group Stage",
+      "venue": "Estadio Akron · Guadalajara",
+      "tv": [
+        {
+          "name": "TV2 Sport",
+          "free": false
+        }
+      ],
+      "status": "pre",
+      "status_detail": "Scheduled",
+      "clock": "0'",
+      "completed": false,
+      "score_a": null,
+      "score_b": null,
+      "tv_source": "estimated"
+    },
+    {
+      "id": "wc_760462",
+      "espn_id": "760462",
+      "team_a": "Bosnia-Herz",
+      "flag_a": "🇧🇦",
+      "color_a": "#112855",
+      "form_a": "DDWWD",
+      "team_b": "Qatar",
+      "flag_b": "🇶🇦",
+      "color_b": "#691a40",
+      "form_b": "DLLWD",
+      "kickoff": "2026-06-24T21:00",
+      "kickoff_utc": "2026-06-24T19:00Z",
+      "day": "WED 24 JUN",
+      "stage": "Group Stage",
+      "venue": "Lumen Field · Seattle, Washington",
+      "tv": [
+        {
+          "name": "TV2 Sport",
+          "free": false
+        }
+      ],
+      "status": "pre",
+      "status_detail": "Scheduled",
+      "clock": "0'",
+      "completed": false,
+      "score_a": null,
+      "score_b": null,
+      "tv_source": "estimated"
+    },
+    {
+      "id": "wc_760463",
+      "espn_id": "760463",
+      "team_a": "Switzerland",
+      "flag_a": "🇨🇭",
+      "color_a": "#d72b2c",
+      "form_a": "DWDLD",
+      "team_b": "Canada",
+      "flag_b": "🇨🇦",
+      "color_b": "#ed2224",
+      "form_b": "DWDDW",
+      "kickoff": "2026-06-24T21:00",
+      "kickoff_utc": "2026-06-24T19:00Z",
+      "day": "WED 24 JUN",
+      "stage": "Group Stage",
+      "venue": "BC Place · Vancouver",
+      "tv": [
+        {
+          "name": "TV2 Sport",
+          "free": false
+        }
+      ],
+      "status": "pre",
+      "status_detail": "Scheduled",
+      "clock": "0'",
+      "completed": false,
+      "score_a": null,
+      "score_b": null,
+      "tv_source": "estimated"
+    },
+    {
+      "id": "wc_760464",
+      "espn_id": "760464",
+      "team_a": "Morocco",
+      "flag_a": "🇲🇦",
+      "color_a": "#009060",
+      "form_a": "DWWWD",
+      "team_b": "Haiti",
+      "flag_b": "🇭🇹",
+      "color_b": "#0033a0",
+      "form_b": "LWDLW",
+      "kickoff": "2026-06-25T00:00",
+      "kickoff_utc": "2026-06-24T22:00Z",
+      "day": "THU 25 JUN",
+      "stage": "Group Stage",
+      "venue": "Mercedes-Benz Stadium · Atlanta, Georgia",
+      "tv": [
+        {
+          "name": "TV2 Sport",
+          "free": false
+        }
+      ],
+      "status": "pre",
+      "status_detail": "Scheduled",
+      "clock": "0'",
+      "completed": false,
+      "score_a": null,
+      "score_b": null,
+      "tv_source": "estimated"
+    },
+    {
+      "id": "wc_760465",
+      "espn_id": "760465",
+      "team_a": "Scotland",
+      "flag_a": "🏴",
+      "color_a": "#1a2d69",
+      "form_a": "WWLLW",
+      "team_b": "Brazil",
+      "flag_b": "🇧🇷",
+      "color_b": "#fee000",
+      "form_b": "WWWLD",
+      "kickoff": "2026-06-25T00:00",
+      "kickoff_utc": "2026-06-24T22:00Z",
+      "day": "THU 25 JUN",
+      "stage": "Group Stage",
+      "venue": "Hard Rock Stadium · Miami Gardens, Florida",
+      "tv": [
+        {
+          "name": "TV2 Sport",
+          "free": false
+        }
+      ],
+      "status": "pre",
+      "status_detail": "Scheduled",
+      "clock": "0'",
+      "completed": false,
+      "score_a": null,
+      "score_b": null,
+      "tv_source": "estimated"
+    },
+    {
+      "id": "wc_760467",
+      "espn_id": "760467",
+      "team_a": "Czechia",
+      "flag_a": "🇨🇿",
+      "color_a": "#d7141a",
+      "form_a": "WWWWW",
+      "team_b": "Mexico",
+      "flag_b": "🇲🇽",
+      "color_b": "#006847",
+      "form_b": "WWWDD",
+      "kickoff": "2026-06-25T03:00",
+      "kickoff_utc": "2026-06-25T01:00Z",
+      "day": "THU 25 JUN",
+      "stage": "Group Stage",
+      "venue": "Estadio Banorte · Mexico City",
+      "tv": [
+        {
+          "name": "TV2 Sport",
+          "free": false
+        }
+      ],
+      "status": "pre",
+      "status_detail": "Scheduled",
+      "clock": "0'",
+      "completed": false,
+      "score_a": null,
+      "score_b": null,
+      "tv_source": "estimated"
+    },
+    {
+      "id": "wc_760466",
+      "espn_id": "760466",
+      "team_a": "South Africa",
+      "flag_a": "🇿🇦",
+      "color_a": "#087d5a",
+      "form_a": "WDLDL",
+      "team_b": "South Korea",
+      "flag_b": "🇰🇷",
+      "color_b": "#ce2028",
+      "form_b": "WWLLW",
+      "kickoff": "2026-06-25T03:00",
+      "kickoff_utc": "2026-06-25T01:00Z",
+      "day": "THU 25 JUN",
+      "stage": "Group Stage",
+      "venue": "Estadio BBVA · Guadalupe",
+      "tv": [
+        {
+          "name": "TV2 Sport",
+          "free": false
+        }
+      ],
+      "status": "pre",
+      "status_detail": "Scheduled",
+      "clock": "0'",
+      "completed": false,
+      "score_a": null,
+      "score_b": null,
+      "tv_source": "estimated"
+    },
+    {
+      "id": "wc_760473",
+      "espn_id": "760473",
+      "team_a": "Curaçao",
+      "flag_a": "🇨🇼",
+      "color_a": "#0537e4",
+      "form_a": "WLLLD",
+      "team_b": "Ivory Coast",
+      "flag_b": "🇨🇮",
+      "color_b": "#d48c00",
+      "form_b": "WWWLW",
+      "kickoff": "2026-06-25T22:00",
+      "kickoff_utc": "2026-06-25T20:00Z",
+      "day": "THU 25 JUN",
+      "stage": "Group Stage",
+      "venue": "Lincoln Financial Field · Philadelphia, Pennsylvania",
+      "tv": [
+        {
+          "name": "TV2 Sport",
+          "free": false
+        }
+      ],
+      "status": "pre",
+      "status_detail": "Scheduled",
+      "clock": "0'",
+      "completed": false,
+      "score_a": null,
+      "score_b": null,
+      "tv_source": "estimated"
+    },
+    {
+      "id": "wc_760468",
+      "espn_id": "760468",
+      "team_a": "Ecuador",
+      "flag_a": "🇪🇨",
+      "color_a": "#ffdd00",
+      "form_a": "WWDDW",
+      "team_b": "Germany",
+      "flag_b": "🇩🇪",
+      "color_b": "#000000",
+      "form_b": "WWWWW",
+      "kickoff": "2026-06-25T22:00",
+      "kickoff_utc": "2026-06-25T20:00Z",
+      "day": "THU 25 JUN",
+      "stage": "Group Stage",
+      "venue": "MetLife Stadium · East Rutherford, New Jersey",
+      "tv": [
+        {
+          "name": "TV2 Sport",
+          "free": false
+        }
+      ],
+      "status": "pre",
+      "status_detail": "Scheduled",
+      "clock": "0'",
+      "completed": false,
+      "score_a": null,
+      "score_b": null,
+      "tv_source": "estimated"
+    },
+    {
+      "id": "wc_760471",
+      "espn_id": "760471",
+      "team_a": "Japan",
+      "flag_a": "🇯🇵",
+      "color_a": "#ed1c24",
+      "form_a": "WWWWW",
+      "team_b": "Sweden",
+      "flag_b": "🇸🇪",
+      "color_b": "#fecb00",
+      "form_b": "DLWWD",
+      "kickoff": "2026-06-26T01:00",
+      "kickoff_utc": "2026-06-25T23:00Z",
+      "day": "FRI 26 JUN",
+      "stage": "Group Stage",
+      "venue": "AT&T Stadium · Arlington, Texas",
+      "tv": [
+        {
+          "name": "TV2 Sport",
+          "free": false
+        }
+      ],
+      "status": "pre",
+      "status_detail": "Scheduled",
+      "clock": "0'",
+      "completed": false,
+      "score_a": null,
+      "score_b": null,
+      "tv_source": "estimated"
+    },
+    {
+      "id": "wc_760472",
+      "espn_id": "760472",
+      "team_a": "Tunisia",
+      "flag_a": "🇹🇳",
+      "color_a": "#D20300",
+      "form_a": "LLDWL",
+      "team_b": "Netherlands",
+      "flag_b": "🇳🇱",
+      "color_b": "#fb5d00",
+      "form_b": "WLDWW",
+      "kickoff": "2026-06-26T01:00",
+      "kickoff_utc": "2026-06-25T23:00Z",
+      "day": "FRI 26 JUN",
+      "stage": "Group Stage",
+      "venue": "GEHA Field at Arrowhead Stadium · Kansas City, Missouri",
+      "tv": [
+        {
+          "name": "TV2 Sport",
+          "free": false
+        }
+      ],
+      "status": "pre",
+      "status_detail": "Scheduled",
+      "clock": "0'",
+      "completed": false,
+      "score_a": null,
+      "score_b": null,
+      "tv_source": "estimated"
+    },
+    {
+      "id": "wc_760469",
+      "espn_id": "760469",
+      "team_a": "Paraguay",
+      "flag_a": "🇵🇾",
+      "color_a": "#ea2300",
+      "form_a": "WLWWL",
+      "team_b": "Australia",
+      "flag_b": "🇦🇺",
+      "color_b": "#2a2d7c",
+      "form_b": "DLWWL",
+      "kickoff": "2026-06-26T04:00",
+      "kickoff_utc": "2026-06-26T02:00Z",
+      "day": "FRI 26 JUN",
+      "stage": "Group Stage",
+      "venue": "Levi's Stadium · Santa Clara, California",
+      "tv": [
+        {
+          "name": "TV2 Sport",
+          "free": false
+        }
+      ],
+      "status": "pre",
+      "status_detail": "Scheduled",
+      "clock": "0'",
+      "completed": false,
+      "score_a": null,
+      "score_b": null,
+      "tv_source": "estimated"
+    },
+    {
+      "id": "wc_760470",
+      "espn_id": "760470",
+      "team_a": "Türkiye",
+      "flag_a": "🇹🇷",
+      "color_a": "#ffffff",
+      "form_a": "WWWWD",
+      "team_b": "USA",
+      "flag_b": "🇺🇸",
+      "color_b": "#213065",
+      "form_b": "LWLLW",
+      "kickoff": "2026-06-26T04:00",
+      "kickoff_utc": "2026-06-26T02:00Z",
+      "day": "FRI 26 JUN",
+      "stage": "Group Stage",
+      "venue": "SoFi Stadium · Inglewood, California",
+      "tv": [
+        {
+          "name": "TV2 Sport",
+          "free": false
+        }
+      ],
+      "status": "pre",
+      "status_detail": "Scheduled",
+      "clock": "0'",
+      "completed": false,
+      "score_a": null,
+      "score_b": null,
+      "tv_source": "estimated"
+    },
+    {
+      "id": "wc_760475",
+      "espn_id": "760475",
+      "team_a": "Norway",
+      "flag_a": "🇳🇴",
+      "color_a": "#ef2b2d",
+      "form_a": "DWDLW",
+      "team_b": "France",
+      "flag_b": "🇫🇷",
+      "color_b": "#0c2fff",
+      "form_b": "WLWWW",
+      "kickoff": "2026-06-26T21:00",
+      "kickoff_utc": "2026-06-26T19:00Z",
+      "day": "FRI 26 JUN",
+      "stage": "Group Stage",
+      "venue": "Gillette Stadium · Foxborough, Massachusetts",
+      "tv": [
+        {
+          "name": "DR1",
+          "free": true
+        }
+      ],
+      "status": "pre",
+      "status_detail": "Scheduled",
+      "clock": "0'",
+      "completed": false,
+      "score_a": null,
+      "score_b": null,
+      "tv_source": "guide:sample"
+    },
+    {
+      "id": "wc_760474",
+      "espn_id": "760474",
+      "team_a": "Senegal",
+      "flag_a": "🇸🇳",
+      "color_a": "#00853f",
+      "form_a": "LWWWW",
+      "team_b": "Iraq",
+      "flag_b": "🏴",
+      "color_b": "#00843d",
+      "form_b": "DWWWD",
+      "kickoff": "2026-06-26T21:00",
+      "kickoff_utc": "2026-06-26T19:00Z",
+      "day": "FRI 26 JUN",
+      "stage": "Group Stage",
+      "venue": "BMO Field · Toronto",
+      "tv": [
+        {
+          "name": "TV2 Sport",
+          "free": false
+        }
+      ],
+      "status": "pre",
+      "status_detail": "Scheduled",
+      "clock": "0'",
+      "completed": false,
+      "score_a": null,
+      "score_b": null,
+      "tv_source": "estimated"
+    },
+    {
+      "id": "wc_760478",
+      "espn_id": "760478",
+      "team_a": "Cape Verde",
+      "flag_a": "🇨🇻",
+      "color_a": "#0000ff",
+      "form_a": "WWLLL",
+      "team_b": "Saudi Arabia",
+      "flag_b": "🇸🇦",
+      "color_b": "#dddddd",
+      "form_b": "WLLLL",
+      "kickoff": "2026-06-27T02:00",
+      "kickoff_utc": "2026-06-27T00:00Z",
+      "day": "SAT 27 JUN",
+      "stage": "Group Stage",
+      "venue": "NRG Stadium · Houston, Texas",
+      "tv": [
+        {
+          "name": "TV2 Sport",
+          "free": false
+        }
+      ],
+      "status": "pre",
+      "status_detail": "Scheduled",
+      "clock": "0'",
+      "completed": false,
+      "score_a": null,
+      "score_b": null,
+      "tv_source": "estimated"
+    },
+    {
+      "id": "wc_760479",
+      "espn_id": "760479",
+      "team_a": "Uruguay",
+      "flag_a": "🇺🇾",
+      "color_a": "#003da5",
+      "form_a": "DDLDW",
+      "team_b": "Spain",
+      "flag_b": "🇪🇸",
+      "color_b": "#c60b1e",
+      "form_b": "WDDWD",
+      "kickoff": "2026-06-27T02:00",
+      "kickoff_utc": "2026-06-27T00:00Z",
+      "day": "SAT 27 JUN",
+      "stage": "Group Stage",
+      "venue": "Estadio Akron · Guadalajara",
+      "tv": [
+        {
+          "name": "TV2 Sport",
+          "free": false
+        }
+      ],
+      "status": "pre",
+      "status_detail": "Scheduled",
+      "clock": "0'",
+      "completed": false,
+      "score_a": null,
+      "score_b": null,
+      "tv_source": "estimated"
+    },
+    {
+      "id": "wc_760476",
+      "espn_id": "760476",
+      "team_a": "Egypt",
+      "flag_a": "🇪🇬",
+      "color_a": "#D20300",
+      "form_a": "LWDWL",
+      "team_b": "Iran",
+      "flag_b": "🇮🇷",
+      "color_b": "#da0000",
+      "form_b": "WWWLL",
+      "kickoff": "2026-06-27T05:00",
+      "kickoff_utc": "2026-06-27T03:00Z",
+      "day": "SAT 27 JUN",
+      "stage": "Group Stage",
+      "venue": "Lumen Field · Seattle, Washington",
+      "tv": [
+        {
+          "name": "TV2 Sport",
+          "free": false
+        }
+      ],
+      "status": "pre",
+      "status_detail": "Scheduled",
+      "clock": "0'",
+      "completed": false,
+      "score_a": null,
+      "score_b": null,
+      "tv_source": "estimated"
+    },
+    {
+      "id": "wc_760477",
+      "espn_id": "760477",
+      "team_a": "New Zealand",
+      "flag_a": "🇳🇿",
+      "color_a": "#273476",
+      "form_a": "LLWLL",
+      "team_b": "Belgium",
+      "flag_b": "🇧🇪",
+      "color_b": "#ef3340",
+      "form_b": "WWDWW",
+      "kickoff": "2026-06-27T05:00",
+      "kickoff_utc": "2026-06-27T03:00Z",
+      "day": "SAT 27 JUN",
+      "stage": "Group Stage",
+      "venue": "BC Place · Vancouver",
+      "tv": [
+        {
+          "name": "TV2 Sport",
+          "free": false
+        }
+      ],
+      "status": "pre",
+      "status_detail": "Scheduled",
+      "clock": "0'",
+      "completed": false,
+      "score_a": null,
+      "score_b": null,
+      "tv_source": "estimated"
+    },
+    {
+      "id": "wc_760480",
+      "espn_id": "760480",
+      "team_a": "Croatia",
+      "flag_a": "🇭🇷",
+      "color_a": "#ff0000",
+      "form_a": "WLLWW",
+      "team_b": "Ghana",
+      "flag_b": "🇬🇭",
+      "color_b": "#ce2931",
+      "form_b": "DLLLL",
+      "kickoff": "2026-06-27T23:00",
+      "kickoff_utc": "2026-06-27T21:00Z",
+      "day": "SAT 27 JUN",
+      "stage": "Group Stage",
+      "venue": "Lincoln Financial Field · Philadelphia, Pennsylvania",
+      "tv": [
+        {
+          "name": "TV2 Sport",
+          "free": false
+        }
+      ],
+      "status": "pre",
+      "status_detail": "Scheduled",
+      "clock": "0'",
+      "completed": false,
+      "score_a": null,
+      "score_b": null,
+      "tv_source": "estimated"
+    },
+    {
+      "id": "wc_760485",
+      "espn_id": "760485",
+      "team_a": "Panama",
+      "flag_a": "🇵🇦",
+      "color_a": "#d21034",
+      "form_a": "DWLWD",
+      "team_b": "England",
+      "flag_b": "🏴",
+      "color_b": "#ffffff",
+      "form_b": "WLDWW",
+      "kickoff": "2026-06-27T23:00",
+      "kickoff_utc": "2026-06-27T21:00Z",
+      "day": "SAT 27 JUN",
+      "stage": "Group Stage",
+      "venue": "MetLife Stadium · East Rutherford, New Jersey",
+      "tv": [
+        {
+          "name": "TV2 Sport",
+          "free": false
+        }
+      ],
+      "status": "pre",
+      "status_detail": "Scheduled",
+      "clock": "0'",
+      "completed": false,
+      "score_a": null,
+      "score_b": null,
+      "tv_source": "estimated"
+    },
+    {
+      "id": "wc_760481",
+      "espn_id": "760481",
+      "team_a": "Colombia",
+      "flag_a": "🇨🇴",
+      "color_a": "#fbd632",
+      "form_a": "WWLLW",
+      "team_b": "Portugal",
+      "flag_b": "🇵🇹",
+      "color_b": "#da291c",
+      "form_b": "WWDWL",
+      "kickoff": "2026-06-28T01:30",
+      "kickoff_utc": "2026-06-27T23:30Z",
+      "day": "SUN 28 JUN",
+      "stage": "Group Stage",
+      "venue": "Hard Rock Stadium · Miami Gardens, Florida",
+      "tv": [
+        {
+          "name": "TV2 Sport",
+          "free": false
+        }
+      ],
+      "status": "pre",
+      "status_detail": "Scheduled",
+      "clock": "0'",
+      "completed": false,
+      "score_a": null,
+      "score_b": null,
+      "tv_source": "estimated"
+    },
+    {
+      "id": "wc_760482",
+      "espn_id": "760482",
+      "team_a": "Congo DR",
+      "flag_a": "🏴",
+      "color_a": "#418fde",
+      "form_a": "DWWLW",
+      "team_b": "Uzbekistan",
+      "flag_b": "🇺🇿",
+      "color_b": "#0081d6",
+      "form_b": "LLWWD",
+      "kickoff": "2026-06-28T01:30",
+      "kickoff_utc": "2026-06-27T23:30Z",
+      "day": "SUN 28 JUN",
+      "stage": "Group Stage",
+      "venue": "Mercedes-Benz Stadium · Atlanta, Georgia",
+      "tv": [
+        {
+          "name": "TV2 Sport",
+          "free": false
+        }
+      ],
+      "status": "pre",
+      "status_detail": "Scheduled",
+      "clock": "0'",
+      "completed": false,
+      "score_a": null,
+      "score_b": null,
+      "tv_source": "estimated"
+    },
+    {
+      "id": "wc_760484",
+      "espn_id": "760484",
+      "team_a": "Algeria",
+      "flag_a": "🇩🇿",
+      "color_a": "#5bbd19",
+      "form_a": "WDWLW",
+      "team_b": "Austria",
+      "flag_b": "🏴",
+      "color_b": "#d72b2c",
+      "form_b": "WWWDW",
+      "kickoff": "2026-06-28T04:00",
+      "kickoff_utc": "2026-06-28T02:00Z",
+      "day": "SUN 28 JUN",
+      "stage": "Group Stage",
+      "venue": "GEHA Field at Arrowhead Stadium · Kansas City, Missouri",
+      "tv": [
+        {
+          "name": "TV2 Sport",
+          "free": false
+        }
+      ],
+      "status": "pre",
+      "status_detail": "Scheduled",
+      "clock": "0'",
+      "completed": false,
+      "score_a": null,
+      "score_b": null,
+      "tv_source": "estimated"
+    },
+    {
+      "id": "wc_760483",
+      "espn_id": "760483",
+      "team_a": "Jordan",
+      "flag_a": "🇯🇴",
+      "color_a": "#E70000",
+      "form_a": "LLDDD",
+      "team_b": "Argentina",
+      "flag_b": "🇦🇷",
+      "color_b": "#74acdf",
+      "form_b": "WWWWW",
+      "kickoff": "2026-06-28T04:00",
+      "kickoff_utc": "2026-06-28T02:00Z",
+      "day": "SUN 28 JUN",
+      "stage": "Group Stage",
+      "venue": "AT&T Stadium · Arlington, Texas",
+      "tv": [
+        {
+          "name": "TV2 Sport",
+          "free": false
+        }
+      ],
+      "status": "pre",
+      "status_detail": "Scheduled",
+      "clock": "0'",
+      "completed": false,
+      "score_a": null,
+      "score_b": null,
+      "tv_source": "estimated"
+    }
+  ],
+  "broadcasters": {
+    "matched": 18,
+    "total": 72,
+    "source": "sample",
+    "updated_at": "2026-06-09T06:38:23.430Z"
+  },
+  "archive_meta": {
+    "matched": 16,
+    "scanned": 31,
+    "source": "Wikimedia Commons",
+    "updated_at": "2026-06-09T07:02:48.479Z"
+  }
+}

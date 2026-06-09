@@ -1,0 +1,21 @@
+# dependencies
+node_modules/
+source/node_modules/
+
+# build output
+dist/
+source/dist/
+
+# env / secrets
+.env
+.env.*
+!.env.example
+
+# os / editor
+.DS_Store
+*.log
+.vscode/
+.idea/
+
+# scratch
+.smoke/
