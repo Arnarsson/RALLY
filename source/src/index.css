@@ -33,3 +33,126 @@ body {
   background-image: radial-gradient(rgba(255,255,255,0.025) 1px, transparent 1px);
   background-size: 3px 3px;
 }
+
+/* ==========================================================================
+   FLOODLIGHT THEME OVERRIDES
+   Applied when <html data-theme="floodlight"> is set by main.jsx.
+   Reverting to classic: change ACTIVE_THEME in src/theme.js — nothing else.
+   ========================================================================== */
+
+/* Page background: ambient gradient + deep ink */
+[data-theme="floodlight"] body {
+  background:
+    var(--bg-gradient, none),
+    var(--bg, #0B0B0B);
+  color: var(--text, #F5F5F1);
+}
+
+/* Global halftone/film grain overlay (the "collage grime") */
+[data-theme="floodlight"] body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 9;
+  opacity: 0.055;
+  background-image: radial-gradient(rgba(255,255,255,0.9) 0.5px, transparent 0.6px);
+  background-size: 3px 3px;
+  mix-blend-mode: overlay;
+}
+
+/* Phone frame background — deepen to ink-2 */
+[data-theme="floodlight"] .bg-night {
+  background-color: var(--bg, #0B0B0B) !important;
+}
+
+/* Cards / panels */
+[data-theme="floodlight"] .bg-panel {
+  background-color: var(--card, #121212) !important;
+}
+[data-theme="floodlight"] .bg-panel2 {
+  background-color: var(--card2, #1a1a1a) !important;
+}
+
+/* Border lines */
+[data-theme="floodlight"] .border-line {
+  border-color: var(--line, #242424) !important;
+}
+
+/* Text: cream → Floodlight text */
+[data-theme="floodlight"] .text-cream {
+  color: var(--text, #F5F5F1) !important;
+}
+/* Muted text fractions — keep opacity-based ones working via cascade */
+
+/* Lime: brighter neon */
+[data-theme="floodlight"] .text-lime {
+  color: var(--lime, #A8FF00) !important;
+}
+[data-theme="floodlight"] .bg-lime {
+  background-color: var(--lime, #A8FF00) !important;
+}
+[data-theme="floodlight"] .border-lime {
+  border-color: var(--lime, #A8FF00) !important;
+}
+[data-theme="floodlight"] .bg-lime\/10 {
+  background-color: color-mix(in srgb, var(--lime, #A8FF00) 10%, transparent) !important;
+}
+[data-theme="floodlight"] .bg-lime\/15 {
+  background-color: color-mix(in srgb, var(--lime, #A8FF00) 15%, transparent) !important;
+}
+
+/* Pink: neon pink */
+[data-theme="floodlight"] .text-pink {
+  color: var(--pink, #FF2D7A) !important;
+}
+[data-theme="floodlight"] .bg-pink {
+  background-color: var(--pink, #FF2D7A) !important;
+}
+[data-theme="floodlight"] .border-pink {
+  border-color: var(--pink, #FF2D7A) !important;
+}
+
+/* LIVE pill: neon pink glow */
+[data-theme="floodlight"] .bg-pink {
+  box-shadow: 0 0 var(--pink-glow-blur, 18px) rgba(255, 45, 122, 0.5);
+}
+
+/* Lime kickoff time: subtle neon text-shadow */
+[data-theme="floodlight"] .text-lime {
+  text-shadow: 0 0 16px rgba(168, 255, 0, 0.4);
+}
+/* But not on large display / headline text — only on small status labels */
+[data-theme="floodlight"] .font-display.text-lime,
+[data-theme="floodlight"] .flourish.text-lime {
+  text-shadow: none;
+}
+
+/* ---- Match card Floodlight treatment ----
+   The left spine + dual corner glow + halftone photo overlay
+   are applied via inline styles in App.jsx (fl* helpers).
+   These CSS rules handle structural overrides. */
+
+/* Card border: line colour */
+[data-theme="floodlight"] .rounded-3xl.border {
+  border-color: var(--line, #242424) !important;
+}
+
+/* TV chip: cyan tint */
+[data-theme="floodlight"] .pill-tv-chip {
+  color: var(--cyan, #00C2FF) !important;
+  border-color: color-mix(in srgb, var(--cyan, #00C2FF) 40%, transparent) !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+/* Navigation bar */
+[data-theme="floodlight"] nav.border-t {
+  border-color: var(--line, #242424) !important;
+}
+
+/* ==========================================================================
+   CLASSIC THEME — no overrides needed; Tailwind hardcoded tokens match.
+   This block is intentionally empty. Left as a reference anchor.
+   ========================================================================== */
+/* [data-theme="classic"] { } */
