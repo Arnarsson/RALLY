@@ -48,9 +48,9 @@ async function goingCount(planId) {
 
 function whenWord(match) {
   try {
-    if (match && match.kickoff) {
+    if (match && match.kickoff_utc) {
       const now = new Date()
-      const k = new Date(match.kickoff)
+      const k = new Date(match.kickoff_utc)
       if (k.getFullYear() === now.getFullYear() && k.getMonth() === now.getMonth() && k.getDate() === now.getDate()) {
         return 'tonight'
       }
@@ -123,7 +123,7 @@ export default async function handler(req, res) {
       const plan = Array.isArray(planRows) && planRows.length ? planRows[0] : null
       if (plan && plan.match_id) {
         const [matchRows, venueRows, hostRows, going] = await Promise.all([
-          sb(`matches?id=eq.${encodeURIComponent(plan.match_id)}&select=team_a,team_b,kickoff,day,status&limit=1`),
+          sb(`matches?id=eq.${encodeURIComponent(plan.match_id)}&select=team_a,team_b,kickoff_utc,day,status&limit=1`),
           plan.venue_id ? sb(`venues?id=eq.${encodeURIComponent(plan.venue_id)}&select=name&limit=1`) : Promise.resolve(null),
           plan.host_id ? sb(`profiles?id=eq.${encodeURIComponent(plan.host_id)}&select=name&limit=1`) : Promise.resolve(null),
           goingCount(planId),
