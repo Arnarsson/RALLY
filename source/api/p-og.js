@@ -114,12 +114,9 @@ export default async function handler(req, res) {
   let description = "It's a packed bar with your lot. Find tonight's match in Copenhagen, grab a spot, get down there. We don't just watch the game — we rally for it."
   let image = `${ORIGIN}/og-image.png`
 
-  const debug = q.debug ? { env: { url: !!process.env.SUPABASE_URL, key: !!process.env.SUPABASE_SERVICE_ROLE_KEY } } : null
-
   try {
     if (planId) {
       const planRows = await sb(`plans?id=eq.${encodeURIComponent(planId)}&select=id,match_id,venue_id,host_id,time&limit=1`)
-      if (debug) debug.planRows = planRows
       const plan = Array.isArray(planRows) && planRows.length ? planRows[0] : null
       if (plan && plan.match_id) {
         const [matchRows, venueRows, hostRows, going] = await Promise.all([
@@ -129,7 +126,6 @@ export default async function handler(req, res) {
           goingCount(planId),
         ])
         const match = Array.isArray(matchRows) && matchRows.length ? matchRows[0] : null
-        if (debug) { debug.matchRows = matchRows; debug.venueRows = venueRows; debug.going = going }
         if (match && match.team_a && match.team_b) {
           const venue = Array.isArray(venueRows) && venueRows.length ? venueRows[0].name : null
           const host = Array.isArray(hostRows) && hostRows.length ? hostRows[0].name : null
@@ -142,14 +138,7 @@ export default async function handler(req, res) {
         }
       }
     }
-  } catch (err) { if (debug) debug.error = String(err && err.message) }
-
-  if (debug) {
-    debug.resolved = { title, image }
-    res.setHeader('Content-Type', 'application/json')
-    res.status(200).send(JSON.stringify(debug, null, 2))
-    return
-  }
+  } catch { /* keep brand-default tags */ }
 
   res.setHeader('Content-Type', 'text/html; charset=utf-8')
   res.setHeader('Cache-Control', 'public, max-age=300, s-maxage=600, stale-while-revalidate=86400')
