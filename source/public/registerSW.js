@@ -23,9 +23,17 @@ export function registerSW() {
   // Auto-bust: when a new service worker takes control, reload ONCE to the fresh
   // build. This unsticks a client holding a broken cached version after a deploy
   // — no manual hard-refresh required.
+  //
+  // CRITICAL: only reload on a genuine UPDATE (a controller was already in place
+  // when this page loaded). The first visit has no controller; the SW's
+  // clients.claim() then fires `controllerchange`, and reloading there double-
+  // loads every first-time visitor — ~1.9s of wasted FCP (Lighthouse logs it as
+  // a redirect-to-self). hadController is false on the first visit, true on
+  // return visits, so the auto-bust still works for deploys without the penalty.
   let reloaded = false;
+  const hadController = !!navigator.serviceWorker.controller;
   navigator.serviceWorker.addEventListener('controllerchange', () => {
-    if (reloaded) return;
+    if (reloaded || !hadController) return;
     reloaded = true;
     window.location.reload();
   });
