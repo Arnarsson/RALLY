@@ -893,8 +893,6 @@ function MatchScreen({ match, plans, myId, onBack, onOpenPlan, onCreate }) {
 
         <TeamExtras match={match} extras={extras} />
 
-        <RatePanel match={match} extras={extras} myId={myId} />
-
         <div className="flex items-end justify-between mb-3">
           <h2 className="font-display text-2xl uppercase leading-none">Spots</h2>
           <span className="text-[11px] uppercase tracking-wide text-cream/40">{matchPlans.length} plans</span>
@@ -1059,8 +1057,13 @@ function WCRecord({ r }) {
     </div>
   )
 }
-function TeamPanel({ team, flag, squad, record }) {
-  const [open, setOpen] = useState(false)
+// One squad: all-time WC record card + a collapsible squad grouped by position.
+// When `rate` is supplied (backend + active categories + squads present), each
+// player becomes a votable chip in the currently-selected category — you rate
+// the real squad in place, no duplicate player list. Without `rate` the players
+// render as plain read-only text (demo build / no backend).
+function TeamPanel({ team, flag, squad, record, rate }) {
+  const [open, setOpen] = useState(!!rate)   // auto-open when the squad is ratable
   if (!squad && (!record || !record.played)) return null
   const players = squad?.players || []
   const grouped = POS_GROUPS.map(([code, label]) => [label, players.filter((p) => p.pos === code)])
@@ -1077,7 +1080,7 @@ function TeamPanel({ team, flag, squad, record }) {
       {players.length > 0 && (
         <>
           <button onClick={() => setOpen((o) => !o)} className="w-full flex items-center justify-between mt-3 pt-3 border-t border-line text-sm font-bold active:scale-[0.99] transition">
-            <span>Squad <span className="text-cream/35">· {players.length}</span></span>
+            <span>{rate ? 'Squad · tap to rate' : 'Squad'} <span className="text-cream/35">· {players.length}</span></span>
             <span className="text-lime text-lg leading-none">{open ? '−' : '+'}</span>
           </button>
           {open && (
@@ -1085,9 +1088,35 @@ function TeamPanel({ team, flag, squad, record }) {
               {grouped.map(([label, ps]) => ps.length > 0 && (
                 <div key={label}>
                   <div className="text-[9px] font-bold uppercase tracking-[0.2em] text-lime mb-1.5">{label}</div>
-                  <div className="flex flex-wrap gap-x-3 gap-y-1 text-[13px] text-cream/80">
-                    {ps.map((p, i) => <span key={i}>{p.no ? <span className="text-cream/35">{p.no} </span> : null}{p.name}</span>)}
-                  </div>
+                  {rate ? (
+                    <div className="flex flex-wrap gap-2">
+                      {ps.map((p, i) => {
+                        const id = playerSlug(p.name, team)
+                        const picked = rate.picks.has(id)
+                        const count = rate.counts[id] || 0
+                        const blocked = !picked && rate.atMax
+                        return (
+                          <button key={i} disabled={blocked || rate.busy}
+                            onClick={() => rate.onToggle({ id, team, name: p.name, no: p.no, pos: p.pos })}
+                            className={'inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[13px] border transition active:scale-[0.96] ' +
+                              (picked ? 'bg-lime text-night border-lime font-bold'
+                                : blocked ? 'bg-night text-cream/25 border-line/60 cursor-not-allowed'
+                                : 'bg-night text-cream/80 border-line hover:border-cream/40')}>
+                            {p.no ? <span className={picked ? 'text-night/55' : 'text-cream/35'}>{p.no}</span> : null}
+                            {p.name}
+                            {rate.hasVoted && count > 0 && (
+                              <span className={'ml-0.5 rounded-full px-1.5 text-[10px] font-bold ' +
+                                (picked ? 'bg-night/15 text-night' : 'bg-lime/15 text-lime')}>{count}</span>
+                            )}
+                          </button>
+                        )
+                      })}
+                    </div>
+                  ) : (
+                    <div className="flex flex-wrap gap-x-3 gap-y-1 text-[13px] text-cream/80">
+                      {ps.map((p, i) => <span key={i}>{p.no ? <span className="text-cream/35">{p.no} </span> : null}{p.name}</span>)}
+                    </div>
+                  )}
                 </div>
               ))}
               {squad?.coach && <div className="text-[12px] text-cream/50 pt-1 border-t border-line/60 mt-1">Coach · <span className="text-cream/80">{squad.coach}</span></div>}
@@ -1098,41 +1127,17 @@ function TeamPanel({ team, flag, squad, record }) {
     </div>
   )
 }
+
+// Teams panel — record + squad for both sides, with rating folded IN (social §3).
+// Instead of a separate "Rate the match" list that duplicated every player, the
+// category selector lives here and the squad players themselves are the votable
+// chips. Pick max 3 per category ACROSS both teams (cap is owned here so it's
+// shared); tap again to unpick. Once you've voted in a category the live
+// AGGREGATE tally shows per player (never an individual vote). Rating is gated
+// behind hasSupabase + active categories + squads — otherwise the squad is
+// read-only and the selector is hidden (standalone demo).
 function TeamExtras({ match, extras }) {
-  if (!extras) return null
-  const { a, b } = extras
-  const has = (t) => t?.squad || (t?.record && t.record.played)
-  if (!has(a) && !has(b)) return null
-  return (
-    <div className="mb-6">
-      <h2 className="font-display text-2xl uppercase leading-none mb-3">Teams</h2>
-      <TeamPanel team={match.team_a} flag={match.flag_a} squad={a?.squad} record={a?.record} />
-      <TeamPanel team={match.team_b} flag={match.flag_b} squad={b?.squad} record={b?.record} />
-    </div>
-  )
-}
-
-// --- Rate the match (social §3) --------------------------------------------
-// Players come from BOTH squads (squad layer = adult pro players only — never
-// RALLY users). Tap to pick (max 3 per category, extra picks blocked in the UI
-// and refused by the loader), tap again to unpick. Once the user has voted in a
-// category, the live AGGREGATE tally per player is shown (matchRatings) — an
-// individual vote is never surfaced. Gated behind hasSupabase: hidden entirely
-// in the standalone demo. Categories (incl. the kill-switch) come from
-// ratingConfig.js via activeCategories().
-function RatePanel({ match, extras, myId }) {
   const cats = activeCategories()
-  // Build the combined player list from both squads, keyed by a stable slug.
-  const players = []
-  if (extras) {
-    for (const [side, team] of [['a', match.team_a], ['b', match.team_b]]) {
-      const sq = extras[side]?.squad
-      for (const p of sq?.players || []) {
-        players.push({ id: playerSlug(p.name, team), name: p.name, no: p.no, pos: p.pos, team })
-      }
-    }
-  }
-
   const [cat, setCat] = useState(cats[0]?.id)
   const [mine, setMine] = useState({})       // { [cat]: Set(player_id) }
   const [tally, setTally] = useState({})      // { [cat]: { [player_id]: count } }
@@ -1144,18 +1149,24 @@ function RatePanel({ match, extras, myId }) {
   }
   useEffect(() => { setMine({}); setTally({}); if (hasSupabase) refresh() }, [match.id])
 
-  // Demo build / kill-switched-to-empty / no squads → render nothing.
-  if (!hasSupabase || !cats.length || !players.length) return null
+  if (!extras) return null
+  const { a, b } = extras
+  const has = (t) => t?.squad || (t?.record && t.record.played)
+  if (!has(a) && !has(b)) return null
+
+  // Rating is available only with a backend, active categories, and squads to rate.
+  const anyPlayers = (a?.squad?.players?.length || 0) + (b?.squad?.players?.length || 0) > 0
+  const rating = hasSupabase && cats.length > 0 && anyPlayers
 
   const myCat = mine[cat] || new Set()
   const atMax = myCat.size >= MAX_PICKS_PER_CATEGORY
-  const hasVoted = myCat.size > 0
   const catTally = tally[cat] || {}
+  const hasVoted = myCat.size > 0
 
-  const toggle = async (p) => {
+  const onToggle = async (p) => {
     if (busy) return
     const picked = myCat.has(p.id)
-    if (!picked && atMax) return            // 4th pick blocked
+    if (!picked && atMax) return             // 4th pick blocked
     setBusy(true)
     if (picked) await unratePlayer(match.id, p.id, cat)
     else await ratePlayer(match.id, p.team, p.id, cat)
@@ -1163,53 +1174,34 @@ function RatePanel({ match, extras, myId }) {
     setBusy(false)
   }
 
+  const rateFor = rating ? { cat, picks: myCat, counts: catTally, atMax, busy, hasVoted, onToggle } : null
+
   return (
     <div className="mb-6">
       <div className="flex items-end justify-between mb-1">
-        <h2 className="font-display text-2xl uppercase leading-none">Rate the match</h2>
-        <span className="text-[10px] uppercase tracking-wide text-cream/40">pick up to {MAX_PICKS_PER_CATEGORY}</span>
+        <h2 className="font-display text-2xl uppercase leading-none">Teams</h2>
+        {rating && <span className="text-[10px] uppercase tracking-wide text-cream/40">rate · pick up to {MAX_PICKS_PER_CATEGORY}</span>}
       </div>
-      <p className="text-[11px] text-cream/40 mb-3">Anonymous · the players on the pitch tonight</p>
-
-      {/* category tabs */}
-      <div className="flex gap-2 mb-3">
-        {cats.map((c) => (
-          <button key={c.id} onClick={() => setCat(c.id)}
-            className={'flex-1 rounded-full px-3 py-2 text-[12px] font-bold uppercase tracking-wide border transition active:scale-[0.97] ' +
-              (cat === c.id ? 'bg-lime text-night border-lime' : 'bg-panel text-cream/70 border-line')}>
-            <span aria-hidden>{c.emoji}</span> {c.label}
-          </button>
-        ))}
-      </div>
-
-      <div className="rounded-2xl bg-panel border border-line p-3">
-        <div className="flex items-center justify-between text-[10px] uppercase tracking-[0.16em] text-cream/40 mb-2">
-          <span>{myCat.size} / {MAX_PICKS_PER_CATEGORY} picked</span>
-          {atMax && <span className="text-pink">max reached — tap a pick to swap</span>}
-        </div>
-        <div className="flex flex-wrap gap-2">
-          {players.map((p) => {
-            const picked = myCat.has(p.id)
-            const count = catTally[p.id] || 0
-            const blocked = !picked && atMax
-            return (
-              <button key={p.id} disabled={blocked || busy} onClick={() => toggle(p)}
-                title={p.team}
-                className={'inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[13px] border transition active:scale-[0.96] ' +
-                  (picked ? 'bg-lime text-night border-lime font-bold'
-                    : blocked ? 'bg-panel text-cream/25 border-line/60 cursor-not-allowed'
-                    : 'bg-night text-cream/80 border-line hover:border-cream/40')}>
-                {p.no ? <span className={picked ? 'text-night/55' : 'text-cream/35'}>{p.no}</span> : null}
-                {p.name}
-                {hasVoted && count > 0 && (
-                  <span className={'ml-0.5 rounded-full px-1.5 text-[10px] font-bold ' +
-                    (picked ? 'bg-night/15 text-night' : 'bg-lime/15 text-lime')}>{count}</span>
-                )}
+      {rating && (
+        <>
+          <p className="text-[11px] text-cream/40 mb-3">Tap a player in the squad to rate — anonymous</p>
+          <div className="flex gap-2 mb-2">
+            {cats.map((c) => (
+              <button key={c.id} onClick={() => setCat(c.id)}
+                className={'flex-1 rounded-full px-3 py-2 text-[12px] font-bold uppercase tracking-wide border transition active:scale-[0.97] ' +
+                  (cat === c.id ? 'bg-lime text-night border-lime' : 'bg-panel text-cream/70 border-line')}>
+                <span aria-hidden>{c.emoji}</span> {c.label}
               </button>
-            )
-          })}
-        </div>
-      </div>
+            ))}
+          </div>
+          <div className="flex items-center justify-between text-[10px] uppercase tracking-[0.16em] text-cream/40 mb-3">
+            <span>{myCat.size} / {MAX_PICKS_PER_CATEGORY} picked</span>
+            {atMax && <span className="text-pink">max reached — tap a pick to swap</span>}
+          </div>
+        </>
+      )}
+      <TeamPanel team={match.team_a} flag={match.flag_a} squad={a?.squad} record={a?.record} rate={rateFor} />
+      <TeamPanel team={match.team_b} flag={match.flag_b} squad={b?.squad} record={b?.record} rate={rateFor} />
     </div>
   )
 }
