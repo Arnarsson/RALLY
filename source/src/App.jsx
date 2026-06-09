@@ -16,6 +16,7 @@ import { activeCategories, MAX_PICKS_PER_CATEGORY } from './data/ratingConfig.js
 import { OUTFIT_IMG } from './data/outfitImages.js'
 import { FLAG_PNG } from './data/flags.js'
 import { HERO_IMG, HERO_GENERIC } from './data/heroImages.js'
+import { SPLASH_IMG } from './data/splashImage.js'
 import { ACTIVE_THEME } from './theme.js'
 import PosterCard from './components/PosterCard'
 
@@ -682,13 +683,30 @@ function TabButton({ active, onClick, label }) {
 // --- splash ----------------------------------------------------------------
 function SplashScreen({ onSkip }) {
   return (
-    <button onClick={onSkip} className="h-full w-full flex flex-col items-center justify-center bg-night text-cream text-center px-8 -mt-6">
-      <div className="animate-pop">
-        <div className="font-display text-7xl tracking-tight text-lime leading-none">RALLY</div>
-        <div className="flourish text-2xl text-cream/90 mt-3">Find your game.<br />Find your people.</div>
+    <button onClick={onSkip} className="relative h-full w-full flex flex-col items-center justify-center bg-night text-cream text-center px-8 overflow-hidden">
+      {/* The room as hero: Denmark, Euro ’92 — a whole nation converging. Grainy
+          B&W and vignetted so the RALLY mark reads as the one lit point. */}
+      <div
+        className="absolute inset-0"
+        style={{
+          backgroundImage: `url(${SPLASH_IMG})`,
+          backgroundSize: 'cover',
+          backgroundPosition: 'center 30%',
+          filter: 'grayscale(1) contrast(1.12) brightness(0.55)',
+          WebkitMaskImage: 'radial-gradient(125% 78% at 50% 42%, #000 0%, #000 38%, transparent 80%)',
+          maskImage: 'radial-gradient(125% 78% at 50% 42%, #000 0%, #000 38%, transparent 80%)',
+        }}
+      />
+      <div className="absolute inset-0 grain opacity-[0.12]" />
+      {/* a single lime ember over the crowd — the gathering, ignited */}
+      <div className="absolute left-1/2 top-[42%] -translate-x-1/2 -translate-y-1/2 w-2.5 h-2.5 rounded-full bg-lime" style={{ boxShadow: '0 0 30px 8px rgba(168,255,0,0.55)' }} />
+
+      <div className="relative animate-pop -mt-6">
+        <div className="font-display text-7xl tracking-tight text-lime leading-none drop-shadow-[0_2px_24px_rgba(0,0,0,0.7)]">RALLY</div>
+        <div className="flourish text-2xl text-cream/90 mt-3 drop-shadow">Find your game.<br />Find your people.</div>
       </div>
       <div className="absolute bottom-10 px-8">
-        <div className="font-display text-[15px] uppercase tracking-wide leading-tight text-cream/70">
+        <div className="font-display text-[15px] uppercase tracking-wide leading-tight text-cream/70 drop-shadow">
           We don’t just watch the game.<br /><span className="text-lime">We rally for it.</span>
         </div>
       </div>
