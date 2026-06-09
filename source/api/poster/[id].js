@@ -137,9 +137,15 @@ async function getPlanEvent(planId) {
       ? fetch(`${url}/rest/v1/venues?id=eq.${encodeURIComponent(plan.venue_id)}&select=name&limit=1`, { headers })
           .then((x) => (x.ok ? x.json() : [])).then((a) => a[0]?.name || null).catch(() => null)
       : Promise.resolve(null)
+    // Drop placeholder host names ("You"/"Me"/anon) — they read as "HOST You",
+    // which looks like a bug. A real name shows; a placeholder degrades to none.
+    const realHost = (n) => {
+      const s = (n || '').trim()
+      return s && !/^(you|me|anonymous|anon|guest)$/i.test(s) ? s : null
+    }
     const hostP = plan.host_id
       ? fetch(`${url}/rest/v1/profiles?id=eq.${encodeURIComponent(plan.host_id)}&select=name&limit=1`, { headers })
-          .then((x) => (x.ok ? x.json() : [])).then((a) => a[0]?.name || null).catch(() => null)
+          .then((x) => (x.ok ? x.json() : [])).then((a) => realHost(a[0]?.name)).catch(() => null)
       : Promise.resolve(null)
     // count=exact via Prefer header → Content-Range "0-N/total"
     const countP = fetch(
