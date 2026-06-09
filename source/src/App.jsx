@@ -12,14 +12,124 @@ import {
 import { OUTFIT_IMG } from './data/outfitImages.js'
 import { FLAG_PNG } from './data/flags.js'
 import { HERO_IMG, HERO_GENERIC } from './data/heroImages.js'
+import { ACTIVE_THEME } from './theme.js'
+import PosterCard from './components/PosterCard'
 
 // ===========================================================================
 // RALLY — editorial football-culture design system, DARK (white on black).
 // Archivo Black headlines, Instrument Serif italic accents (.flourish),
 // Inter body, lime/pink/blue/purple pop palette.
+//
+// Theme: ACTIVE_THEME is imported from theme.js — 'floodlight' (default) or
+// 'classic'. CSS variables are applied by main.jsx at startup. Match cards
+// use flCard*/flPhoto* helpers below for Floodlight-specific visual treatment.
 // ===========================================================================
 
 const NIGHT = '#0B0B0B'
+const IS_FLOODLIGHT = ACTIVE_THEME === 'floodlight'
+
+// ---------------------------------------------------------------------------
+// Floodlight match card helpers
+// These return inline-style objects that power the Floodlight card treatment:
+// left team-colour spine, dual corner glow, halftone photo overlay, neon pills.
+// Classic theme: all these return empty objects / null.
+// ---------------------------------------------------------------------------
+
+/** Outer card container: team-colour spine + box shadow + gradient bg */
+function flCardStyle(colorA, colorB) {
+  if (!IS_FLOODLIGHT) return {}
+  const a = colorA || '#8ACE00'
+  const b = colorB || '#2A5BFF'
+  return {
+    background: 'linear-gradient(180deg, #121212, #0B0B0B)',
+    borderColor: 'var(--line, #242424)',
+    boxShadow: `0 0 0 1px rgba(168,255,0,0.04), 0 18px 40px -24px rgba(0,0,0,0.9)`,
+  }
+}
+
+/** Pseudo-spine element: a 5px left strip with teamA→teamB gradient */
+function FlSpine({ colorA, colorB }) {
+  if (!IS_FLOODLIGHT) return null
+  const a = colorA || '#8ACE00'
+  const b = colorB || '#2A5BFF'
+  return (
+    <div
+      aria-hidden
+      style={{
+        position: 'absolute', left: 0, top: 0, bottom: 0, width: 5, zIndex: 3,
+        background: `linear-gradient(180deg, ${a}, ${b})`,
+        borderTopLeftRadius: 24, borderBottomLeftRadius: 24,
+      }}
+    />
+  )
+}
+
+/** Photo shade overlay: fade to ink + dual team-colour corner glow */
+function flPhotoShadeStyle(colorA, colorB) {
+  if (!IS_FLOODLIGHT) return { background: 'linear-gradient(180deg, rgba(11,11,11,0) 35%, #161616 100%)' }
+  const a = colorA || '#8ACE00'
+  const b = colorB || '#2A5BFF'
+  return {
+    background: [
+      'linear-gradient(180deg, rgba(11,11,11,0) 28%, #0B0B0B 96%)',
+      `linear-gradient(115deg, color-mix(in srgb, ${a} 55%, transparent), transparent 42%)`,
+      `linear-gradient(245deg, color-mix(in srgb, ${b} 50%, transparent), transparent 42%)`,
+    ].join(', '),
+  }
+}
+
+/** Halftone overlay for photo area (Floodlight only) */
+function FlHalftone() {
+  if (!IS_FLOODLIGHT) return null
+  return (
+    <div
+      aria-hidden
+      style={{
+        position: 'absolute', inset: 0, opacity: 0.16, pointerEvents: 'none',
+        backgroundImage: 'radial-gradient(rgba(255,255,255,0.8) 0.7px, transparent 0.8px)',
+        backgroundSize: '4px 4px',
+        mixBlendMode: 'overlay',
+      }}
+    />
+  )
+}
+
+/** TV chip inline style (Floodlight: cyan, borderless bg) */
+function flTvChipStyle() {
+  if (!IS_FLOODLIGHT) return {}
+  return {
+    color: 'var(--cyan, #00C2FF)',
+    borderColor: 'color-mix(in srgb, #00C2FF 40%, transparent)',
+    background: 'transparent',
+  }
+}
+
+/** LIVE pill inline style (Floodlight: neon pink + glow) */
+function flLivePillStyle() {
+  if (!IS_FLOODLIGHT) return {}
+  return {
+    background: 'var(--pink, #FF2D7A)',
+    color: '#fff',
+    borderColor: 'transparent',
+    boxShadow: '0 0 18px rgba(255,45,122,0.5)',
+  }
+}
+
+/** Kickoff time inline style (Floodlight: lime + subtle glow) */
+function flKickStyle() {
+  if (!IS_FLOODLIGHT) return {}
+  return { textShadow: '0 0 16px rgba(168,255,0,0.45)' }
+}
+
+/** CSS variables to set on a per-card container for teamA/teamB */
+function flTeamVars(colorA, colorB) {
+  if (!IS_FLOODLIGHT) return {}
+  return {
+    '--teamA': colorA || '#8ACE00',
+    '--teamB': colorB || '#2A5BFF',
+  }
+}
+
 const UserCtx = createContext(userById)
 const useResolve = () => useContext(UserCtx)
 
@@ -97,15 +207,21 @@ function TvChips({ tv, small = false }) {
     <div className="flex items-center gap-1.5 flex-wrap">
       {tv.map((c) => {
         const url = watchURL(c.name)
-        const cls = 'inline-flex items-center gap-1 rounded-full font-bold uppercase tracking-wide ' +
-          (small ? 'px-2 py-0.5 text-[9px]' : 'px-2.5 py-1 text-[10px]') + ' ' +
-          (c.free ? 'bg-lime text-night' : 'border border-current/25 text-current opacity-80')
+        // Floodlight: free channels get cyan pill; paid get ghost with cyan text.
+        // Classic: free get lime pill; paid get ghost.
+        const clsBase = 'inline-flex items-center gap-1 rounded-full font-bold uppercase tracking-wide ' +
+          (small ? 'px-2 py-0.5 text-[9px]' : 'px-2.5 py-1 text-[10px]')
+        const clsVariant = IS_FLOODLIGHT
+          ? 'border border-current/25 text-current opacity-90'
+          : (c.free ? 'bg-lime text-night' : 'border border-current/25 text-current opacity-80')
+        const cls = clsBase + ' ' + clsVariant
+        const chipStyle = IS_FLOODLIGHT ? flTvChipStyle() : {}
         const text = `${c.name}${c.free ? ' · free' : ''}`
-        if (!url) return <span key={c.name} className={cls}>{text}</span>
+        if (!url) return <span key={c.name} className={cls} style={chipStyle}>{url ? <span aria-hidden className="text-[0.8em] leading-none">▶</span> : null}{text}</span>
         return (
           <a key={c.name} href={url} target="_blank" rel="noreferrer"
             onClick={(e) => e.stopPropagation()}
-            className={cls + ' active:scale-95 transition'} title={'Watch live · ' + c.name}>
+            className={cls + ' active:scale-95 transition'} style={chipStyle} title={'Watch live · ' + c.name}>
             <span aria-hidden className="text-[0.8em] leading-none">▶</span>{text}
           </a>
         )
@@ -151,7 +267,8 @@ function Clock() {
 function KickClock({ m }) {
   if (m.status === 'in') return (
     <div className="text-right shrink-0">
-      <div className="flex items-center justify-end gap-1 text-pink text-[10px] font-bold uppercase tracking-wide">
+      <div className="flex items-center justify-end gap-1 text-pink text-[10px] font-bold uppercase tracking-wide"
+        style={IS_FLOODLIGHT ? flLivePillStyle() : {}}>
         <span className="w-1.5 h-1.5 rounded-full bg-pink animate-pulse" />LIVE {m.clock}
       </div>
       <div className="font-display text-3xl leading-none">{m.score_a}–{m.score_b}</div>
@@ -165,7 +282,7 @@ function KickClock({ m }) {
   )
   return (
     <div className="text-right shrink-0">
-      <div className="font-display text-3xl leading-none">{m.kickoff.slice(11, 16)}</div>
+      <div className="font-display text-3xl leading-none text-lime" style={flKickStyle()}>{m.kickoff.slice(11, 16)}</div>
       <div className="text-[10px] uppercase tracking-wide text-lime/90 mt-0.5"><Countdown to={m.kickoff_utc} max={72} /></div>
     </div>
   )
@@ -212,10 +329,18 @@ function MatchArt({ m, className = '', credit = false }) {
       <div className={'relative overflow-hidden bg-night ' + className}>
         <img src={m.archive.src} alt="" loading="lazy" className="absolute inset-0 w-full h-full object-cover"
           onError={(e) => { e.currentTarget.style.opacity = 0 }}
-          style={{ filter: 'grayscale(1) contrast(1.06) brightness(0.82)' }} />
+          style={{ filter: IS_FLOODLIGHT ? 'grayscale(1) contrast(1.05) brightness(0.80)' : 'grayscale(1) contrast(1.06) brightness(0.82)' }} />
         <div className="absolute inset-0 grain opacity-30" />
-        <div className="absolute inset-0" style={{ background: `linear-gradient(112deg, ${a} 0%, transparent 45%, ${b} 100%)`, mixBlendMode: 'overlay', opacity: 0.45 }} />
-        <div className="absolute inset-0 bg-gradient-to-t from-night via-night/35 to-night/5" />
+        {/* Floodlight: dual team-corner glow replaces the simple gradient tint */}
+        {IS_FLOODLIGHT ? (
+          <div className="absolute inset-0" style={flPhotoShadeStyle(a, b)} />
+        ) : (
+          <>
+            <div className="absolute inset-0" style={{ background: `linear-gradient(112deg, ${a} 0%, transparent 45%, ${b} 100%)`, mixBlendMode: 'overlay', opacity: 0.45 }} />
+            <div className="absolute inset-0 bg-gradient-to-t from-night via-night/35 to-night/5" />
+          </>
+        )}
+        {IS_FLOODLIGHT && <FlHalftone />}
         {credit && m.archive.credit && (
           <div className="absolute top-1.5 right-2 text-[8px] uppercase tracking-wide text-cream/40">{m.archive.credit}</div>
         )}
@@ -227,13 +352,15 @@ function MatchArt({ m, className = '', credit = false }) {
   // as faint glows; crisp flags carry the identity. No bright gradient.
   return (
     <div className={'relative overflow-hidden bg-night ' + className}>
-      <div className="absolute inset-0" style={{ background: `radial-gradient(120% 120% at 0% 0%, ${a} 0%, transparent 50%), radial-gradient(120% 120% at 100% 100%, ${b} 0%, transparent 50%)`, opacity: 0.22 }} />
+      <div className="absolute inset-0" style={{ background: `radial-gradient(120% 120% at 0% 0%, ${a} 0%, transparent 50%), radial-gradient(120% 120% at 100% 100%, ${b} 0%, transparent 50%)`, opacity: IS_FLOODLIGHT ? 0.30 : 0.22 }} />
       <div className="absolute inset-0 grain opacity-45" />
-      <div className="absolute inset-0 flex items-center justify-between px-9">
-        <FlagImg emoji={m.flag_a} team={m.team_a} size={54} className="-rotate-3 shadow-2xl ring-1 ring-white/10" />
-        <FlagImg emoji={m.flag_b} team={m.team_b} size={54} className="rotate-3 shadow-2xl ring-1 ring-white/10" />
+      {IS_FLOODLIGHT && <FlHalftone />}
+      <div className="absolute inset-x-0 top-0 flex items-center justify-center gap-4 pt-5">
+        <FlagImg emoji={m.flag_a} team={m.team_a} size={40} className="-rotate-3 shadow-2xl ring-1 ring-white/10" />
+        <span className="font-display text-cream/35 text-sm leading-none">v</span>
+        <FlagImg emoji={m.flag_b} team={m.team_b} size={40} className="rotate-3 shadow-2xl ring-1 ring-white/10" />
       </div>
-      <div className="absolute inset-0" style={{ background: 'radial-gradient(135% 95% at 50% 0%, transparent 30%, rgba(11,11,11,0.80))' }} />
+      <div className="absolute inset-0" style={{ background: 'linear-gradient(to top, rgba(11,11,11,0.92) 0%, rgba(11,11,11,0.35) 46%, transparent 76%)' }} />
     </div>
   )
 }
@@ -535,7 +662,10 @@ function MatchesScreen({ plans, onOpenMatch, flag }) {
             onError={(e) => { if (e.currentTarget.src !== HERO_GENERIC) e.currentTarget.src = HERO_GENERIC }} />
           <div className="absolute inset-0 grain opacity-30" />
           <div className="absolute inset-0 bg-gradient-to-t from-night via-night/40 to-night/10" />
-          <div className="absolute inset-0" style={{ background: 'radial-gradient(120% 80% at 0% 100%, rgba(138,206,0,0.18), transparent 55%)' }} />
+          {/* Floodlight: use brighter lime (A8FF00) for corner accent; classic: #8ACE00 */}
+          <div className="absolute inset-0" style={{ background: IS_FLOODLIGHT
+            ? 'radial-gradient(120% 80% at 0% 100%, rgba(168,255,0,0.22), transparent 55%)'
+            : 'radial-gradient(120% 80% at 0% 100%, rgba(138,206,0,0.18), transparent 55%)' }} />
         </div>
         <div className="absolute inset-0 flex flex-col justify-between p-5">
           <div className="flex items-center justify-between text-[11px] font-bold tracking-[0.18em] uppercase text-cream/80">
@@ -575,18 +705,27 @@ function MatchesScreen({ plans, onOpenMatch, flag }) {
               const { planCount, people } = statsFor(m.id)
               const hot = m.featured || m.marquee
               const border = m.featured ? 'border-lime' : m.marquee ? 'border-pink' : 'border-line'
+              // Floodlight: apply card gradient + team CSS vars per card
+              const cardStyle = IS_FLOODLIGHT
+                ? { ...flCardStyle(m.color_a, m.color_b), ...flTeamVars(m.color_a, m.color_b) }
+                : {}
               return (
                 <div key={m.id} role="button" tabIndex={0} onClick={() => onOpenMatch(m)}
                   onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') onOpenMatch(m) }}
-                  className={'relative overflow-hidden w-full text-left rounded-3xl p-5 border text-cream cursor-pointer active:scale-[0.98] transition ' + (hot ? '' : 'bg-panel ') + border}>
+                  className={'relative overflow-hidden w-full text-left rounded-3xl p-5 border text-cream cursor-pointer active:scale-[0.98] transition ' + (hot ? '' : 'bg-panel ') + border}
+                  style={cardStyle}>
+                  {/* Floodlight spine: team-colour left strip */}
+                  {IS_FLOODLIGHT && <FlSpine colorA={m.color_a} colorB={m.color_b} />}
                   {hot && (<><div className="absolute inset-0"><MatchArt m={m} className="w-full h-full" /></div><div className="absolute inset-0 bg-night/55" /></>)}
-                  <div className="relative">
+                  <div className="relative" style={IS_FLOODLIGHT ? { paddingLeft: 8 } : {}}>
                     {m.featured && <div className="text-[10px] font-bold tracking-[0.2em] text-lime mb-3">★ OPENING MATCH</div>}
                     {m.marquee && <div className="text-[10px] font-bold tracking-[0.2em] text-pink mb-3">★ BIG ONE</div>}
                     <div className="flex items-end justify-between gap-3">
                       <div className="font-display uppercase leading-[0.95] text-xl">
                         <div className="flex items-center gap-2"><FlagImg emoji={m.flag_a} team={m.team_a} size={17} /> {m.team_a}</div>
-                        <div className="text-cream/40 text-xs my-0.5">versus</div>
+                        {IS_FLOODLIGHT
+                          ? <div className="flourish lowercase text-cream/50 text-sm my-0.5" style={{ fontStyle: 'italic', fontFamily: "'Instrument Serif', serif", fontSize: 15 }}>v</div>
+                          : <div className="text-cream/40 text-xs my-0.5">versus</div>}
                         <div className="flex items-center gap-2"><FlagImg emoji={m.flag_b} team={m.team_b} size={17} /> {m.team_b}</div>
                       </div>
                       <KickClock m={m} />
@@ -618,6 +757,8 @@ function MatchesScreen({ plans, onOpenMatch, flag }) {
 function MatchScreen({ match, plans, onBack, onOpenPlan, onCreate }) {
   const matchPlans = plans.filter((p) => p.match_id === match.id).sort((a, b) => b.participant_ids.length - a.participant_ids.length)
   const [extras, setExtras] = useState(null)
+  const [showPoster, setShowPoster] = useState(false)
+  const topPlan = matchPlans[0] || null
   useEffect(() => {
     let alive = true
     setExtras(null)
@@ -635,7 +776,13 @@ function MatchScreen({ match, plans, onBack, onOpenPlan, onCreate }) {
           </div>
           <div className="text-[11px] uppercase tracking-[0.18em] text-cream/80 mt-2"><MatchStatusLine m={match} /></div>
           {match.venue && <div className="text-[11px] text-cream/55 mt-1">📍 {match.venue}</div>}
-          <div className="mt-3"><TvChips tv={match.tv} /></div>
+          <div className="mt-3 flex items-center gap-2 flex-wrap justify-center">
+            <TvChips tv={match.tv} />
+            <button onClick={() => setShowPoster(true)}
+              className="inline-flex items-center gap-1 rounded-full bg-lime text-night font-bold uppercase tracking-wide px-3 py-1 text-[10px] active:scale-95 transition">
+              <span aria-hidden>⬆</span> Share
+            </button>
+          </div>
         </div>
       </div>
       <div className="px-5 pt-5">
@@ -682,6 +829,48 @@ function MatchScreen({ match, plans, onBack, onOpenPlan, onCreate }) {
       </div>
 
       <StickyBar><Pill onClick={onCreate} className="w-full">+ Start a watch plan</Pill></StickyBar>
+
+      {showPoster && (
+        <div
+          style={{
+            position: 'fixed', inset: 0, zIndex: 99,
+            background: 'rgba(0,0,0,0.82)',
+            display: 'flex', flexDirection: 'column',
+            alignItems: 'center', justifyContent: 'center',
+            gap: 20, padding: 24,
+          }}
+          onClick={() => setShowPoster(false)}
+        >
+          <PosterCard
+            match={match}
+            plan={topPlan}
+            planId={topPlan?.id}
+            width={300}
+          />
+          <button
+            className="rounded-full bg-lime text-night font-bold uppercase tracking-widest py-3.5 px-7 active:scale-[0.98] transition"
+            onClick={async (e) => {
+              e.stopPropagation()
+              const url = `/api/poster/${match.id}.png${topPlan ? `?planId=${topPlan.id}` : ''}`
+              if (navigator.share) {
+                try {
+                  await navigator.share({ url: `https://rally.futbol${url}`, title: `${match.team_a} vs ${match.team_b}` })
+                } catch { /* user cancelled */ }
+              } else {
+                window.open(url, '_blank')
+              }
+            }}
+          >
+            Download / Share
+          </button>
+          <button
+            className="text-cream/50 text-xs uppercase tracking-widest"
+            onClick={() => setShowPoster(false)}
+          >
+            Close
+          </button>
+        </div>
+      )}
     </div>
   )
 }
