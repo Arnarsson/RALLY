@@ -34,8 +34,9 @@
 
 import { ImageResponse } from '@vercel/og'
 
-// @vercel/og (satori + JSX) runs on the Edge runtime.
-export const config = { runtime: 'edge' }
+// Node runtime: @vercel/og renders the PNG here and we stream the bytes via
+// res.send. (Edge produced a 0-byte body; Node is verified to render. No JSX in
+// this file — it uses the h() hyperscript below — so nothing needs transpiling.)
 
 // ── size ─────────────────────────────────────────────────────────────────────
 
@@ -549,25 +550,22 @@ function PosterElement({ match, planId, going, lowdownOverride, tvOverride }) {
 
 // ── handler ───────────────────────────────────────────────────────────────────
 
-export default async function handler(req) {
-  const url = new URL(req.url)
-  // Route is /api/poster/[id] → take the last path segment, strip a trailing .png
-  let id = decodeURIComponent(url.pathname.split('/').pop() || '').replace(/\.png$/i, '')
-  if (!id) return new Response('Missing match id. Usage: /api/poster/<matchId>.png', { status: 400 })
+export default async function handler(req, res) {
+  // Vercel passes the dynamic [id] segment as req.query.id; strip a trailing .png.
+  let id = (req.query && req.query.id) || (req.url || '').split('?')[0].split('/').pop() || ''
+  id = decodeURIComponent(id).replace(/\.png$/i, '')
+  if (!id) { res.status(400).send('Missing match id. Usage: /api/poster/<matchId>.png'); return }
 
-  const sp = url.searchParams
-  const planId = sp.get('planId')
-  const going = sp.get('going')
-  const lowdownParam = sp.get('lowdown')
-  const tvParam = sp.get('tv')
+  const q = req.query || {}
+  const planId = q.planId || null
+  const going = q.going || null
+  const lowdownParam = q.lowdown || null
+  const tvParam = q.tv || null
 
   let match
-  try {
-    match = await getMatch(id)
-  } catch (err) {
-    return new Response('Data fetch failed: ' + err.message, { status: 500 })
-  }
-  if (!match) return new Response(`Match not found: ${id}`, { status: 404 })
+  try { match = await getMatch(id) }
+  catch (err) { res.status(500).send('Data fetch failed: ' + err.message); return }
+  if (!match) { res.status(404).send(`Match not found: ${id}`); return }
 
   try { await loadFonts() } catch (err) { console.warn('Font load warning:', err.message) }
 
@@ -575,17 +573,17 @@ export default async function handler(req) {
   if (fontArchivoBlack) fonts.push({ name: 'Archivo Black', data: fontArchivoBlack, weight: 400, style: 'normal' })
   if (fontInstrumentSerifItalic) fonts.push({ name: 'Instrument Serif', data: fontInstrumentSerifItalic, weight: 400, style: 'italic' })
 
-  // ImageResponse IS a web Response — return it directly (edge runtime).
-  return new ImageResponse(
-    PosterElement({ match, planId, going, lowdownOverride: lowdownParam, tvOverride: tvParam }),
-    {
-      width: W,
-      height: H,
-      fonts,
-      headers: {
-        'Cache-Control': 'public, max-age=3600, s-maxage=3600, stale-while-revalidate=86400',
-        'X-Rally-Match': id,
-      },
-    },
-  )
+  try {
+    const ir = new ImageResponse(
+      PosterElement({ match, planId, going, lowdownOverride: lowdownParam, tvOverride: tvParam }),
+      { width: W, height: H, fonts },
+    )
+    const buf = Buffer.from(await ir.arrayBuffer())
+    res.setHeader('Content-Type', 'image/png')
+    res.setHeader('Cache-Control', 'public, max-age=3600, s-maxage=3600, stale-while-revalidate=86400')
+    res.setHeader('X-Rally-Match', id)
+    res.status(200).send(buf)
+  } catch (err) {
+    res.status(500).send('Render failed: ' + (err && err.message))
+  }
 }
