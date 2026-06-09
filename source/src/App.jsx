@@ -6,6 +6,7 @@ import {
   PLANS as SEED_PLANS,
   OUTFITS,
 } from './data/mockData.js'
+import { OUTFIT_IMG } from './data/outfitImages.js'
 
 // ===========================================================================
 // RALLY — editorial football-culture design system, DARK (white on black).
@@ -791,10 +792,17 @@ function CreateScreen({ match, onBack, onCreate }) {
 
 // --- outfit (Style for the game · Miinto-ready) ----------------------------
 function OutfitScreen() {
+  const looks = [
+    { img: OUTFIT_IMG.women, who: 'Women', title: 'Matchday looks', price: 'fr. 749 kr' },
+    { img: OUTFIT_IMG.men, who: 'Men', title: 'Matchday looks', price: 'fr. 899 kr' },
+  ]
   return (
     <div className="pb-6">
       <header className="relative mb-5">
-        <Img seed="rally-outfit-hero-fashion" h="h-[300px]" />
+        <div className="relative h-[300px] overflow-hidden bg-night">
+          <img src={OUTFIT_IMG.hero} alt="" className="absolute inset-0 w-full h-full object-cover" />
+          <div className="absolute inset-0 bg-gradient-to-t from-night via-night/30 to-night/10" />
+        </div>
         <div className="absolute inset-0 flex flex-col justify-between p-5">
           <div className="flex items-center justify-between text-[11px] font-bold tracking-[0.18em] uppercase text-cream/80">
             <span>Style for the game</span><span>Unisex</span>
@@ -808,9 +816,10 @@ function OutfitScreen() {
       <div className="px-5">
         <div className="text-[11px] font-bold tracking-[0.18em] uppercase text-cream/40 mb-3">The looks</div>
         <div className="grid grid-cols-2 gap-3">
-          {OUTFITS.looks.map((l) => (
-            <button key={l.id} className="relative rounded-2xl overflow-hidden text-left active:scale-[0.98] transition">
-              <Img seed={l.seed} h="h-56" />
+          {looks.map((l) => (
+            <button key={l.who} className="relative rounded-2xl overflow-hidden text-left active:scale-[0.98] transition h-56">
+              <img src={l.img} alt="" className="absolute inset-0 w-full h-full object-cover" />
+              <div className="absolute inset-0 bg-gradient-to-t from-night/90 via-night/15 to-transparent" />
               <div className="absolute inset-0 flex flex-col justify-end p-3">
                 <div className="text-[9px] font-bold uppercase tracking-wide text-lime">{l.who}</div>
                 <div className="font-display uppercase text-lg leading-none drop-shadow">{l.title}</div>
@@ -821,20 +830,14 @@ function OutfitScreen() {
         </div>
 
         <div className="text-[11px] font-bold tracking-[0.18em] uppercase text-cream/40 mt-6 mb-3">Essentials</div>
-        <div className="grid grid-cols-3 gap-3">
-          {OUTFITS.essentials.map((e) => (
-            <button key={e.id} className="rounded-2xl overflow-hidden bg-panel border border-line text-left active:scale-95 transition">
-              <div className="relative">
-                <Img seed={e.seed} h="h-24" gradient={false} />
-                <div className="absolute inset-0 flex items-center justify-center text-3xl drop-shadow">{e.emoji}</div>
-              </div>
-              <div className="p-2">
-                <div className="text-xs font-bold truncate">{e.name}</div>
-                <div className="text-[11px] text-cream/50">{e.price}</div>
-              </div>
-            </button>
-          ))}
-        </div>
+        <button className="relative w-full rounded-2xl overflow-hidden text-left active:scale-[0.98] transition">
+          <img src={OUTFIT_IMG.essentials} alt="" className="w-full h-44 object-cover" />
+          <div className="absolute inset-0 bg-gradient-to-t from-night/85 via-night/10 to-transparent" />
+          <div className="absolute bottom-3 left-3">
+            <div className="font-display uppercase text-lg leading-none drop-shadow">Jerseys · caps · bags</div>
+            <div className="text-xs text-cream/80 mt-1">from 199 kr</div>
+          </div>
+        </button>
 
         <div className="rounded-2xl border-2 border-line p-4 mt-6 text-center">
           <div className="text-[11px] uppercase tracking-[0.18em] text-cream/50">Shop the looks · powered by</div>

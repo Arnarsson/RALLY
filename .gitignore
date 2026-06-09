@@ -19,3 +19,7 @@ source/dist/
 
 # scratch
 .smoke/
+
+# raw brand assets (not for public repo)
+WhatsApp Image*.jpeg
+*.jpeg
