@@ -79,9 +79,9 @@ async function fetchGoogleFont(family, weight, italic) {
 
   const cssRes = await fetch(cssUrl, {
     headers: {
-      // Request a woff2 compatible format — satori can handle woff2 and ttf.
-      'User-Agent':
-        'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+      // An OLD User-Agent makes Google Fonts serve TTF, not woff2 — satori
+      // ("Unsupported OpenType signature wOF2") can only parse ttf/otf/woff.
+      'User-Agent': 'Mozilla/4.0',
     },
   })
   const css = await cssRes.text()
