@@ -682,52 +682,32 @@ function TabButton({ active, onClick, label }) {
 
 // --- splash ----------------------------------------------------------------
 function SplashScreen({ onSkip }) {
-  // "The gathering" — Denmark, Euro ’92. The room as hero: a whole nation
-  // converging, RALLY lit as the one bright node over the crowd. Matches the
-  // approved A+C rebrand splash mockup.
+  // The room as hero: the Denmark Euro ’92 crowd, full-bleed grainy B&W, RALLY lit
+  // lime on top. A whole nation watching together — "we rally for it."
   return (
-    <button
-      onClick={onSkip}
-      className="relative h-full w-full text-cream overflow-hidden block text-left"
-      style={{ background: 'radial-gradient(125% 80% at 50% 36%, #15120d 0%, #0a0908 62%)' }}
-    >
-      {/* full-bleed grainy B&W crowd, masked to a soft vignette */}
+    <button onClick={onSkip} className="relative h-full w-full flex flex-col items-center justify-center bg-night text-cream text-center px-8 overflow-hidden">
       <div
         className="absolute inset-0"
         style={{
           backgroundImage: `url(${SPLASH_IMG})`,
           backgroundSize: 'cover',
           backgroundPosition: 'center 28%',
-          filter: 'grayscale(1) contrast(1.12) brightness(0.6)',
-          opacity: 0.46,
-          WebkitMaskImage: 'radial-gradient(125% 72% at 50% 33%, #000 0%, #000 36%, transparent 74%)',
-          maskImage: 'radial-gradient(125% 72% at 50% 33%, #000 0%, #000 36%, transparent 74%)',
+          filter: 'grayscale(1) contrast(1.1) brightness(0.62)',
         }}
       />
-      <div className="absolute inset-0 grain opacity-[0.07] mix-blend-overlay" />
+      {/* gentle top/bottom scrims so the status bar + footer stay legible */}
+      <div className="absolute inset-0" style={{ background: 'linear-gradient(180deg, rgba(11,11,11,0.55) 0%, rgba(11,11,11,0.08) 24%, rgba(11,11,11,0.08) 66%, rgba(11,11,11,0.82) 100%)' }} />
+      <div className="absolute inset-0 grain opacity-[0.1] mix-blend-overlay" />
 
-      {/* the lime node: the crowd converging on one room — ringed in stillness */}
-      <div className="absolute left-1/2 top-[33%] -translate-x-1/2 -translate-y-1/2 rounded-full" style={{ width: 208, height: 208, border: '1px solid rgba(168,255,0,0.07)' }} />
-      <div className="absolute left-1/2 top-[33%] -translate-x-1/2 -translate-y-1/2 rounded-full" style={{ width: 122, height: 122, border: '1px solid rgba(168,255,0,0.16)' }} />
-      <div className="absolute left-1/2 top-[33%] -translate-x-1/2 -translate-y-1/2 rounded-full bg-lime" style={{ width: 11, height: 11, boxShadow: '0 0 26px 7px rgba(168,255,0,0.55)' }} />
-      {/* one stray ember — a fan still on their way */}
-      <div className="absolute left-[63%] top-[24%] rounded-full" style={{ width: 5, height: 5, background: '#FF4D2E', boxShadow: '0 0 12px 3px rgba(255,77,46,0.55)' }} />
-
-      {/* corner labels */}
-      <div className="absolute top-6 left-6 text-[9px] uppercase tracking-[0.22em] text-cream/30">Fig. 01 — the gathering</div>
-      <div className="absolute top-6 right-6 text-[9px] uppercase tracking-[0.22em] text-cream/30">55.6761° N · 12.5683° E</div>
-
-      {/* wordmark + promise */}
-      <div className="absolute left-0 right-0 bottom-[148px] text-center animate-pop px-6">
-        <div className="font-display text-[76px] leading-[0.9] tracking-tight text-cream">RALLY</div>
-        <div className="flourish text-[25px] leading-snug text-cream/75 mt-3">find your game.<br /><span className="text-lime">find your people.</span></div>
+      <div className="relative animate-pop -mt-6">
+        <div className="font-display text-7xl tracking-tight text-lime leading-none drop-shadow-[0_2px_24px_rgba(0,0,0,0.8)]">RALLY</div>
+        <div className="flourish text-2xl text-cream/90 mt-3 drop-shadow">Find your game.<br />Find your people.</div>
       </div>
 
-      <div className="absolute left-0 right-0 bottom-[96px] text-center text-[11px] font-bold uppercase tracking-[0.18em] text-cream/45">— don’t watch it alone —</div>
-
-      {/* CTA — tapping anywhere advances, but this is the visual affordance */}
-      <div className="absolute left-6 right-6 bottom-[42px] rounded-full bg-lime text-night text-center font-bold uppercase tracking-[0.06em] text-[13px]" style={{ padding: 15 }}>
-        Find your people →
+      <div className="absolute bottom-10 px-8">
+        <div className="font-display text-[15px] uppercase tracking-wide leading-tight text-cream/70 drop-shadow">
+          We don’t just watch the game.<br /><span className="text-lime">We rally for it.</span>
+        </div>
       </div>
     </button>
   )
