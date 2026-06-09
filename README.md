@@ -7,14 +7,13 @@
 A match-night social app — find where Copenhagen is watching tonight's game, and
 show up together. *We don't just watch the game. We rally for it.*
 
-`React + Vite + Tailwind` · mobile-first · real World Cup 2026 data
+`React + Vite + Tailwind` · `Supabase` · mobile-first · real World Cup 2026 data
 
-**[▶ Live demo — www.rally.futbol](https://www.rally.futbol)**
+**[▶ Live — www.rally.futbol](https://www.rally.futbol)**
 
 [Standalone: `RALLY — open me.html`](./RALLY%20—%20open%20me.html) ·
 [Architecture (CLAUDE.md)](./CLAUDE.md) ·
-[Roadmap](./docs/RALLY-10x-plan.md) ·
-[Backend handoff](./docs/HANDOFF-backend.md)
+[Roadmap](./docs/RALLY-10x-plan.md)
 
 </div>
 
@@ -22,51 +21,71 @@ show up together. *We don't just watch the game. We rally for it.*
 
 ## What it is
 
-A high-fidelity, fully interactive front-end prototype. The whole core loop works:
+A live, mobile-first match-night app. The whole core loop works end to end:
 
-**Tonight** (live match schedule) → **Match** (AI "lowdown", head-to-head, who's
-going) → **Plan** (join + share card) → **Create a plan** → **Outfit** (style for
-the game) → **Leaders**.
+**Tonight** (live match schedule) → **Match** (AI "lowdown", head-to-head, teams,
+who's going) → **Plan** (join + share card) → **Create a plan** → **Outfit** (style
+for the game) → **Leaders**.
 
-Social data (plans, people, venues) is mock. The football data is **real**.
+It runs on a **real Supabase backend** — schema, row-level security, and Realtime.
+Plans, "going" counts, and live scores are real and shared across devices. The
+standalone `file://` build keeps a self-contained demo mode (no backend) as a
+fallback.
 
 ## What's built
 
-- **Real fixtures** — the full 72-match World Cup 2026 group stage: Copenhagen
-  kickoff times, real venues, recent form, team colours.
-- **Live-aware match cards** — a scheduled match shows kickoff + a ticking
-  countdown; it flips to **● LIVE 67' · 2–1** when in play and **FULL TIME** after.
-  The data layer is wired; the fields go live when a backend worker feeds them.
+- **Real fixtures** — the full 72-match World Cup 2026 group stage in Supabase:
+  Copenhagen kickoff times, real venues, recent form, team colours.
+- **Live scores** — a Supabase Edge Function (`live-scores`) runs every minute on
+  `pg_cron` (guarded to match windows) and pulls scores from a **free public
+  feed**. Cards show kickoff + a ticking countdown, flip to **● LIVE 67' · 2–1**
+  when in play, then **FULL TIME** — all driven from the live table over Realtime.
+- **Persistent, shared plans** — anonymous Supabase Auth, plans and live "going"
+  counts stored in Postgres and synced across devices via Realtime.
+- **Teams panel** — a collapsible per-match panel with full **squad lists** (48
+  nations: players, positions, coach) and **all-time World Cup records** (sourced
+  from Wikipedia), both stored in Supabase.
 - **"Busiest tonight" banner** — the most-subscribed venue, which game is on
   there, and the headcount, on the Tonight screen.
 - **"The numbers" analytics panel** — on every match: a win-probability bar plus
-  both teams' recent form with points. Real model when the prediction worker has
-  run, otherwise a form-based estimate (never blank).
+  both teams' recent form with points. Real model when predictions are populated,
+  otherwise a form-based estimate (never blank).
 - **Danish TV channel + watch links** — each fixture matched to its real
   broadcaster (DR1 / TV 2 / TV 2 Sport X); the chip deep-links to DRTV / TV 2 Play
   to stream it.
 - **Match art from the teams** — national colours + flags, or for matches with
-  history a real **B&W Creative-Commons photo** of the two teams (attributed);
-  no-photo matches get a dark editorial panel, never a stock image.
+  history a real **B&W Creative-Commons photo** of the two teams (attributed,
+  synced to Supabase); no-photo matches get a dark editorial panel, never a stock
+  image.
 - **Head-to-head** — a "last met" line (or "first-ever meeting").
-- **AI "lowdown"** — a 30-second hype script per match (browser voice today;
-  ElevenLabs in production).
+- **AI "lowdown"** — a 30-second hype script per match (browser voice today).
+- **Matchday poster** — an in-app Share sheet (`PosterCard`) plus a generated
+  Open Graph image at `/api/poster/[id].png` (`@vercel/og`) for social shares.
+- **Floodlight theme** — a neon-on-deep-ink look (lime / pink / violet / cyan,
+  team-colour card spines, halftone grain). One-line toggle in `src/theme.js`
+  (`ACTIVE_THEME`) flips back to the `classic` look.
 - **Outfit** — the real brand-board shoot (hero, Women/Men looks, essentials),
   shopping via Miinto. **Leaders** + **Share card** for sponsorship and the viral
   loop.
 - **Mobile-first & fast** — 48 flags bundled as data URIs (zero flag requests),
-  momentum scroll, single-file standalone.
+  momentum scroll, single-file standalone fallback.
 
-## Data pipeline (`source/scripts/`)
+## Backend (Supabase)
 
-| Script | Command | Source | Writes |
-|---|---|---|---|
-| Fixtures + live status | `npm run fixtures` | football API (see decisions) | `fixtures.json` schedule, venues, form, colours, odds→win-prob, live fields |
-| Danish TV channels | `npm run channels` | published DR/TV 2 guide | `fixtures.json` `.tv` — matched by **team pair** |
-| Archive photos | `npm run archive` | Wikimedia Commons API | `fixtures.json` `.archive` — commercial-OK licences only |
+Live on Supabase: schema, row-level security, and Realtime. Tables: `matches`,
+`venues`, `plans`, `plan_participants`, `profiles`, `predictions`, `squads`,
+`team_records`. Scheduled work runs as Supabase **Edge Functions** on `pg_cron`:
 
-The UI only ever reads one shape (`mockData.js`). Swapping the data source is a
-change in `scripts/` — never in the UI. That adapter boundary is the whole design.
+| Function | Schedule | Does |
+|---|---|---|
+| `live-scores` | every minute (match-window guarded) | pulls live scores from a free public feed → `matches` |
+| `sync-fixtures` | daily | refreshes the schedule |
+| `sync-squads` | daily | refreshes squad lists |
+
+The seed/build scripts in `source/scripts/` normalise external sources into the
+same shape (`fetch-fixtures`, `fetch-channels`, `fetch-archive`). The UI only ever
+reads one shape — whether it comes from Supabase or, in fallback demo mode, from
+generated JSON. That adapter boundary is the whole design.
 
 ## Run / develop
 
@@ -81,12 +100,13 @@ Then copy `dist/index.html` to `../RALLY — open me.html` to refresh the standa
 
 ## Key decisions
 
-- **European data over ESPN.** The prototype was seeded from ESPN's public
-  endpoint, but ESPN is US-only (US broadcasters, no Danish channels, no support).
-  We're migrating to **football-data.org** (free, European, World Cup code `WC` —
-  the API behind `football-cli`) for schedule, and **API-Football** for live
-  events/lineups/odds every 15s. `openfootball/worldcup.json` is the keyless
-  fallback. See `docs/RALLY-10x-plan.md`.
+- **Live scores from a free public feed.** The `live-scores` Edge Function reads a
+  free public scoreboard feed — no key, no quota — and only during match windows
+  (a `pg_cron` job guarded so it isn't hammering the feed off-hours). The feed URL
+  lives in a Supabase secret, never in the repo.
+- **Anonymous auth first.** Supabase anonymous Auth lets anyone join and create
+  plans with zero friction; the `profiles` row can be upgraded later. Plans and
+  "going" counts persist in Postgres and sync over Realtime.
 - **Channels matched by team pair, not time.** Two teams meet once in the group
   stage, so the pair is a unique key — no fragile kickoff-time math, and it
   self-heals if DR/TV 2 move a match.
@@ -111,26 +131,24 @@ Then copy `dist/index.html` to `../RALLY — open me.html` to refresh the standa
 
 ## Tech
 
-React 18 · Vite 5 · Tailwind 3 · `vite-plugin-singlefile`. No backend yet —
-everything is mock or generated JSON.
+React 18 · Vite 5 · Tailwind 3 · `vite-plugin-singlefile` (front-end) ·
+**Supabase** (Postgres + RLS + Realtime + Edge Functions + `pg_cron`) ·
+`@vercel/og` for the poster image. Front-end on Vercel (project `rally`,
+www.rally.futbol); backend on Supabase.
 
 ## Data sources & licensing
 
-- Fixtures/live: football-data.org + API-Football (keys required).
+- Live scores: a free public scoreboard feed (no key) via the `live-scores` Edge
+  Function.
 - TV channels: published DR / TV 2 World Cup schedule.
+- Squads + records: openly published listings (records sourced from Wikipedia).
 - Archive photos: Wikimedia Commons, commercial-use licences only — credits in
   `docs/ATTRIBUTION.md`.
 - Not affiliated with FIFA; no FIFA / "World Cup" marks used in the brand.
 
-## Going live
-
-The static front-end is **already deployed on Vercel** (www.rally.futbol). The
-remaining work — Supabase schema, RLS, Realtime, the data + prediction workers,
-the front-end port, and auth — is a complete build plan in
-`docs/HANDOFF-backend.md`, with a definition-of-done checklist. Deploy into the
-**existing** Vercel project (`rally`), don't create a new one.
-
 ## Status
 
-Research / prototype — built to feel the product and validate the flow before the
-backend.
+**Live.** Real Supabase backend (schema, RLS, Realtime, Edge Functions on
+`pg_cron`) behind www.rally.futbol; 72 real WC2026 fixtures with live scores,
+persistent shared plans, squads, and all-time records. The standalone `file://`
+build keeps a no-backend demo mode as a fallback.

@@ -1,18 +1,30 @@
-# Kickoff — MVP prototype
+# RALLY — match-night app
 
 *Find where Copenhagen is watching tonight's match, and join them.*
 
-A mobile-first clickable prototype of the core loop. Social data (plans, people,
-venues) is still mock, but **fixtures are now real**: the full 2026 World Cup
-schedule is pulled live from a free public feed.
+A mobile-first app for the core loop, **live on a real Supabase backend**. The
+full 2026 World Cup schedule, live scores, persistent plans, and shared "going"
+counts are all real and synced across devices via Realtime. The standalone
+`file://` build keeps a self-contained demo mode (no backend) as a fallback.
 
 ---
 
-## Live fixtures (real data)
+## Backend (Supabase)
 
-`src/data/fixtures.json` holds the real WC2026 schedule — Copenhagen kickoff
-times, venues, recent form, and live-status fields (score + minute that
-auto-fill once a match kicks off). Refresh it any time:
+Schema, row-level security, and Realtime are live on Supabase. Tables: `matches`,
+`venues`, `plans`, `plan_participants`, `profiles`, `predictions`, `squads`,
+`team_records`. Scheduled work runs as **Edge Functions** on `pg_cron`:
+
+- `live-scores` — every minute (guarded to match windows), pulls live scores from
+  a **free public feed** (no key, no scraping) into `matches`.
+- `sync-fixtures` — daily schedule refresh.
+- `sync-squads` — daily squad refresh.
+
+The feed URL lives in a Supabase secret, never in the repo. The app reads the
+tables over Realtime; the seed/build scripts below produce the same shape so the
+UI never changes.
+
+## Build / seed scripts (`src/data/fixtures.json` shape)
 
 ```bash
 npm run fixtures                       # whole group stage
@@ -21,14 +33,8 @@ npm run channels                       # Danish TV channel per match (DR/TV2)
 npm run archive                        # CC/PD archive photo per match (Commons)
 ```
 
-Source: a free public scoreboard feed — no key, no scraping. The hand-authored
-editorial matches (commentary, fun facts, plans) are merged on top and the rest
-of the real schedule is appended automatically.
-
-**Production path:** a Supabase Edge Function on a `pg_cron` schedule refreshes
-the feed during live windows and writes into Supabase. The app just reads the
-table — same JSON, same shape. The feed URL lives in a Supabase secret
-(`LIVE_FEED_URL`), never in the repo.
+These normalise external sources into our shape and back the fallback demo mode;
+the hand-authored editorial matches are merged on top.
 
 ---
 
@@ -51,34 +57,32 @@ On a laptop it renders inside a phone frame automatically.
 
 ---
 
-## What's in the demo
+## What's in the app
 
-The whole core loop works, with realistic Copenhagen data:
+The whole core loop works, with real Copenhagen data:
 
-1. **Tonight** — today's & upcoming World Cup matches, your team (Denmark) featured, live "X going" counts.
-2. **Match → spots** — every venue with a plan: vibe, who's going, headcount.
-3. **Plan detail** — host, note, the actual people going, **Join**, **Share**.
+1. **Tonight** — today's & upcoming World Cup matches, your team (Denmark) featured, live "X going" counts (shared across devices via Realtime).
+2. **Match → spots** — every venue with a plan: vibe, who's going, headcount. Plus a collapsible **Teams** panel (squad lists + all-time World Cup records).
+3. **Plan detail** — host, note, the people going, **Join**, **Share**. Backed by Supabase + anonymous Auth, so plans persist.
 4. **Create a plan** — pick venue, time, vibe, note → instantly live + shareable.
-5. **Share card** — the growth engine: a branded card "I'm watching X at [bar], join us" for WhatsApp/iMessage/IG.
+5. **Share card / poster** — the growth engine: an in-app Share sheet (`PosterCard`) and a generated Open Graph image (`/api/poster/[id].png`, `@vercel/og`) for WhatsApp/iMessage/IG.
 6. **Leaders** — the simple sponsorship layer: 3 recognition categories, Unisport-branded. No points economy.
 
-Everything is interactive — joining, creating, and sharing all update live in the session.
+Joining, creating, and live scores all update live and persist.
 
 ---
 
-## How this maps to the real build
+## Theme
 
-The mock data in `src/data/mockData.js` is shaped like the Supabase schema from
-your spec (`users`, `venues`, `matches`, `plans`, `plan_participants`). When we
-go real, those arrays become Supabase queries and the screens shouldn't need to
-change much.
+`src/theme.js` exposes a one-line `ACTIVE_THEME` toggle: **`floodlight`** (default
+— neon-on-deep-ink: lime / pink / violet / cyan, team-colour card spines, halftone
+grain) or **`classic`** (the original lime-on-ink look).
 
-**Suggested next steps (post-pitch):**
-1. Supabase project + the schema (already drafted in your notes).
-2. Seed 20–50 real Copenhagen venues.
-3. Wire auth (phone or Google) + real join/create.
-4. Real share links that deep-link into a plan.
-5. *Then* the AI venue-scraping enrichment layer — cold-start accelerator, not MVP.
+## Deploy
+
+Front-end on Vercel (project `rally`, www.rally.futbol); backend on Supabase
+(Postgres + RLS + Realtime + Edge Functions on `pg_cron`). `hasSupabase` gates the
+backend so the standalone `file://` build still runs in demo mode with no backend.
 
 ## Stack
-React + Vite + Tailwind. One screen file (`src/App.jsx`), one data file. Deliberately tiny so it's fast to change.
+React + Vite + Tailwind, one screen file (`src/App.jsx`). Supabase for data, auth, and Realtime. Deliberately tiny so it's fast to change.
