@@ -1,17 +1,18 @@
 // ---------------------------------------------------------------------------
 // RALLY — live-scores Edge Function (Deno).
 //
-// Polls API-Football for in-play fixtures and upserts live status/score/clock
-// into `matches`. Scheduled by pg_cron every minute; each invocation polls a
-// few times ~20s apart so freshness is ~20s without a long-running host.
+// Polls a live-score feed for in-play fixtures and upserts live status/score/
+// clock into `matches`. Scheduled by pg_cron every minute; each invocation polls
+// a few times ~20s apart so freshness is ~20s without a long-running host.
 // Everything runs on Supabase — no Coolify / Fly / Vercel cron.
 //
 // Secrets (supabase secrets set ...):
-//   API_FOOTBALL_KEY   — api-sports.io key (the live data source)
+//   LIVE_FEED_URL      — default source: a free public scoreboard, no key/quota
+//   API_FOOTBALL_KEY   — OPTIONAL upgrade; used instead of the feed if present
 //   CRON_SECRET        — shared secret; pg_cron sends it as x-cron-secret
 // SUPABASE_URL + SUPABASE_SERVICE_ROLE_KEY are auto-injected by the runtime.
 //
-// Dormant until API_FOOTBALL_KEY is set: logs and exits 200, never errors.
+// Idle when no match is in window; no-op if neither source is configured.
 // ---------------------------------------------------------------------------
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SERVICE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
@@ -24,7 +25,7 @@ const CRON_SECRET = Deno.env.get("CRON_SECRET") ?? "";
 const POLLS = 3;           // polls per invocation
 const GAP_MS = 20_000;     // ~20s apart → ~40s of coverage per minute
 
-// API-Football team names → our match names (same reconciliation as worker/live.mjs)
+// Feed team names → our match names (same reconciliation as the schedule loader)
 const ALIAS: Record<string, string> = {
   "korea republic": "south korea", "czech republic": "czechia",
   "turkey": "türkiye", "cabo verde": "cape verde", "ivory coast": "ivory coast",
@@ -58,8 +59,8 @@ async function loadPairMap(): Promise<Record<string, string>> {
 }
 
 // Only spend an API call when a match is actually near/live: kickoff within the
-// last ~2.5h or the next 5min. Keeps us under API-Football's free 100/day cap
-// even with an every-minute cron (most invocations exit here, zero API cost).
+// last ~2.5h or the next 5min. Keeps polling polite (and, if the optional keyed
+// upgrade is used, well under its free daily cap) — most invocations exit here.
 async function inMatchWindow(): Promise<boolean> {
   const now = Date.now();
   const lo = new Date(now - 150 * 60_000).toISOString();

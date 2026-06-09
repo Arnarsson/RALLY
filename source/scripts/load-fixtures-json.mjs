@@ -18,7 +18,7 @@ if (!SB_URL || !KEY) { console.error('set SUPABASE_URL and SUPABASE_SERVICE_ROLE
 
 const data = JSON.parse(await readFile(new URL('../src/data/fixtures.json', import.meta.url)))
 const rows = data.fixtures.map((f) => ({
-  id: f.id, espn_id: f.espn_id ?? null,
+  id: f.id, ext_id: f.ext_id ?? null,
   team_a: f.team_a, flag_a: f.flag_a, color_a: f.color_a ?? null, form_a: f.form_a ?? null,
   team_b: f.team_b, flag_b: f.flag_b, color_b: f.color_b ?? null, form_b: f.form_b ?? null,
   kickoff_utc: f.kickoff_utc, kickoff_local: f.kickoff, day: f.day, stage: f.stage, venue: f.venue ?? null,

@@ -59,7 +59,7 @@ create table if not exists matches (
   day           text,                       -- day-group label, e.g. "THU 11 JUN"
   stage         text,
   venue         text,
-  espn_id       text,                       -- upstream id (ESPN migration aid)
+  ext_id       text,                       -- upstream provider id
   tv            jsonb,                       -- [{name, free, watch_url}]
   -- live status
   status        text default 'pre',         -- pre | in | post

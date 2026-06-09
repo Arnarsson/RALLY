@@ -28,7 +28,7 @@ const FIXTURES = new URL('../src/data/fixtures.json', import.meta.url)
 const API = 'https://commons.wikimedia.org/w/api.php'
 const UA = 'rally-archive/1.0 (https://rally.app; dev@rally.app)'
 
-// Search aliases where the ESPN name isn't how Commons files are titled.
+// Search aliases where the source name isn't how Commons files are titled.
 const ALIAS = {
   'USA': 'United States', 'Bosnia-Herz': 'Bosnia and Herzegovina', 'Türkiye': 'Turkey',
   'Congo DR': 'DR Congo', 'Czechia': 'Czech Republic', 'Curaçao': 'Curacao',

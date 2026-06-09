@@ -1,5 +1,5 @@
 {
-  "source": "ESPN site API (fifa.world/scoreboard)",
+  "source": "live schedule feed",
   "league": "fifa.world",
   "fetched_at": "2026-06-09T06:15:34.344Z",
   "timezone": "Europe/Copenhagen",
@@ -7,7 +7,7 @@
   "fixtures": [
     {
       "id": "wc_760415",
-      "espn_id": "760415",
+      "ext_id": "760415",
       "team_a": "Mexico",
       "flag_a": "🇲🇽",
       "color_a": "#006847",
@@ -44,7 +44,7 @@
     },
     {
       "id": "wc_760414",
-      "espn_id": "760414",
+      "ext_id": "760414",
       "team_a": "South Korea",
       "flag_a": "🇰🇷",
       "color_a": "#ce2028",
@@ -81,7 +81,7 @@
     },
     {
       "id": "wc_760416",
-      "espn_id": "760416",
+      "ext_id": "760416",
       "team_a": "Canada",
       "flag_a": "🇨🇦",
       "color_a": "#ed2224",
@@ -118,7 +118,7 @@
     },
     {
       "id": "wc_760417",
-      "espn_id": "760417",
+      "ext_id": "760417",
       "team_a": "USA",
       "flag_a": "🇺🇸",
       "color_a": "#213065",
@@ -155,7 +155,7 @@
     },
     {
       "id": "wc_760420",
-      "espn_id": "760420",
+      "ext_id": "760420",
       "team_a": "Qatar",
       "flag_a": "🇶🇦",
       "color_a": "#691a40",
@@ -192,7 +192,7 @@
     },
     {
       "id": "wc_760419",
-      "espn_id": "760419",
+      "ext_id": "760419",
       "team_a": "Brazil",
       "flag_a": "🇧🇷",
       "color_a": "#fee000",
@@ -229,7 +229,7 @@
     },
     {
       "id": "wc_760418",
-      "espn_id": "760418",
+      "ext_id": "760418",
       "team_a": "Haiti",
       "flag_a": "🇭🇹",
       "color_a": "#0033a0",
@@ -266,7 +266,7 @@
     },
     {
       "id": "wc_760421",
-      "espn_id": "760421",
+      "ext_id": "760421",
       "team_a": "Australia",
       "flag_a": "🇦🇺",
       "color_a": "#2a2d7c",
@@ -303,7 +303,7 @@
     },
     {
       "id": "wc_760422",
-      "espn_id": "760422",
+      "ext_id": "760422",
       "team_a": "Germany",
       "flag_a": "🇩🇪",
       "color_a": "#000000",
@@ -340,7 +340,7 @@
     },
     {
       "id": "wc_760425",
-      "espn_id": "760425",
+      "ext_id": "760425",
       "team_a": "Netherlands",
       "flag_a": "🇳🇱",
       "color_a": "#fb5d00",
@@ -377,7 +377,7 @@
     },
     {
       "id": "wc_760423",
-      "espn_id": "760423",
+      "ext_id": "760423",
       "team_a": "Ivory Coast",
       "flag_a": "🇨🇮",
       "color_a": "#d48c00",
@@ -414,7 +414,7 @@
     },
     {
       "id": "wc_760424",
-      "espn_id": "760424",
+      "ext_id": "760424",
       "team_a": "Sweden",
       "flag_a": "🇸🇪",
       "color_a": "#fecb00",
@@ -451,7 +451,7 @@
     },
     {
       "id": "wc_760428",
-      "espn_id": "760428",
+      "ext_id": "760428",
       "team_a": "Spain",
       "flag_a": "🇪🇸",
       "color_a": "#c60b1e",
@@ -488,7 +488,7 @@
     },
     {
       "id": "wc_760426",
-      "espn_id": "760426",
+      "ext_id": "760426",
       "team_a": "Belgium",
       "flag_a": "🇧🇪",
       "color_a": "#ef3340",
@@ -525,7 +525,7 @@
     },
     {
       "id": "wc_760429",
-      "espn_id": "760429",
+      "ext_id": "760429",
       "team_a": "Saudi Arabia",
       "flag_a": "🇸🇦",
       "color_a": "#dddddd",
@@ -562,7 +562,7 @@
     },
     {
       "id": "wc_760427",
-      "espn_id": "760427",
+      "ext_id": "760427",
       "team_a": "Iran",
       "flag_a": "🇮🇷",
       "color_a": "#da0000",
@@ -599,7 +599,7 @@
     },
     {
       "id": "wc_760432",
-      "espn_id": "760432",
+      "ext_id": "760432",
       "team_a": "France",
       "flag_a": "🇫🇷",
       "color_a": "#0c2fff",
@@ -636,7 +636,7 @@
     },
     {
       "id": "wc_760430",
-      "espn_id": "760430",
+      "ext_id": "760430",
       "team_a": "Iraq",
       "flag_a": "🏴",
       "color_a": "#00843d",
@@ -673,7 +673,7 @@
     },
     {
       "id": "wc_760433",
-      "espn_id": "760433",
+      "ext_id": "760433",
       "team_a": "Argentina",
       "flag_a": "🇦🇷",
       "color_a": "#74acdf",
@@ -710,7 +710,7 @@
     },
     {
       "id": "wc_760431",
-      "espn_id": "760431",
+      "ext_id": "760431",
       "team_a": "Austria",
       "flag_a": "🏴",
       "color_a": "#d72b2c",
@@ -747,7 +747,7 @@
     },
     {
       "id": "wc_760435",
-      "espn_id": "760435",
+      "ext_id": "760435",
       "team_a": "Portugal",
       "flag_a": "🇵🇹",
       "color_a": "#da291c",
@@ -784,7 +784,7 @@
     },
     {
       "id": "wc_760437",
-      "espn_id": "760437",
+      "ext_id": "760437",
       "team_a": "England",
       "flag_a": "🏴",
       "color_a": "#ffffff",
@@ -821,7 +821,7 @@
     },
     {
       "id": "wc_760434",
-      "espn_id": "760434",
+      "ext_id": "760434",
       "team_a": "Ghana",
       "flag_a": "🇬🇭",
       "color_a": "#ce2931",
@@ -858,7 +858,7 @@
     },
     {
       "id": "wc_760436",
-      "espn_id": "760436",
+      "ext_id": "760436",
       "team_a": "Uzbekistan",
       "flag_a": "🇺🇿",
       "color_a": "#0081d6",
@@ -895,7 +895,7 @@
     },
     {
       "id": "wc_760438",
-      "espn_id": "760438",
+      "ext_id": "760438",
       "team_a": "Czechia",
       "flag_a": "🇨🇿",
       "color_a": "#d7141a",
@@ -932,7 +932,7 @@
     },
     {
       "id": "wc_760439",
-      "espn_id": "760439",
+      "ext_id": "760439",
       "team_a": "Switzerland",
       "flag_a": "🇨🇭",
       "color_a": "#d72b2c",
@@ -969,7 +969,7 @@
     },
     {
       "id": "wc_760440",
-      "espn_id": "760440",
+      "ext_id": "760440",
       "team_a": "Canada",
       "flag_a": "🇨🇦",
       "color_a": "#ed2224",
@@ -1006,7 +1006,7 @@
     },
     {
       "id": "wc_760441",
-      "espn_id": "760441",
+      "ext_id": "760441",
       "team_a": "Mexico",
       "flag_a": "🇲🇽",
       "color_a": "#006847",
@@ -1043,7 +1043,7 @@
     },
     {
       "id": "wc_760442",
-      "espn_id": "760442",
+      "ext_id": "760442",
       "team_a": "USA",
       "flag_a": "🇺🇸",
       "color_a": "#213065",
@@ -1080,7 +1080,7 @@
     },
     {
       "id": "wc_760445",
-      "espn_id": "760445",
+      "ext_id": "760445",
       "team_a": "Scotland",
       "flag_a": "🏴",
       "color_a": "#1a2d69",
@@ -1117,7 +1117,7 @@
     },
     {
       "id": "wc_760444",
-      "espn_id": "760444",
+      "ext_id": "760444",
       "team_a": "Brazil",
       "flag_a": "🇧🇷",
       "color_a": "#fee000",
@@ -1154,7 +1154,7 @@
     },
     {
       "id": "wc_760443",
-      "espn_id": "760443",
+      "ext_id": "760443",
       "team_a": "Türkiye",
       "flag_a": "🇹🇷",
       "color_a": "#ffffff",
@@ -1191,7 +1191,7 @@
     },
     {
       "id": "wc_760447",
-      "espn_id": "760447",
+      "ext_id": "760447",
       "team_a": "Netherlands",
       "flag_a": "🇳🇱",
       "color_a": "#fb5d00",
@@ -1228,7 +1228,7 @@
     },
     {
       "id": "wc_760448",
-      "espn_id": "760448",
+      "ext_id": "760448",
       "team_a": "Germany",
       "flag_a": "🇩🇪",
       "color_a": "#000000",
@@ -1265,7 +1265,7 @@
     },
     {
       "id": "wc_760446",
-      "espn_id": "760446",
+      "ext_id": "760446",
       "team_a": "Ecuador",
       "flag_a": "🇪🇨",
       "color_a": "#ffdd00",
@@ -1302,7 +1302,7 @@
     },
     {
       "id": "wc_760449",
-      "espn_id": "760449",
+      "ext_id": "760449",
       "team_a": "Tunisia",
       "flag_a": "🇹🇳",
       "color_a": "#D20300",
@@ -1339,7 +1339,7 @@
     },
     {
       "id": "wc_760453",
-      "espn_id": "760453",
+      "ext_id": "760453",
       "team_a": "Spain",
       "flag_a": "🇪🇸",
       "color_a": "#c60b1e",
@@ -1376,7 +1376,7 @@
     },
     {
       "id": "wc_760451",
-      "espn_id": "760451",
+      "ext_id": "760451",
       "team_a": "Belgium",
       "flag_a": "🇧🇪",
       "color_a": "#ef3340",
@@ -1413,7 +1413,7 @@
     },
     {
       "id": "wc_760450",
-      "espn_id": "760450",
+      "ext_id": "760450",
       "team_a": "Uruguay",
       "flag_a": "🇺🇾",
       "color_a": "#003da5",
@@ -1450,7 +1450,7 @@
     },
     {
       "id": "wc_760452",
-      "espn_id": "760452",
+      "ext_id": "760452",
       "team_a": "New Zealand",
       "flag_a": "🇳🇿",
       "color_a": "#273476",
@@ -1487,7 +1487,7 @@
     },
     {
       "id": "wc_760456",
-      "espn_id": "760456",
+      "ext_id": "760456",
       "team_a": "Argentina",
       "flag_a": "🇦🇷",
       "color_a": "#74acdf",
@@ -1524,7 +1524,7 @@
     },
     {
       "id": "wc_760457",
-      "espn_id": "760457",
+      "ext_id": "760457",
       "team_a": "France",
       "flag_a": "🇫🇷",
       "color_a": "#0c2fff",
@@ -1561,7 +1561,7 @@
     },
     {
       "id": "wc_760454",
-      "espn_id": "760454",
+      "ext_id": "760454",
       "team_a": "Norway",
       "flag_a": "🇳🇴",
       "color_a": "#ef2b2d",
@@ -1598,7 +1598,7 @@
     },
     {
       "id": "wc_760455",
-      "espn_id": "760455",
+      "ext_id": "760455",
       "team_a": "Jordan",
       "flag_a": "🇯🇴",
       "color_a": "#E70000",
@@ -1635,7 +1635,7 @@
     },
     {
       "id": "wc_760461",
-      "espn_id": "760461",
+      "ext_id": "760461",
       "team_a": "Portugal",
       "flag_a": "🇵🇹",
       "color_a": "#da291c",
@@ -1672,7 +1672,7 @@
     },
     {
       "id": "wc_760458",
-      "espn_id": "760458",
+      "ext_id": "760458",
       "team_a": "England",
       "flag_a": "🏴",
       "color_a": "#ffffff",
@@ -1709,7 +1709,7 @@
     },
     {
       "id": "wc_760460",
-      "espn_id": "760460",
+      "ext_id": "760460",
       "team_a": "Panama",
       "flag_a": "🇵🇦",
       "color_a": "#d21034",
@@ -1746,7 +1746,7 @@
     },
     {
       "id": "wc_760459",
-      "espn_id": "760459",
+      "ext_id": "760459",
       "team_a": "Colombia",
       "flag_a": "🇨🇴",
       "color_a": "#fbd632",
@@ -1783,7 +1783,7 @@
     },
     {
       "id": "wc_760462",
-      "espn_id": "760462",
+      "ext_id": "760462",
       "team_a": "Bosnia-Herz",
       "flag_a": "🇧🇦",
       "color_a": "#112855",
@@ -1820,7 +1820,7 @@
     },
     {
       "id": "wc_760463",
-      "espn_id": "760463",
+      "ext_id": "760463",
       "team_a": "Switzerland",
       "flag_a": "🇨🇭",
       "color_a": "#d72b2c",
@@ -1857,7 +1857,7 @@
     },
     {
       "id": "wc_760464",
-      "espn_id": "760464",
+      "ext_id": "760464",
       "team_a": "Morocco",
       "flag_a": "🇲🇦",
       "color_a": "#009060",
@@ -1894,7 +1894,7 @@
     },
     {
       "id": "wc_760465",
-      "espn_id": "760465",
+      "ext_id": "760465",
       "team_a": "Scotland",
       "flag_a": "🏴",
       "color_a": "#1a2d69",
@@ -1931,7 +1931,7 @@
     },
     {
       "id": "wc_760467",
-      "espn_id": "760467",
+      "ext_id": "760467",
       "team_a": "Czechia",
       "flag_a": "🇨🇿",
       "color_a": "#d7141a",
@@ -1968,7 +1968,7 @@
     },
     {
       "id": "wc_760466",
-      "espn_id": "760466",
+      "ext_id": "760466",
       "team_a": "South Africa",
       "flag_a": "🇿🇦",
       "color_a": "#087d5a",
@@ -2005,7 +2005,7 @@
     },
     {
       "id": "wc_760473",
-      "espn_id": "760473",
+      "ext_id": "760473",
       "team_a": "Curaçao",
       "flag_a": "🇨🇼",
       "color_a": "#0537e4",
@@ -2042,7 +2042,7 @@
     },
     {
       "id": "wc_760468",
-      "espn_id": "760468",
+      "ext_id": "760468",
       "team_a": "Ecuador",
       "flag_a": "🇪🇨",
       "color_a": "#ffdd00",
@@ -2079,7 +2079,7 @@
     },
     {
       "id": "wc_760471",
-      "espn_id": "760471",
+      "ext_id": "760471",
       "team_a": "Japan",
       "flag_a": "🇯🇵",
       "color_a": "#ed1c24",
@@ -2116,7 +2116,7 @@
     },
     {
       "id": "wc_760472",
-      "espn_id": "760472",
+      "ext_id": "760472",
       "team_a": "Tunisia",
       "flag_a": "🇹🇳",
       "color_a": "#D20300",
@@ -2153,7 +2153,7 @@
     },
     {
       "id": "wc_760469",
-      "espn_id": "760469",
+      "ext_id": "760469",
       "team_a": "Paraguay",
       "flag_a": "🇵🇾",
       "color_a": "#ea2300",
@@ -2190,7 +2190,7 @@
     },
     {
       "id": "wc_760470",
-      "espn_id": "760470",
+      "ext_id": "760470",
       "team_a": "Türkiye",
       "flag_a": "🇹🇷",
       "color_a": "#ffffff",
@@ -2227,7 +2227,7 @@
     },
     {
       "id": "wc_760475",
-      "espn_id": "760475",
+      "ext_id": "760475",
       "team_a": "Norway",
       "flag_a": "🇳🇴",
       "color_a": "#ef2b2d",
@@ -2264,7 +2264,7 @@
     },
     {
       "id": "wc_760474",
-      "espn_id": "760474",
+      "ext_id": "760474",
       "team_a": "Senegal",
       "flag_a": "🇸🇳",
       "color_a": "#00853f",
@@ -2301,7 +2301,7 @@
     },
     {
       "id": "wc_760478",
-      "espn_id": "760478",
+      "ext_id": "760478",
       "team_a": "Cape Verde",
       "flag_a": "🇨🇻",
       "color_a": "#0000ff",
@@ -2338,7 +2338,7 @@
     },
     {
       "id": "wc_760479",
-      "espn_id": "760479",
+      "ext_id": "760479",
       "team_a": "Uruguay",
       "flag_a": "🇺🇾",
       "color_a": "#003da5",
@@ -2375,7 +2375,7 @@
     },
     {
       "id": "wc_760476",
-      "espn_id": "760476",
+      "ext_id": "760476",
       "team_a": "Egypt",
       "flag_a": "🇪🇬",
       "color_a": "#D20300",
@@ -2412,7 +2412,7 @@
     },
     {
       "id": "wc_760477",
-      "espn_id": "760477",
+      "ext_id": "760477",
       "team_a": "New Zealand",
       "flag_a": "🇳🇿",
       "color_a": "#273476",
@@ -2449,7 +2449,7 @@
     },
     {
       "id": "wc_760480",
-      "espn_id": "760480",
+      "ext_id": "760480",
       "team_a": "Croatia",
       "flag_a": "🇭🇷",
       "color_a": "#ff0000",
@@ -2486,7 +2486,7 @@
     },
     {
       "id": "wc_760485",
-      "espn_id": "760485",
+      "ext_id": "760485",
       "team_a": "Panama",
       "flag_a": "🇵🇦",
       "color_a": "#d21034",
@@ -2523,7 +2523,7 @@
     },
     {
       "id": "wc_760481",
-      "espn_id": "760481",
+      "ext_id": "760481",
       "team_a": "Colombia",
       "flag_a": "🇨🇴",
       "color_a": "#fbd632",
@@ -2560,7 +2560,7 @@
     },
     {
       "id": "wc_760482",
-      "espn_id": "760482",
+      "ext_id": "760482",
       "team_a": "Congo DR",
       "flag_a": "🏴",
       "color_a": "#418fde",
@@ -2597,7 +2597,7 @@
     },
     {
       "id": "wc_760484",
-      "espn_id": "760484",
+      "ext_id": "760484",
       "team_a": "Algeria",
       "flag_a": "🇩🇿",
       "color_a": "#5bbd19",
@@ -2634,7 +2634,7 @@
     },
     {
       "id": "wc_760483",
-      "espn_id": "760483",
+      "ext_id": "760483",
       "team_a": "Jordan",
       "flag_a": "🇯🇴",
       "color_a": "#E70000",

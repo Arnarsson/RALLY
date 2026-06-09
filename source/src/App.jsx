@@ -113,7 +113,7 @@ function TvChips({ tv, small = false }) {
   )
 }
 
-// --- live status (real ESPN data) -----------------------------------------
+// --- live status (real-time data) -----------------------------------------
 // Recent form, e.g. "WWWDD" -> coloured pips.
 const FORM_COLOR = { W: '#8ACE00', D: '#8a8a8a', L: '#FF5A1F' }
 const FORM_LABEL = { W: 'Win', D: 'Draw', L: 'Loss' }
@@ -177,7 +177,7 @@ function MatchStatusLine({ m }) {
   return <span>kickoff {m.kickoff.slice(11, 16)}</span>
 }
 
-// Match artwork built from the actual teams — national colours (from ESPN) +
+// Match artwork built from the actual teams — national colours +
 // flags. Always matches the game on screen, never a random stock photo.
 // Crisp flag images (flagcdn) from a flag emoji — sharper than emoji and
 // consistent across platforms (emoji flags don't render on Windows).

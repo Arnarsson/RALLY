@@ -4,7 +4,7 @@
 
 A mobile-first clickable prototype of the core loop. Social data (plans, people,
 venues) is still mock, but **fixtures are now real**: the full 2026 World Cup
-schedule is pulled live from ESPN's hidden API.
+schedule is pulled live from a free public feed.
 
 ---
 
@@ -21,13 +21,14 @@ npm run channels                       # Danish TV channel per match (DR/TV2)
 npm run archive                        # CC/PD archive photo per match (Commons)
 ```
 
-Source: ESPN `site.api.espn.com/.../soccer/fifa.world/scoreboard` — no key, no
-scraping. The hand-authored editorial matches (commentary, fun facts, plans)
-are merged on top and the rest of the real schedule is appended automatically.
+Source: a free public scoreboard feed — no key, no scraping. The hand-authored
+editorial matches (commentary, fun facts, plans) are merged on top and the rest
+of the real schedule is appended automatically.
 
-**Production path:** run the fetcher on a backend cron (or the `espn-pp-mcp`
-MCP server from the Printing Press `espn` CLI) every ~30s during live windows,
-writing into Supabase. The app just reads the table — same JSON, same shape.
+**Production path:** a Supabase Edge Function on a `pg_cron` schedule refreshes
+the feed during live windows and writes into Supabase. The app just reads the
+table — same JSON, same shape. The feed URL lives in a Supabase secret
+(`LIVE_FEED_URL`), never in the repo.
 
 ---
 

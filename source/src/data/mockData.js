@@ -102,7 +102,7 @@ export const OUTFITS = {
 
 // matches ---------------------------------------------------------------------
 // Hand-authored editorial cards (commentary + fun facts + plans live on these).
-// They get enriched with live ESPN data below; the rest of the real schedule
+// They get enriched with live data below; the rest of the real schedule
 // is appended automatically.
 const EDITORIAL = [
   {
@@ -183,7 +183,7 @@ function _enrich(m) {
     archive: m.archive || f.archive,
     prob_a: m.prob_a ?? fp?.a ?? null, prob_draw: m.prob_draw ?? fp?.draw ?? null,
     prob_b: m.prob_b ?? fp?.b ?? null, prob_source: m.prob_source || (fp ? 'form' : null),
-    kickoff_utc: f.kickoff_utc, espn_id: f.espn_id, day: f.day || m.day,
+    kickoff_utc: f.kickoff_utc, ext_id: f.ext_id, day: f.day || m.day,
   }
 }
 const _usedKeys = new Set(EDITORIAL.map((m) => _key(m.team_a, m.team_b)))
@@ -200,7 +200,7 @@ const _extra = LIVE_FIXTURES
       color_a: f.color_a, color_b: f.color_b, archive: f.archive,
       prob_a: fp?.a ?? null, prob_draw: fp?.draw ?? null, prob_b: fp?.b ?? null,
       prob_source: fp ? 'form' : null,
-      kickoff_utc: f.kickoff_utc, espn_id: f.espn_id,
+      kickoff_utc: f.kickoff_utc, ext_id: f.ext_id,
     }
   })
 
