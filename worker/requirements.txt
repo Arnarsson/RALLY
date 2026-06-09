@@ -1,0 +1,4 @@
+# RALLY prediction worker (predict.py)
+penaltyblog>=1.0
+supabase>=2.4
+pandas>=2.0
