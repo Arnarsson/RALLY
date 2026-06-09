@@ -33,9 +33,9 @@
 // Cache-Control is set to 1 h (social crawlers cache for up to 24 h anyway).
 
 import { ImageResponse } from '@vercel/og'
-import { createClient } from '@supabase/supabase-js'
-import { readFileSync } from 'node:fs'
-import { join } from 'node:path'
+
+// @vercel/og (satori + JSX) runs on the Edge runtime.
+export const config = { runtime: 'edge' }
 
 // ── size ─────────────────────────────────────────────────────────────────────
 
@@ -96,27 +96,19 @@ async function fetchGoogleFont(family, weight, italic) {
 
 // ── data helpers ──────────────────────────────────────────────────────────────
 
-// Load match by id. Supabase first, fixtures.json fallback.
+// Load match by id from Supabase REST (edge-compatible fetch). On prod
+// SUPABASE_URL + SUPABASE_SERVICE_ROLE_KEY are always set; returns null otherwise.
 async function getMatch(id) {
-  const supaUrl = process.env.SUPABASE_URL
-  const supaKey = process.env.SUPABASE_SERVICE_ROLE_KEY
-
-  if (supaUrl && supaKey) {
-    const sb = createClient(supaUrl, supaKey)
-    const { data, error } = await sb.from('matches').select('*').eq('id', id).single()
-    if (!error && data) return data
-    // Fall through to fixtures.json on Supabase miss (id might not be synced yet).
-  }
-
-  // Local fixtures.json — path relative to the source project root on Vercel.
-  try {
-    const raw = readFileSync(join(process.cwd(), 'src/data/fixtures.json'), 'utf8')
-    const parsed = JSON.parse(raw)
-    const fixtures = parsed.fixtures || parsed
-    return fixtures.find((f) => f.id === id || f.ext_id === id) || null
-  } catch {
-    return null
-  }
+  const url = process.env.SUPABASE_URL
+  const key = process.env.SUPABASE_SERVICE_ROLE_KEY
+  if (!url || !key) return null
+  const r = await fetch(
+    `${url}/rest/v1/matches?id=eq.${encodeURIComponent(id)}&select=*&limit=1`,
+    { headers: { apikey: key, Authorization: `Bearer ${key}` } },
+  )
+  if (!r.ok) return null
+  const rows = await r.json()
+  return Array.isArray(rows) && rows.length ? rows[0] : null
 }
 
 function safeColor(c, fallback) {
@@ -482,71 +474,49 @@ function PosterElement({ match, planId, going, lowdownOverride, tvOverride }) {
 
 // ── handler ───────────────────────────────────────────────────────────────────
 
-export default async function handler(req, res) {
-  // Extract dynamic id from the URL. On Vercel the dynamic param arrives as
-  // req.query.id when the file is named [id].png.js. Strip a trailing ".png"
-  // that might still be present if Vercel passes the raw segment.
-  let { id = '' } = req.query || {}
-  id = id.replace(/\.png$/i, '')
+export default async function handler(req) {
+  const url = new URL(req.url)
+  // Route is /api/poster/[id] → take the last path segment, strip a trailing .png
+  let id = decodeURIComponent(url.pathname.split('/').pop() || '').replace(/\.png$/i, '')
+  if (!id) return new Response('Missing match id. Usage: /api/poster/<matchId>.png', { status: 400 })
 
-  if (!id) {
-    res.status(400).json({ error: 'Missing match id. Usage: /api/poster/<matchId>.png' })
-    return
-  }
-
-  const { planId, going, lowdown: lowdownParam, tv: tvParam } = req.query || {}
+  const sp = url.searchParams
+  const planId = sp.get('planId')
+  const going = sp.get('going')
+  const lowdownParam = sp.get('lowdown')
+  const tvParam = sp.get('tv')
 
   let match
   try {
     match = await getMatch(id)
   } catch (err) {
-    res.status(500).json({ error: 'Data fetch failed', detail: err.message })
-    return
+    return new Response('Data fetch failed: ' + err.message, { status: 500 })
   }
+  if (!match) return new Response(`Match not found: ${id}`, { status: 404 })
 
-  if (!match) {
-    res.status(404).json({ error: `Match not found: ${id}` })
-    return
-  }
-
-  try {
-    await loadFonts()
-  } catch (err) {
-    // Font loading failure is non-fatal — satori will fall back to system fonts.
-    console.warn('Font load warning:', err.message)
-  }
+  try { await loadFonts() } catch (err) { console.warn('Font load warning:', err.message) }
 
   const fonts = []
-  if (fontArchivoBlack) {
-    fonts.push({ name: 'Archivo Black', data: fontArchivoBlack, weight: 400, style: 'normal' })
-  }
-  if (fontInstrumentSerifItalic) {
-    fonts.push({ name: 'Instrument Serif', data: fontInstrumentSerifItalic, weight: 400, style: 'italic' })
-  }
+  if (fontArchivoBlack) fonts.push({ name: 'Archivo Black', data: fontArchivoBlack, weight: 400, style: 'normal' })
+  if (fontInstrumentSerifItalic) fonts.push({ name: 'Instrument Serif', data: fontInstrumentSerifItalic, weight: 400, style: 'italic' })
 
-  try {
-    const imageResponse = new ImageResponse(
-      <PosterElement
-        match={match}
-        planId={planId || null}
-        going={going || null}
-        lowdownOverride={lowdownParam || null}
-        tvOverride={tvParam || null}
-      />,
-      {
-        width: W,
-        height: H,
-        fonts,
+  // ImageResponse IS a web Response — return it directly (edge runtime).
+  return new ImageResponse(
+    <PosterElement
+      match={match}
+      planId={planId}
+      going={going}
+      lowdownOverride={lowdownParam}
+      tvOverride={tvParam}
+    />,
+    {
+      width: W,
+      height: H,
+      fonts,
+      headers: {
+        'Cache-Control': 'public, max-age=3600, s-maxage=3600, stale-while-revalidate=86400',
+        'X-Rally-Match': id,
       },
-    )
-
-    // Forward headers from ImageResponse to the platform response.
-    const body = await imageResponse.arrayBuffer()
-    res.setHeader('Content-Type', 'image/png')
-    res.setHeader('Cache-Control', 'public, max-age=3600, s-maxage=3600, stale-while-revalidate=86400')
-    res.setHeader('X-Rally-Match', id)
-    res.status(200).send(Buffer.from(body))
-  } catch (err) {
-    res.status(500).json({ error: 'Render failed', detail: err.message })
-  }
+    },
+  )
 }
