@@ -559,3 +559,27 @@ create policy push_sub_select on push_subscriptions for select using (auth.uid()
 drop policy if exists push_sub_delete on push_subscriptions;
 create policy push_sub_delete on push_subscriptions for delete using (auth.uid() = user_id);
 grant select, insert, delete on push_subscriptions to anon, authenticated;
+
+-- ===========================================================================
+-- Goal alerts — a score change on `matches` POSTs to /api/push/goal (pg_net),
+-- which targets only subscribers with a plan for that match. The real
+-- x-rally-secret is injected from CRON_SECRET at apply time (never in the repo).
+-- ===========================================================================
+create extension if not exists pg_net;
+create or replace function rally_push_goal() returns trigger
+  language plpgsql security definer set search_path = public as $fn$
+declare gained int;
+begin
+  gained := (coalesce(NEW.score_a,0)+coalesce(NEW.score_b,0)) - (coalesce(OLD.score_a,0)+coalesce(OLD.score_b,0));
+  if (NEW.status = 'in' and gained > 0) or (NEW.status = 'post' and OLD.status is distinct from 'post') then
+    perform net.http_post(
+      url := 'https://rally.futbol/api/push/goal',
+      headers := jsonb_build_object('Content-Type','application/json','x-rally-secret','__CRON_SECRET__'),
+      body := jsonb_build_object('match_id',NEW.id,'team_a',NEW.team_a,'team_b',NEW.team_b,
+        'score_a',NEW.score_a,'score_b',NEW.score_b,'old_score_a',OLD.score_a,'old_score_b',OLD.score_b,
+        'clock',NEW.clock,'status',NEW.status));
+  end if;
+  return NEW;
+end; $fn$;
+drop trigger if exists trg_rally_push_goal on matches;
+create trigger trg_rally_push_goal after update on matches for each row execute function rally_push_goal();
