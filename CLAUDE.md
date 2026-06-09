@@ -166,8 +166,9 @@ Edge Function fills these in real time and Realtime pushes them to the cards.
   which emits per-plan OG/Twitter tags in **SOUL voice** (match · venue · "N
   going") with the landscape poster as the image; humans pass through untouched.
   Site-wide OG meta + the splash + the lime "gathering" mark all follow the same
-  voice/brand. The §2 referral RPC (`claim_referral`) is coded but **not yet
-  applied to live Supabase** — the discount loop is dormant until it is.
+  voice/brand. The §2 referral loop is **live**: `referrals` + `discount_codes`
+  (RLS) and the `claim_referral(p_code)` SECURITY DEFINER RPC are applied to
+  Supabase, minting one 15%-Miinto code per genuine referral.
 - **Watch links** — the TV-channel chips deep-link to where to stream:
   DR1/DR2 → DRTV, TV 2 family → TV 2 Play (broadcaster hub).
 - **Outfit** — uses the real brand-board shoot (hero couple, Women/Men looks,
