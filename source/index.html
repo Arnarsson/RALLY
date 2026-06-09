@@ -38,9 +38,19 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Archivo:wght@500;600;700;800;900&family=Instrument+Serif:ital@0;1&family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
+    <style>html,body{margin:0;background:#0B0B0B}</style>
   </head>
   <body>
-    <div id="root"></div>
+    <!-- Boot splash painted from static HTML so first paint is instant (no wait
+         for the inlined JS to parse + React to boot). createRoot().render()
+         replaces #root on mount, swapping this for the real splash. Without it,
+         #root is empty until ~3.9s on throttled mobile — FCP/LCP killer. -->
+    <div id="root">
+      <div style="position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;background:#0B0B0B;color:#F5F1E6;text-align:center;padding:0 24px">
+        <div style="font-family:'Archivo Black',system-ui,sans-serif;font-size:64px;letter-spacing:-0.02em;color:#A8FF00;line-height:1">RALLY</div>
+        <div style="font-family:'Instrument Serif',Georgia,serif;font-style:italic;font-size:22px;color:rgba(245,241,230,.9);margin-top:10px;line-height:1.25">Find your game.<br>Find your people.</div>
+      </div>
+    </div>
     <script type="module" src="/src/main.jsx"></script>
   </body>
 </html>
