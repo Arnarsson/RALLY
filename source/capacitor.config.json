@@ -2,6 +2,7 @@
   "appId": "futbol.rally.app",
   "appName": "RALLY",
   "webDir": "dist",
+  "backgroundColor": "#0b0b0b",
   "server": { "iosScheme": "https" },
-  "ios": { "contentInset": "always" }
+  "ios": { "contentInset": "always", "backgroundColor": "#0b0b0b" }
 }
