@@ -29,3 +29,10 @@ WhatsApp Image*.jpeg
 __pycache__/
 *.pyc
 worker/node_modules/
+.vercel
+
+# Content engine — generated daily packs (regenerate with `npm run social <date>`).
+# The 2026-06-11 opener pack is committed as Definition-of-Done evidence.
+social/*
+!social/2026-06-11/
+social/*/.work/

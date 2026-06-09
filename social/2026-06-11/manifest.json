@@ -1,0 +1,80 @@
+{
+  "engine": "rally-social-pack",
+  "mode": "generate-only",
+  "note": "Nothing is published. A human posts these assets by hand.",
+  "date": "2026-06-11",
+  "generated_at": "2026-06-09T12:09:38.663Z",
+  "caption_source": "template",
+  "video_provider_default": "kenburns",
+  "fixtures": [
+    {
+      "id": "wc_760415",
+      "fixture": "Mexico v South Africa",
+      "base": "mexico-south-africa",
+      "assets": {
+        "captions": {
+          "file": "mexico-south-africa.txt",
+          "status": "written"
+        },
+        "poster": {
+          "file": "mexico-south-africa.png",
+          "status": "rendered",
+          "source": "api",
+          "size": "1080x1920"
+        },
+        "video": {
+          "file": "mexico-south-africa.mp4",
+          "status": "rendered",
+          "provider": "kenburns",
+          "model": null,
+          "vo": null,
+          "cost_usd": 0,
+          "notes": [
+            "no local TTS (espeak/espeak-ng/say) — video built without VO"
+          ]
+        }
+      },
+      "captions": {
+        "source": "template",
+        "cost_usd": 0,
+        "degraded_reason": null
+      },
+      "attribution": {
+        "fixture": "Mexico v South Africa",
+        "used_in": [
+          "mexico-south-africa.png",
+          "mexico-south-africa.mp4"
+        ],
+        "credit": "Wikimedia Commons",
+        "license": "Commons (free licence)",
+        "source": "https://commons.wikimedia.org/wiki/File:FIFA_World_Cup_2006_-_ARG_vs_MEX.jpg"
+      }
+    }
+  ],
+  "cost": {
+    "caption_usd": 0,
+    "video_usd": 0,
+    "total_usd": 0,
+    "currency": "USD"
+  },
+  "attributions": [
+    {
+      "fixture": "Mexico v South Africa",
+      "used_in": [
+        "mexico-south-africa.png",
+        "mexico-south-africa.mp4"
+      ],
+      "credit": "Wikimedia Commons",
+      "license": "Commons (free licence)",
+      "source": "https://commons.wikimedia.org/wiki/File:FIFA_World_Cup_2006_-_ARG_vs_MEX.jpg"
+    }
+  ],
+  "follow_ups": [
+    "Daily cron trigger (Vercel cron / scheduled task) to run this for \"today\" and notify Sven — OUT OF SCOPE this pass."
+  ],
+  "slate_digest": {
+    "poster": "slate-digest.png",
+    "status": "rendered",
+    "fixtures": 1
+  }
+}
