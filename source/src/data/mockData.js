@@ -14,6 +14,7 @@
 
 import LIVE_DATA from './fixtures.json'
 import { supabase, hasSupabase } from '../lib/supabase.js'
+import { referralCodeFor } from './shareLinks.js'
 export { hasSupabase }
 
 // Real 2026 World Cup fixtures. In production this table is kept fresh by a
@@ -540,4 +541,68 @@ export async function matchRatings(matchId) {
     cat[r.player_id] = (cat[r.player_id] || 0) + 1
   }
   return out
+}
+
+// ===========================================================================
+// §2 — REFERRAL NUDGE → 15% MIINTO DISCOUNT
+//
+// The viral loop §1 opened: share a plan → a NEW person joins via the link →
+// the SHARER earns a single-use 15% Miinto code. All Supabase access lives here
+// (data-adapter pattern); the UI only ever reads our own shape. Every function
+// is a clean no-op / stub in demo mode (`!hasSupabase`) so the standalone build
+// never throws and degrades gracefully.
+//
+// Code derivation is deterministic from the auth id (referralCodeFor, pure) — no
+// extra column on `profiles`. The cross-user reward mint is done by the
+// `claim_referral` SECURITY DEFINER RPC (see supabase/schema.sql) because RLS
+// forbids the invitee from writing the referrer's rows directly.
+// ===========================================================================
+
+// The signed-in user's stable referral code (or null in demo mode / pre-auth).
+export function myReferralCode(userId) {
+  if (!hasSupabase || !userId) return null
+  return referralCodeFor(userId)
+}
+
+// Make sure a PENDING referral row exists for this sharer + their code, so an
+// invitee's claim_referral(code) can find it. Idempotent on the unique `code`
+// (re-sharing never creates duplicates). RLS-safe: the sharer writes their own
+// row (auth.uid() = referrer_id). No-op in demo mode.
+export async function ensureReferral(userId) {
+  if (!hasSupabase || !userId) return null
+  const code = referralCodeFor(userId)
+  if (!code) return null
+  // Only create when missing — never reset a row that's already joined/rewarded.
+  const { data: existing } = await supabase
+    .from('referrals').select('id').eq('code', code).maybeSingle()
+  if (!existing) {
+    await supabase.from('referrals')
+      .insert({ referrer_id: userId, code, status: 'pending' })
+    // A unique-violation here just means a race created it first — that's fine.
+  }
+  return code
+}
+
+// Invitee side: redeem a stashed ?ref code via the claim_referral RPC. Mints the
+// REFERRER's reward exactly once (idempotent server-side). Returns the reward
+// code string on a fresh/at-most-once claim, else null. No-op in demo mode.
+// `selfCode` guards the obvious self-referral (own link on own device).
+export async function claimReferral(refCode, selfCode) {
+  if (!hasSupabase || !refCode) return null
+  if (selfCode && refCode === selfCode) return null
+  const { data, error } = await supabase.rpc('claim_referral', { p_code: refCode })
+  if (error) return null
+  return data || null   // the minted reward code (for the referrer), or null
+}
+
+// Reward surface: the discount codes earned by the signed-in user. Newest first.
+// Returns [] in demo mode so the UI can render a clean empty/demo state.
+export async function myDiscounts(userId) {
+  if (!hasSupabase || !userId) return []
+  const { data } = await supabase
+    .from('discount_codes')
+    .select('code, partner, pct, redeemed, expires_at, created_at')
+    .eq('user_id', userId)
+    .order('created_at', { ascending: false })
+  return data || []
 }

@@ -36,3 +36,4 @@ worker/node_modules/
 social/*
 !social/2026-06-11/
 social/*/.work/
+.claude/
