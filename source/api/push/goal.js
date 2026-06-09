@@ -7,8 +7,10 @@
 // Body (from the trigger): { match_id, team_a, team_b, score_a, score_b,
 //   old_score_a, old_score_b, clock, status }
 //
-// v1 broadcasts to all subscriptions. Per-match targeting (only people with a
-// plan for this match) is the obvious next step — flagged, not silently assumed.
+// TARGETED, not spammy: a goal only pings people who actually have a plan for
+// that match (the plan's host + everyone "going"). No plan for the match → no
+// push. The whole point is "get to YOUR people", not buzz the whole city for
+// every goal in the tournament.
 
 import webpush from 'web-push'
 
@@ -22,15 +24,23 @@ async function readBody(req) {
   try { return JSON.parse(raw || '{}') } catch { return {} }
 }
 
-async function getSubs() {
+// Only the people with a plan for THIS match: the plan host(s) + everyone
+// "going". Returns their push subscriptions. No plan → empty → nobody buzzed.
+async function getSubsForMatch(matchId) {
   const url = process.env.SUPABASE_URL
   const key = process.env.SUPABASE_SERVICE_ROLE_KEY
-  if (!url || !key) return []
-  const r = await fetch(`${url}/rest/v1/push_subscriptions?select=endpoint,p256dh,auth`, {
-    headers: { apikey: key, Authorization: `Bearer ${key}` },
-  })
-  if (!r.ok) return []
-  return r.json()
+  if (!url || !key || !matchId) return []
+  const H = { apikey: key, Authorization: `Bearer ${key}` }
+  const j = async (path) => { const r = await fetch(`${url}/rest/v1/${path}`, { headers: H }); return r.ok ? r.json() : [] }
+
+  const plans = await j(`plans?match_id=eq.${encodeURIComponent(matchId)}&select=id,host_id`)
+  if (!plans.length) return []
+  const planIds = plans.map((p) => p.id)
+  const hostIds = plans.map((p) => p.host_id).filter(Boolean)
+  const parts = await j(`plan_participants?plan_id=in.(${planIds.join(',')})&select=user_id`)
+  const userIds = [...new Set([...hostIds, ...parts.map((p) => p.user_id).filter(Boolean)])]
+  if (!userIds.length) return []
+  return j(`push_subscriptions?user_id=in.(${userIds.join(',')})&select=endpoint,p256dh,auth`)
 }
 
 async function pruneStale(endpoint) {
@@ -80,7 +90,7 @@ export default async function handler(req, res) {
   } catch (e) { res.status(500).json({ ok: false, error: 'vapid: ' + e.message }); return }
 
   const payload = JSON.stringify(compose(m))
-  const subs = await getSubs()
+  const subs = await getSubsForMatch(m.match_id)
   let sent = 0, failed = 0, removed = 0
   await Promise.all(subs.map(async (s) => {
     const sub = { endpoint: s.endpoint, keys: { p256dh: s.p256dh, auth: s.auth } }
