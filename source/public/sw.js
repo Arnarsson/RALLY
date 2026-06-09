@@ -10,7 +10,7 @@
  * deletes every cache that isn't the current version.
  */
 
-const CACHE = 'rally-v3';
+const CACHE = 'rally-v4';
 
 // App shell precached on install. Vite emits hashed asset filenames we can't
 // know up front, so we precache the entry points + PWA assets and let the
@@ -43,15 +43,13 @@ self.addEventListener('activate', (event) => {
       .then((keys) => Promise.all(
         keys.filter((k) => k !== CACHE).map((k) => caches.delete(k)),
       ))
-      .then(() => self.clients.claim())
-      // Auto-bust: force-reload every open tab to the fresh build the moment a
-      // new SW takes over — this unsticks a client that was holding a broken
-      // cached version, with no manual refresh needed.
-      .then(() => self.clients.matchAll({ type: 'window' }))
-      .then((clients) => clients.forEach((c) => {
-        try { c.navigate(c.url); } catch (e) { /* navigate unsupported — ignore */ }
-      })),
+      .then(() => self.clients.claim()),
   );
+  // NOTE: the auto-bust reload is handled PAGE-side in registerSW.js, guarded so
+  // it only fires for genuine updates (a controller was already in place). We must
+  // NOT force `client.navigate()` here: clients.claim() above claims the
+  // just-loaded first-visit page, so navigating it re-loads every first-time
+  // visitor (~2s of wasted FCP, logged by Lighthouse as a redirect-to-self).
 });
 
 // Allow the page to tell a waiting SW to take over immediately.
