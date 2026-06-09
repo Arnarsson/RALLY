@@ -11,6 +11,25 @@ shape must not change; workers normalise external APIs into our tables.
 
 ---
 
+## Current state (what already exists)
+
+- **Front-end is live on Vercel** — project `rally` (account `arnarsson`), custom
+  domain **www.rally.futbol**. Deploy into this **existing** project; don't create
+  a new one. Root dir is `source`, build `npm run build`, output `dist`.
+- **The UI already consumes** these per-match fields (today static from
+  `fixtures.json`; your job is to feed them live from Supabase): `status`,
+  `score_a/score_b`, `clock`, `form_a/form_b`, `color_a/color_b`,
+  `prob_a/prob_draw/prob_b`, `venue`, `tv`, `archive`, `h2h`, `kickoff_utc`. Match
+  the column names in §1 and the front-end barely changes.
+- **Win-prob** renders from `prob_*` (form-based estimate as fallback). Your
+  penaltyblog worker (`worker/predict.py`, stubbed) replaces it with a real model.
+- **Flags + outfit images are bundled** as data URIs (`src/data/flags.js`,
+  `src/data/outfitImages.js`) — no backend needed for those.
+- **Watch links**: channel chips deep-link to DRTV / TV 2 Play *hubs*. Upgrade:
+  capture the per-match program deep link in the channel worker (§2.3).
+
+---
+
 ## 0. Accounts & secrets
 
 Create and put in Vercel/Supabase env (`source/.env.example` lists them):
@@ -107,12 +126,16 @@ Reuse the scripts in `source/scripts/` — change their output target from
    `status/score_a/score_b/clock/completed` into `matches`. Realtime pushes to the
    app. Wire push notifications on goal/card events.
 3. **Channels.** `fetch-channels.mjs` already matches fixture→Danish channel by
-   team pair; point it at the `matches.tv` column. Run daily.
+   team pair; point it at the `matches.tv` column. Run daily. **Upgrade:** also
+   capture the per-match DRTV / TV 2 Play program URL (a `tv[].watch_url`) so the
+   in-app watch links go straight to the match, not the broadcaster hub.
 4. **Archive photos.** `fetch-archive.mjs` → `matches.archive`. Run once (static).
-5. **Predictions (penaltyblog).** A small Python worker (penaltyblog: Dixon-Coles
-   / Bivariate Poisson; data from FBref/Understat/Club Elo) writing
-   `prob_a/draw/b` into `predictions` nightly. Powers the win-prob bar and a real
-   Super Predictor leaderboard.
+5. **Predictions (penaltyblog).** `worker/predict.py` is stubbed with the real
+   fit/predict + Supabase-upsert shape (penaltyblog: Dixon-Coles / Bivariate
+   Poisson; data from FBref / Understat / Club Elo). Wire the data source + creds,
+   run nightly, write `prob_a/draw/b` into `predictions`. The UI's win-prob bar and
+   the Super Predictor leaderboard read from it (it falls back to a form-based
+   estimate until then).
 
 Scheduling options: Vercel Cron (`vercel.json`) for the JS workers, or Supabase
 Edge Functions / `pg_cron`. The live worker needs a long-running/iterating host
@@ -140,8 +163,10 @@ Edge Functions / `pg_cron`. The live worker needs a long-running/iterating host
 
 ## 4. Deploy to Vercel
 
-- Import the GitHub repo. **Root directory: `source`.** Framework: Vite. Build:
-  `npm run build`. Output dir: `dist`.
+- The Vercel project (`rally`, domain www.rally.futbol) already exists — link to
+  it, don't create a new one. **Root directory: `source`.** Framework: Vite.
+  Build: `npm run build`. Output dir: `dist`. (Today a static standalone is
+  deployed; switch the project to build from `source` when you wire Supabase.)
 - Add all env vars (server + `VITE_` client vars).
 - `vercel.json` for cron (example):
 

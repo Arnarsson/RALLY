@@ -9,7 +9,9 @@ show up together. *We don't just watch the game. We rally for it.*
 
 `React + Vite + Tailwind` · mobile-first · real World Cup 2026 data
 
-[Live build: `RALLY — open me.html`](./RALLY%20—%20open%20me.html) ·
+**[▶ Live demo — www.rally.futbol](https://www.rally.futbol)**
+
+[Standalone: `RALLY — open me.html`](./RALLY%20—%20open%20me.html) ·
 [Architecture (CLAUDE.md)](./CLAUDE.md) ·
 [Roadmap](./docs/RALLY-10x-plan.md) ·
 [Backend handoff](./docs/HANDOFF-backend.md)
@@ -31,25 +33,29 @@ Social data (plans, people, venues) is mock. The football data is **real**.
 ## What's built
 
 - **Real fixtures** — the full 72-match World Cup 2026 group stage: Copenhagen
-  kickoff times, real venues, recent form, team colours, flag images.
+  kickoff times, real venues, recent form, team colours.
 - **Live-aware match cards** — a scheduled match shows kickoff + a ticking
-  countdown ("in 2d 12h"); it flips to **● LIVE 67' · 2–1** when in play and
-  **FULL TIME** after. The data layer is wired; the fields go live when a backend
-  worker feeds them.
-- **Real Danish TV channel per match** — each fixture matched to its actual
-  broadcaster (DR1 / TV 2 / TV 2 Sport X) from the published DR/TV 2 schedule.
-- **Match art from the teams** — every match renders its two national colours +
-  flags, never a random stock photo.
-- **Archival head-to-head** — for matches with history, a real Creative-Commons
-  photo of the two teams, rendered B&W and tinted in their colours with
-  attribution, plus a "last met" line (or "first-ever meeting").
-- **Recent-form pips** — each team's last five results (W/D/L), with a legend.
-- **Win-probability fields** — derived from bookmaker odds; ready for the
-  win-prob bar.
+  countdown; it flips to **● LIVE 67' · 2–1** when in play and **FULL TIME** after.
+  The data layer is wired; the fields go live when a backend worker feeds them.
+- **"Busiest tonight" banner** — the most-subscribed venue, which game is on
+  there, and the headcount, on the Tonight screen.
+- **"The numbers" analytics panel** — on every match: a win-probability bar plus
+  both teams' recent form with points. Real model when the prediction worker has
+  run, otherwise a form-based estimate (never blank).
+- **Danish TV channel + watch links** — each fixture matched to its real
+  broadcaster (DR1 / TV 2 / TV 2 Sport X); the chip deep-links to DRTV / TV 2 Play
+  to stream it.
+- **Match art from the teams** — national colours + flags, or for matches with
+  history a real **B&W Creative-Commons photo** of the two teams (attributed);
+  no-photo matches get a dark editorial panel, never a stock image.
+- **Head-to-head** — a "last met" line (or "first-ever meeting").
 - **AI "lowdown"** — a 30-second hype script per match (browser voice today;
   ElevenLabs in production).
-- **Outfit, Leaders, Share card** — commerce (Miinto), sponsorship (Unisport),
-  and the viral share loop.
+- **Outfit** — the real brand-board shoot (hero, Women/Men looks, essentials),
+  shopping via Miinto. **Leaders** + **Share card** for sponsorship and the viral
+  loop.
+- **Mobile-first & fast** — 48 flags bundled as data URIs (zero flag requests),
+  momentum scroll, single-file standalone.
 
 ## Data pipeline (`source/scripts/`)
 
@@ -97,6 +103,11 @@ Then copy `dist/index.html` to `../RALLY — open me.html` to refresh the standa
   Understat / Club Elo) — a production library, not a novelty.
 - **Single-file standalone.** `vite-plugin-singlefile` inlines everything so
   `RALLY — open me.html` runs from `file://` with no server.
+- **Bundled flags, not a flag CDN.** The fixture list renders ~150 flags; fetching
+  them per-image caused scroll pop-in on mobile, so the 48 needed flags are inlined
+  as data URIs (`src/data/flags.js`) — zero flag requests.
+- **Watch where you are.** The channel chips deep-link to DRTV / TV 2 Play so a tap
+  goes straight to the stream.
 
 ## Tech
 
@@ -113,9 +124,11 @@ everything is mock or generated JSON.
 
 ## Going live
 
-`docs/HANDOFF-backend.md` is a complete build plan to take this prototype live on
-**Supabase + Vercel**: schema, RLS, Realtime, the data workers, the front-end
-port, auth, and deploy — with a definition-of-done checklist.
+The static front-end is **already deployed on Vercel** (www.rally.futbol). The
+remaining work — Supabase schema, RLS, Realtime, the data + prediction workers,
+the front-end port, and auth — is a complete build plan in
+`docs/HANDOFF-backend.md`, with a definition-of-done checklist. Deploy into the
+**existing** Vercel project (`rally`), don't create a new one.
 
 ## Status
 

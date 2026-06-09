@@ -28,17 +28,29 @@ RALLY/
 │   ├── PITCH-Sven.md        # 60-sec pitch script
 │   ├── RALLY-brand-guidelines.md
 │   └── STORE-LISTING.md
+├── worker/
+│   └── predict.py           # penaltyblog prediction worker (stub) — Phase D
 └── source/                  # the app (React + Vite + Tailwind)
     ├── src/
     │   ├── App.jsx          # entire UI (single file by design)
     │   ├── data/
-    │   │   ├── mockData.js   # editorial matches + venues/plans/people; merges fixtures.json
-    │   │   └── fixtures.json  # GENERATED — real WC2026 data (do not hand-edit)
+    │   │   ├── mockData.js     # editorial matches + venues/plans/people; merges fixtures.json
+    │   │   ├── fixtures.json    # GENERATED — real WC2026 data (do not hand-edit)
+    │   │   ├── flags.js        # GENERATED — 48 country flags as data URIs (no network)
+    │   │   └── outfitImages.js  # GENERATED — brand-board outfit crops (data URIs)
     │   ├── index.css
     │   └── main.jsx
     ├── scripts/             # data pipeline (see below)
     └── vite.config.js       # react + vite-plugin-singlefile
 ```
+
+## Live deployment
+
+Already live on **Vercel** (project `rally`, account `arnarsson`): the static
+front-end at **www.rally.futbol** (and `rally-ecru.vercel.app`). `vercel deploy
+--prod` from a folder containing the standalone `index.html` redeploys. The full
+backend deploy (Supabase + workers) is the next step — see `docs/HANDOFF-backend.md`;
+CC should deploy into the **existing** Vercel project, not create a new one.
 
 ## Commands
 
@@ -82,6 +94,11 @@ be single-file (the singlefile plugin handles this) and asset paths in
 | `fetch-channels.mjs` | Published DR/TV 2 guide (digitalt.tv) | `fixtures.json` `.tv` | Matches fixture→channel by **team pair** (unique key). `--source sample` for offline seed |
 | `fetch-archive.mjs` | Wikimedia Commons API | `fixtures.json` `.archive` | Only commercial-OK licences (CC BY / BY-SA / CC0 / PD — never NC/ND). Attribution required |
 
+`src/data/flags.js` and `src/data/outfitImages.js` are also generated (one-off
+node scripts — flag PNGs from flagcdn, and crops of the brand board — committed as
+data URIs so the standalone stays self-contained and the list makes no flag
+requests).
+
 **Migration note:** `fetch-fixtures.mjs` currently reads ESPN. The roadmap (and
 `HANDOFF-backend.md`) replaces this with **football-data.org** (European, free,
 `WC` code) and **API-Football** for live. Keep the output shape identical so the
@@ -94,6 +111,26 @@ Every match carries `status` (`pre` | `in` | `post`), `score_a/score_b`, `clock`
 `archive`, `h2h`. The UI is already live-aware: cards show a countdown when
 scheduled, "● LIVE 67' · 2–1" when in play, and "FULL TIME" after. These fields
 are static today; the backend worker fills them in real time (see handoff).
+
+## What the app surfaces now
+
+- **Tonight** — a "Busiest tonight" banner (most-subscribed venue + which game +
+  headcount), then the full real schedule grouped by day. Live-aware cards
+  (kickoff + countdown → live score → full time).
+- **Match detail** — the AI "lowdown" (browser TTS today), a prominent
+  **"the numbers"** analytics panel (win probability + recent form with points),
+  a **head-to-head** line, and for fixtures with history a **B&W archive photo**
+  of the two teams (Wikimedia Commons, CC). No-photo matches use a dark editorial
+  team-colour panel (cohesive with the photos), never a stock image.
+- **Watch links** — the TV-channel chips deep-link to where to stream:
+  DR1/DR2 → DRTV, TV 2 family → TV 2 Play. (Currently the broadcaster hub; capture
+  per-match deep links in the backend — see handoff.)
+- **Outfit** — uses the real brand-board shoot (hero couple, Women/Men looks,
+  essentials), embedded as data URIs; "Shop · Miinto".
+- **Flags** — 48 country flags are bundled as data URIs (`src/data/flags.js`) so
+  the dense fixture list makes **zero external flag requests** (mobile perf).
+- **Win probability** — real model when `predictions` is populated by the
+  penaltyblog worker; otherwise a form-based estimate so the bar is never blank.
 
 ## Conventions & gotchas
 
