@@ -1,0 +1,69 @@
+<!doctype html><html><head><meta charset="utf-8">
+<link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Instrument+Serif:ital@0;1&family=Inter:wght@600;700;800;900&display=swap" rel="stylesheet">
+<style>
+ *{margin:0;padding:0;box-sizing:border-box}
+ html,body{width:390px;height:844px;overflow:hidden;background:#0a0908;font-family:Inter;color:#F4F2EC}
+ .wrap{position:relative;width:390px;height:844px}
+ .grain{position:absolute;inset:0;opacity:.06;background-image:radial-gradient(rgba(255,255,255,.9) .6px,transparent .7px);background-size:3px 3px;mix-blend-mode:overlay;pointer-events:none;z-index:5}
+ /* full-bleed crowd photo as the hero band — the room is the hero */
+ .hero{position:absolute;top:0;left:0;right:0;height:330px;
+   background:url('https://commons.wikimedia.org/wiki/Special:FilePath/FIFA_World_Cup_2006_-_ARG_vs_MEX.jpg?width=1000') center 26%/cover;
+   filter:grayscale(1) contrast(1.08) brightness(.66)}
+ .hero .fade{position:absolute;inset:0;background:linear-gradient(180deg,rgba(10,9,8,.35) 0%,rgba(10,9,8,.1) 38%,rgba(10,9,8,.82) 80%,#0a0908 100%)}
+ .top{position:absolute;top:22px;left:24px;right:24px;display:flex;justify-content:space-between;font-size:9px;letter-spacing:.22em;text-transform:uppercase;color:rgba(244,242,236,.7);z-index:3}
+ .htext{position:absolute;left:24px;top:150px;z-index:3}
+ .htext h1{font-family:'Archivo Black';font-size:40px;line-height:.9;letter-spacing:-.02em;text-transform:uppercase}
+ .htext .w{font-family:'Instrument Serif';font-style:italic;font-weight:400;font-size:38px;color:#8ACE00;line-height:.92}
+ /* busiest tonight = the lime node, ringed in stillness — the crowd converging on one room */
+ .node{position:absolute;top:296px;left:24px;right:24px;z-index:4;
+   border:1px solid rgba(138,206,0,.28);border-radius:18px;padding:16px 18px;
+   background:rgba(13,12,10,.78);backdrop-filter:blur(2px);
+   background-image:radial-gradient(120% 130% at 16% 18%, rgba(138,206,0,.12), transparent 58%)}
+ .node .lbl{font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:#8ACE00;font-weight:800}
+ .node .v{font-family:'Archivo Black';font-size:19px;margin-top:5px;line-height:1.05}
+ .node .m{font-size:11px;color:rgba(244,242,236,.6);margin-top:7px}
+ .node .dot{position:absolute;top:18px;right:18px;width:9px;height:9px;border-radius:50%;background:#8ACE00;box-shadow:0 0 16px 4px rgba(138,206,0,.6)}
+ .node .ring{position:absolute;top:8px;right:8px;width:30px;height:30px;border:1px solid rgba(138,206,0,.2);border-radius:50%}
+ .list{position:absolute;top:418px;left:0;right:0;bottom:60px;padding:0 24px;overflow:hidden}
+ .day{font-size:9px;letter-spacing:.2em;color:rgba(244,242,236,.36);margin:6px 0 12px;text-transform:uppercase}
+ /* hero card with faint archival B&W photo behind */
+ .card{position:relative;border:1px solid rgba(244,242,236,.10);border-radius:16px;overflow:hidden;margin-bottom:12px;background:#100e0b}
+ .card.feat .ph{position:absolute;inset:0;background:url('https://commons.wikimedia.org/wiki/Special:FilePath/FIFA_World_Cup_2006_-_ARG_vs_MEX.jpg?width=900') center/cover;filter:grayscale(1) brightness(.45);opacity:.3}
+ .card .in{position:relative;padding:15px 18px;display:flex;justify-content:space-between;align-items:flex-end}
+ .card .t{font-family:'Archivo Black';font-size:18px;line-height:1.05;text-transform:uppercase}
+ .card .t .v{font-family:'Instrument Serif';font-style:italic;font-weight:400;font-size:13px;color:rgba(244,242,236,.45);display:block;margin:1px 0}
+ .card .k{font-family:'Archivo Black';font-size:24px;color:#8ACE00}
+ .card .k.live{color:#FF4D2E;font-size:15px;display:flex;align-items:center;gap:5px}
+ .card .k.live::before{content:'';width:7px;height:7px;border-radius:50%;background:#FF4D2E;box-shadow:0 0 10px 2px rgba(255,77,46,.6)}
+ .card .meta{position:relative;padding:0 18px 13px;font-size:10px;letter-spacing:.03em;color:rgba(244,242,236,.45)}
+ .nav{position:absolute;left:0;right:0;bottom:0;padding:15px 26px;display:flex;justify-content:space-between;font-size:11px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;border-top:1px solid rgba(244,242,236,.08);background:#0a0908;z-index:4}
+ .nav .on{color:#8ACE00}.nav .off{color:rgba(244,242,236,.35)}
+ .tag{position:absolute;bottom:54px;right:22px;font-size:8px;letter-spacing:.2em;color:rgba(244,242,236,.28);text-transform:uppercase;z-index:4}
+</style></head><body>
+<div class="wrap">
+ <div class="hero"><div class="fade"></div></div>
+ <div class="grain"></div>
+ <div class="top"><span>· København</span><span>WC ’26</span></div>
+ <div class="htext"><h1>Who's<br>watching</h1><div class="w">tonight?</div></div>
+ <div class="node">
+   <span class="dot"></span><span class="ring"></span>
+   <div class="lbl">Busiest tonight · 7 going</div>
+   <div class="v">Fan Zone — Rådhuspladsen</div>
+   <div class="m">Mexico v South Africa · 21:00 · the whole room's in</div>
+ </div>
+ <div class="list">
+   <div class="day">Thu 11 Jun · 72 fixtures · the loudest rooms in the city</div>
+   <div class="card feat"><div class="ph"></div>
+     <div class="in"><div class="t">Mexico<span class="v">v</span>South Africa</div><div class="k">21:00</div></div>
+     <div class="meta">▶ TV 2 · 10 going · 2 spots left — save you a seat</div>
+   </div>
+   <div class="card"><div class="in"><div class="t">Brazil<span class="v">v</span>Serbia</div><div class="k live">67' · 2–1</div></div>
+     <div class="meta">▶ DR1 · 14 in the room right now</div>
+   </div>
+   <div class="card"><div class="in"><div class="t">South Korea<span class="v">v</span>Czechia</div><div class="k">04:00</div></div>
+     <div class="meta">▶ TV 2 Sport X · nobody's called it yet — be the one</div>
+   </div>
+ </div>
+ <div class="tag">Reference mockup, not final · A+C blend</div>
+ <div class="nav"><span class="on">Tonight</span><span class="off">Outfit</span><span class="off">Leaders</span></div>
+</div></body></html>

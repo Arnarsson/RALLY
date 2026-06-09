@@ -1,0 +1,44 @@
+<!doctype html><html><head><meta charset="utf-8">
+<link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Instrument+Serif:ital@0;1&family=Inter:wght@600;700;800&display=swap" rel="stylesheet">
+<style>
+  *{margin:0;padding:0;box-sizing:border-box}
+  html,body{width:390px;height:844px;overflow:hidden;background:#0a0908;font-family:Inter,sans-serif;color:#F4F2EC}
+  .wrap{position:relative;width:390px;height:844px;background:radial-gradient(125% 80% at 50% 36%, #15120d 0%, #0a0908 62%)}
+  /* full-bleed grainy B&W crowd — the room full of people, masked to a soft vignette */
+  .crowd{position:absolute;inset:0;
+    background:url('img/dk92-crowd.jpg') center 28%/cover;
+    filter:grayscale(1) contrast(1.12) brightness(.6);opacity:.42;
+    -webkit-mask-image:radial-gradient(125% 72% at 50% 33%, #000 0%, #000 36%, transparent 74%);
+            mask-image:radial-gradient(125% 72% at 50% 33%, #000 0%, #000 36%, transparent 74%)}
+  .grain{position:absolute;inset:0;opacity:.07;background-image:radial-gradient(rgba(255,255,255,.9) .6px,transparent .7px);background-size:3px 3px;mix-blend-mode:overlay}
+  /* the lime node: the crowd converging on one room — ringed in stillness */
+  .ring{position:absolute;left:50%;top:33%;transform:translate(-50%,-50%);border:1px solid rgba(138,206,0,.16);border-radius:50%}
+  .ring.r1{width:122px;height:122px}
+  .ring.r2{width:208px;height:208px;border-color:rgba(138,206,0,.07)}
+  .node{position:absolute;left:50%;top:33%;transform:translate(-50%,-50%);width:11px;height:11px;border-radius:50%;background:#8ACE00;box-shadow:0 0 26px 7px rgba(138,206,0,.55)}
+  /* a single rarer ember mark — one stray fan still on their way */
+  .ember{position:absolute;left:63%;top:24%;width:5px;height:5px;border-radius:50%;background:#FF4D2E;box-shadow:0 0 12px 3px rgba(255,77,46,.55)}
+  .lbl{position:absolute;top:24px;left:24px;font-size:9px;letter-spacing:.22em;color:rgba(244,242,236,.34);text-transform:uppercase}
+  .lbl.r{left:auto;right:24px}
+  .stack{position:absolute;left:0;right:0;bottom:148px;text-align:center}
+  .word{font-family:'Archivo Black';font-size:76px;letter-spacing:-.02em;color:#F4F2EC;line-height:.9}
+  .sub{font-family:'Instrument Serif';font-style:italic;font-size:25px;color:rgba(244,242,236,.72);margin-top:16px;line-height:1.25}
+  .sub b{color:#8ACE00;font-weight:400;font-style:italic}
+  .seat{position:absolute;left:0;right:0;bottom:96px;text-align:center;font-size:11px;font-weight:800;letter-spacing:.18em;text-transform:uppercase;color:rgba(244,242,236,.45)}
+  .cta{position:absolute;left:24px;right:24px;bottom:46px;background:#8ACE00;color:#0a0908;text-align:center;font-weight:800;font-size:13px;letter-spacing:.06em;text-transform:uppercase;padding:15px;border-radius:999px}
+  .tag{position:absolute;bottom:18px;left:0;right:0;text-align:center;font-size:8px;letter-spacing:.2em;color:rgba(244,242,236,.26);text-transform:uppercase}
+</style></head><body>
+<div class="wrap">
+  <div class="crowd"></div>
+  <div class="grain"></div>
+  <div class="ring r2"></div><div class="ring r1"></div><div class="node"></div><div class="ember"></div>
+  <div class="lbl">Fig. 01 — the gathering</div>
+  <div class="lbl r">55.6761° N · 12.5683° E</div>
+  <div class="stack">
+    <div class="word">RALLY</div>
+    <div class="sub">find your game.<br><b>find your people.</b></div>
+  </div>
+  <div class="seat">— don't watch it alone —</div>
+  <div class="cta">Find your people →</div>
+  <div class="tag">Reference mockup, not final · A+C blend</div>
+</div></body></html>
