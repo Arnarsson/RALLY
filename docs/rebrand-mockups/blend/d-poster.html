@@ -1,0 +1,45 @@
+<!doctype html><html><head><meta charset="utf-8">
+<link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Instrument+Serif:ital@0;1&family=Inter:wght@600;700;800;900&display=swap" rel="stylesheet">
+<style>
+ *{margin:0;padding:0;box-sizing:border-box}
+ html,body{width:390px;height:844px;overflow:hidden;background:#0a0908;font-family:Inter;color:#F4F2EC}
+ .wrap{position:relative;width:390px;height:844px;background:#0a0908}
+ /* full-bleed crowd photo, B&W, masked toward the node */
+ .photo{position:absolute;inset:0;
+   background:url('https://commons.wikimedia.org/wiki/Special:FilePath/FIFA_World_Cup_2006_-_ARG_vs_MEX.jpg?width=1100') center 30%/cover;
+   filter:grayscale(1) contrast(1.14) brightness(.56);opacity:.5}
+ .fade{position:absolute;inset:0;background:linear-gradient(180deg,rgba(10,9,8,.55) 0%,rgba(10,9,8,.2) 30%,rgba(10,9,8,.72) 66%,#0a0908 100%)}
+ .grain{position:absolute;inset:0;opacity:.07;background-image:radial-gradient(rgba(255,255,255,.9) .6px,transparent .7px);background-size:3px 3px;mix-blend-mode:overlay}
+ /* ember marquee node — the singular event */
+ .ring{position:absolute;left:50%;top:30%;transform:translate(-50%,-50%);border:1px solid rgba(255,77,46,.18);border-radius:50%;width:150px;height:150px}
+ .node{position:absolute;left:50%;top:30%;transform:translate(-50%,-50%);width:10px;height:10px;border-radius:50%;background:#FF4D2E;box-shadow:0 0 24px 6px rgba(255,77,46,.55)}
+ .top{position:absolute;top:26px;left:24px;right:24px;display:flex;justify-content:space-between;font-size:9px;letter-spacing:.22em;text-transform:uppercase;color:rgba(244,242,236,.6);z-index:3}
+ .marq{position:absolute;top:26px;left:50%;transform:translateX(-50%);font-size:9px;font-weight:900;letter-spacing:.2em;text-transform:uppercase;color:#FF4D2E;z-index:3}
+ .stack{position:absolute;left:24px;right:24px;bottom:206px;z-index:3}
+ .whisper{font-family:'Instrument Serif';font-style:italic;font-size:26px;color:rgba(244,242,236,.7);line-height:1}
+ .mono{font-family:'Archivo Black';font-size:60px;line-height:.86;letter-spacing:-.02em;text-transform:uppercase;margin-top:8px}
+ .mono .v{font-family:'Instrument Serif';font-style:italic;font-weight:400;font-size:30px;color:#8ACE00;text-transform:none;display:block;margin:3px 0}
+ .when{position:absolute;left:24px;right:24px;bottom:150px;z-index:3;font-size:12px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:#8ACE00}
+ .where{position:absolute;left:24px;right:24px;bottom:118px;z-index:3;font-family:'Instrument Serif';font-style:italic;font-size:18px;color:rgba(244,242,236,.78)}
+ .seat{position:absolute;left:24px;right:24px;bottom:58px;z-index:3;text-align:center;font-size:11px;font-weight:800;letter-spacing:.16em;text-transform:uppercase;color:rgba(244,242,236,.55)}
+ .brand{position:absolute;left:0;right:0;bottom:26px;text-align:center;z-index:3}
+ .brand .r{font-family:'Archivo Black';font-size:18px;letter-spacing:.04em}
+ .brand .r .dot{color:#8ACE00}
+ .brand .u{font-size:9px;letter-spacing:.24em;text-transform:uppercase;color:rgba(244,242,236,.45);margin-top:3px}
+ .tag{position:absolute;bottom:8px;left:10px;font-size:8px;letter-spacing:.2em;color:rgba(244,242,236,.28);text-transform:uppercase;z-index:4}
+</style></head><body>
+<div class="wrap">
+ <div class="photo"></div><div class="fade"></div><div class="grain"></div>
+ <div class="ring"></div><div class="node"></div>
+ <div class="top"><span>· København</span><span>WC ’26</span></div>
+ <div class="marq">● The big one</div>
+ <div class="stack">
+   <div class="whisper">who's watching <span style="color:#8ACE00">tonight?</span></div>
+   <div class="mono">Mexico<span class="v">versus</span>South Africa</div>
+ </div>
+ <div class="when">Thu 11 Jun · 21:00 · TV 2</div>
+ <div class="where">Fan Zone — Rådhuspladsen · 10 going, 2 spots left</div>
+ <div class="seat">— don't watch it alone —</div>
+ <div class="brand"><div class="r">RALLY<span class="dot">.</span></div><div class="u">Find your game. Find your people.</div></div>
+ <div class="tag">Reference mockup, not final · share poster</div>
+</div></body></html>

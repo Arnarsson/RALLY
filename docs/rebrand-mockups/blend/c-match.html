@@ -1,0 +1,77 @@
+<!doctype html><html><head><meta charset="utf-8">
+<link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Instrument+Serif:ital@0;1&family=Inter:wght@600;700;800;900&display=swap" rel="stylesheet">
+<style>
+ *{margin:0;padding:0;box-sizing:border-box}
+ html,body{width:390px;height:844px;overflow:hidden;background:#0a0908;font-family:Inter;color:#F4F2EC}
+ .wrap{position:relative;width:390px;height:844px}
+ .grain{position:absolute;inset:0;opacity:.06;background-image:radial-gradient(rgba(255,255,255,.9) .6px,transparent .7px);background-size:3px 3px;mix-blend-mode:overlay;pointer-events:none;z-index:6}
+ /* hero photo — the two teams, archival B&W, the room behind */
+ .hero{position:absolute;top:0;left:0;right:0;height:300px;
+   background:url('https://commons.wikimedia.org/wiki/Special:FilePath/FIFA_World_Cup_2006_-_ARG_vs_MEX.jpg?width=1000') center 24%/cover;
+   filter:grayscale(1) contrast(1.1) brightness(.6)}
+ .hero .fade{position:absolute;inset:0;background:linear-gradient(180deg,rgba(10,9,8,.45) 0%,rgba(10,9,8,.12) 34%,rgba(10,9,8,.86) 82%,#0a0908 100%)}
+ .back{position:absolute;top:22px;left:22px;z-index:4;font-size:18px;color:rgba(244,242,236,.85)}
+ .lbl{position:absolute;top:24px;right:24px;z-index:4;font-size:9px;letter-spacing:.22em;text-transform:uppercase;color:rgba(244,242,236,.55)}
+ .htext{position:absolute;left:24px;right:24px;bottom:14px;z-index:4}
+ .htext .v{font-family:'Instrument Serif';font-style:italic;font-size:22px;color:rgba(244,242,236,.55);line-height:1}
+ .htext h1{font-family:'Archivo Black';font-size:40px;line-height:.9;letter-spacing:-.02em;text-transform:uppercase}
+ .htext .ko{margin-top:8px;font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:#8ACE00;font-weight:800}
+ .body{position:absolute;top:300px;left:0;right:0;bottom:0;padding:18px 24px 20px;overflow:hidden}
+ /* the lowdown — the SOUL whisper */
+ .low{font-family:'Instrument Serif';font-style:italic;font-size:18px;line-height:1.32;color:rgba(244,242,236,.82)}
+ .low b{color:#8ACE00;font-style:italic;font-weight:400}
+ /* THE NUMBERS panel — restrained, instrumented */
+ .panel{margin-top:18px;border:1px solid rgba(244,242,236,.10);border-radius:16px;padding:16px 18px;background:#100e0b}
+ .panel .h{font-size:9px;letter-spacing:.22em;text-transform:uppercase;color:rgba(244,242,236,.45);font-weight:800;display:flex;justify-content:space-between}
+ .prob{display:flex;height:10px;border-radius:6px;overflow:hidden;margin:12px 0 8px}
+ .prob .a{background:#8ACE00;width:54%}
+ .prob .d{background:rgba(244,242,236,.22);width:26%}
+ .prob .b{background:#FF4D2E;width:20%}
+ .plabels{display:flex;justify-content:space-between;font-size:11px;font-weight:800}
+ .plabels .a{color:#8ACE00}.plabels .d{color:rgba(244,242,236,.5)}.plabels .b{color:#FF4D2E}
+ .form{display:flex;justify-content:space-between;margin-top:14px;padding-top:13px;border-top:1px solid rgba(244,242,236,.08)}
+ .form .side{font-size:10px;color:rgba(244,242,236,.5);letter-spacing:.04em}
+ .form .pips{margin-top:6px;display:flex;gap:4px}
+ .pip{width:16px;height:16px;border-radius:4px;font-size:9px;font-weight:900;display:flex;align-items:center;justify-content:center;color:#0a0908}
+ .pip.w{background:#8ACE00}.pip.d{background:rgba(244,242,236,.3);color:#fff}.pip.l{background:rgba(255,77,46,.55);color:#fff}
+ /* rate-the-match nod */
+ .rate{margin-top:14px;display:flex;align-items:center;justify-content:space-between;border:1px dashed rgba(138,206,0,.3);border-radius:14px;padding:13px 16px}
+ .rate .q{font-family:'Instrument Serif';font-style:italic;font-size:16px;color:rgba(244,242,236,.8)}
+ .rate .stars{font-size:15px;letter-spacing:3px;color:#8ACE00}
+ .rate .stars .off{color:rgba(244,242,236,.22)}
+ .seat{position:absolute;left:24px;right:24px;bottom:22px;background:#8ACE00;color:#0a0908;text-align:center;font-weight:800;font-size:13px;letter-spacing:.05em;text-transform:uppercase;padding:15px;border-radius:999px}
+ .tag{position:absolute;bottom:5px;right:10px;font-size:8px;letter-spacing:.2em;color:rgba(244,242,236,.28);text-transform:uppercase;z-index:6}
+</style></head><body>
+<div class="wrap">
+ <div class="hero"><div class="fade"></div>
+   <div class="htext">
+     <h1>Mexico</h1><div class="v">versus</div><h1>South Africa</h1>
+     <div class="ko">21:00 · TV 2 · Fan Zone Rådhuspladsen</div>
+   </div>
+ </div>
+ <div class="grain"></div>
+ <div class="back">←</div>
+ <div class="lbl">Fig. 04 — the tie</div>
+ <div class="body">
+   <div class="low">Mexico are seventeen World Cups deep and still can't get past the quarters — and they'll <b>still throw the best party in the room.</b> Get down there.</div>
+   <div class="panel">
+     <div class="h"><span>The numbers</span><span>N = 1,148</span></div>
+     <div class="prob"><div class="a"></div><div class="d"></div><div class="b"></div></div>
+     <div class="plabels"><span class="a">MEX 54%</span><span class="d">DRAW 26%</span><span class="b">RSA 20%</span></div>
+     <div class="form">
+       <div class="side">Mexico — last five
+         <div class="pips"><span class="pip w">W</span><span class="pip w">W</span><span class="pip d">D</span><span class="pip w">W</span><span class="pip l">L</span></div>
+       </div>
+       <div class="side" style="text-align:right">South Africa
+         <div class="pips" style="justify-content:flex-end"><span class="pip l">L</span><span class="pip d">D</span><span class="pip w">W</span><span class="pip l">L</span><span class="pip d">D</span></div>
+       </div>
+     </div>
+   </div>
+   <div class="rate">
+     <div class="q">was it a classic?</div>
+     <div class="stars">★★★★<span class="off">★</span></div>
+   </div>
+ </div>
+ <div class="seat">Save you a seat →</div>
+ <div class="tag">Reference mockup, not final</div>
+</div></body></html>
