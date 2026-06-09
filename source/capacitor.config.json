@@ -1,0 +1,7 @@
+{
+  "appId": "futbol.rally.app",
+  "appName": "RALLY",
+  "webDir": "dist",
+  "server": { "iosScheme": "https" },
+  "ios": { "contentInset": "always" }
+}
