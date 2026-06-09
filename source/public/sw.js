@@ -10,7 +10,7 @@
  * deletes every cache that isn't the current version.
  */
 
-const CACHE = 'rally-v4';
+const CACHE = 'rally-v5';
 
 // App shell precached on install. Vite emits hashed asset filenames we can't
 // know up front, so we precache the entry points + PWA assets and let the
@@ -55,6 +55,46 @@ self.addEventListener('activate', (event) => {
 // Allow the page to tell a waiting SW to take over immediately.
 self.addEventListener('message', (event) => {
   if (event.data === 'SKIP_WAITING') self.skipWaiting();
+});
+
+// --- Web push -------------------------------------------------------------
+// Goal alerts (and similar) arrive here. Payload is JSON:
+//   { title, body, url }  — all optional, with sensible RALLY defaults.
+self.addEventListener('push', (event) => {
+  let data = {};
+  try {
+    data = event.data ? event.data.json() : {};
+  } catch {
+    data = {};
+  }
+  const title = data.title || 'RALLY';
+  const options = {
+    body: data.body || 'Goal alert — your match is heating up.',
+    icon: '/icon-192.png',
+    badge: '/icon-192.png',
+    data: { url: data.url || '/' },
+  };
+  event.waitUntil(self.registration.showNotification(title, options));
+});
+
+// Tapping a notification → focus an open RALLY tab and route it, else open one.
+self.addEventListener('notificationclick', (event) => {
+  event.notification.close();
+  const url = (event.notification.data && event.notification.data.url) || '/';
+  event.waitUntil(
+    self.clients
+      .matchAll({ type: 'window', includeUncontrolled: true })
+      .then((clients) => {
+        for (const client of clients) {
+          if ('focus' in client) {
+            if ('navigate' in client) client.navigate(url).catch(() => {});
+            return client.focus();
+          }
+        }
+        if (self.clients.openWindow) return self.clients.openWindow(url);
+        return undefined;
+      }),
+  );
 });
 
 self.addEventListener('fetch', (event) => {

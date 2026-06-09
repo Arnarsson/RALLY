@@ -540,3 +540,22 @@ begin
   alter publication supabase_realtime add table match_picks;
 exception when duplicate_object then null;
 end $$;
+
+-- ===========================================================================
+-- push_subscriptions — web-push (PWA) subscriptions for goal/going alerts
+-- ===========================================================================
+create table if not exists push_subscriptions (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid references profiles(id) on delete cascade,
+  endpoint text unique not null,
+  p256dh text not null, auth text not null, ua text,
+  created_at timestamptz default now()
+);
+alter table push_subscriptions enable row level security;
+drop policy if exists push_sub_insert on push_subscriptions;
+create policy push_sub_insert on push_subscriptions for insert with check (true);
+drop policy if exists push_sub_select on push_subscriptions;
+create policy push_sub_select on push_subscriptions for select using (auth.uid() = user_id);
+drop policy if exists push_sub_delete on push_subscriptions;
+create policy push_sub_delete on push_subscriptions for delete using (auth.uid() = user_id);
+grant select, insert, delete on push_subscriptions to anon, authenticated;

@@ -14,6 +14,7 @@ import { HERO_IMG, HERO_GENERIC } from './data/heroImages.js'
 import { SPLASH_IMG } from './data/splashImage.js'
 import { ACTIVE_THEME } from './theme.js'
 import PosterCard from './components/PosterCard'
+import { pushSupported, pushStatus, enablePush } from './lib/push'
 
 // Code-split: every screen past Tonight is lazy. The initial chunk only carries
 // the splash + onboarding + Tonight (MatchesScreen), so the critical mobile
@@ -400,6 +401,29 @@ export function Pill({ children, onClick, color = 'lime', className = '' }) {
   )
 }
 
+// Goal-alerts opt-in. Hidden entirely where web push can't work (file:// /
+// unsupported). Reflects the live permission state; lime when on, ghost to opt in.
+export function GoalAlertsPill({ myId, className = '' }) {
+  const [status, setStatus] = useState(() => pushStatus())
+  if (!pushSupported() || status === 'denied') return null // nothing tasteful to show
+  const on = status === 'granted'
+  const enable = async () => {
+    if (on) return
+    const r = await enablePush(myId)
+    setStatus(pushStatus())
+    return r
+  }
+  return (
+    <button
+      onClick={enable}
+      disabled={on}
+      className={'rounded-full font-bold text-[11px] uppercase tracking-[0.12em] py-2 px-3.5 active:scale-[0.98] transition '
+        + (on ? 'bg-lime text-night' : 'bg-night/40 text-cream border border-cream/25 backdrop-blur-sm ') + className}>
+      {on ? 'Goal alerts on ✓' : '🔔 Goal alerts'}
+    </button>
+  )
+}
+
 // --- AI rundown ------------------------------------------------------------
 export function Rundown({ text }) {
   const [playing, setPlaying] = useState(false)
@@ -627,7 +651,7 @@ export default function App() {
 
   let screen
   if (view.name === 'matches') {
-    screen = <MatchesScreen plans={plans} flag={profile.flag} onOpenMatch={(m) => push({ name: 'match', matchId: m.id })} />
+    screen = <MatchesScreen plans={plans} flag={profile.flag} myId={myId} onOpenMatch={(m) => push({ name: 'match', matchId: m.id })} />
   } else if (view.name === 'match') {
     screen = <MatchScreen match={matchById(view.matchId)} plans={plans} myId={myId} onBack={back}
       onOpenPlan={(p) => push({ name: 'plan', planId: p.id })} onCreate={() => push({ name: 'create', matchId: view.matchId })} />
@@ -790,7 +814,7 @@ function ProfileSetup({ onDone }) {
 }
 
 // --- matches home ----------------------------------------------------------
-function MatchesScreen({ plans, onOpenMatch, flag }) {
+function MatchesScreen({ plans, onOpenMatch, flag, myId }) {
   const statsFor = (matchId) => {
     const ps = plans.filter((p) => p.match_id === matchId)
     return { planCount: ps.length, people: ps.reduce((n, p) => n + p.participant_ids.length, 0) }
@@ -815,7 +839,11 @@ function MatchesScreen({ plans, onOpenMatch, flag }) {
         </div>
         <div className="absolute inset-0 flex flex-col justify-between p-5">
           <div className="flex items-center justify-between text-[11px] font-bold tracking-[0.18em] uppercase text-cream/80">
-            <span>📍 Copenhagen</span><span>World Cup ’26</span>
+            <span>📍 Copenhagen</span>
+            <div className="flex items-center gap-2 normal-case tracking-normal">
+              <GoalAlertsPill myId={myId} />
+              <span className="tracking-[0.18em]">World Cup ’26</span>
+            </div>
           </div>
           <h1 className="font-display text-[44px] leading-[0.86] uppercase drop-shadow">
             Who’s<br />watching<br /><span className="flourish lowercase text-[48px] text-lime">tonight?</span>
