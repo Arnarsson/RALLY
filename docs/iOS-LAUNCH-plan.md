@@ -19,6 +19,18 @@ app actually needs — push, deep links, share. No React Native rewrite.
 
 ---
 
+## Progress (as of this session)
+
+| Subgoal | Status |
+|---|---|
+| **SG1** — web app App-Store-grade | ✅ **done** — mobile Lighthouse **90** (from 79), PWA installable, web push shipped (`/api/push/*`, `push_subscriptions`, VAPID). |
+| **SG2** — Capacitor wrap runs | ✅ **done** — scaffolded on Linux; **built + launched to Tonight** in the iOS Simulator on Sven's Mac. |
+| **SG3** — CI signing → TestFlight | ⏸ **parked on the $99 Apple Developer account.** Sven chose the **PWA path for now** (zero cost, push works, no Developer Mode). |
+| **SG4** — native integrations | ⏸ after SG3. Native APNs push needs the paid account; web push covers the PWA in the meantime. |
+| **SG5** — submission-ready | ⏸ after SG3/SG4. |
+
+**Decisions logged:** Sven has a Mac (local Xcode builds, CI optional). Free Xcode-to-device builds need **Developer Mode ON to even launch** (iOS 16+), and turning it off blocks the app — so for *using* RALLY on the phone now, the **PWA (Add to Home Screen)** is the chosen path: real icon, offline, web push, no Developer Mode, no $99. The native/$99 path resumes when Sven wants TestFlight + reliable APNs push + the App Store.
+
 ## FINAL GOAL
 
 > RALLY is a TestFlight-distributed iPhone app built from the existing web app: a
