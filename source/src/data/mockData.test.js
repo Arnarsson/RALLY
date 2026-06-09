@@ -8,6 +8,7 @@ import {
   loadMatches, loadVenues, loadPlans, loadPlan,
   MATCHES, VENUES, PLANS,
   playerSlug, ratePlayer, unratePlayer, matchRatings, myRatings,
+  myReferralCode, ensureReferral, claimReferral, myDiscounts,
 } from './mockData.js'
 import { activeCategories, isCategoryActive, RATING_CATEGORIES, MAX_PICKS_PER_CATEGORY } from './ratingConfig.js'
 
@@ -110,6 +111,29 @@ describe('match ratings — loaders are no-ops without Supabase', () => {
   it('matchRatings / myRatings return null on the demo path', async () => {
     expect(await matchRatings('m1')).toBeNull()
     expect(await myRatings('m1')).toBeNull()
+  })
+})
+
+describe('§2 referral loaders — degrade cleanly without Supabase (demo mode)', () => {
+  it('myReferralCode returns null on the demo path (no backend)', () => {
+    // hasSupabase is false in the test env → stub, even with a plausible id.
+    expect(myReferralCode('some-auth-uid')).toBeNull()
+    expect(myReferralCode(null)).toBeNull()
+  })
+  it('ensureReferral is a no-op that resolves to null', async () => {
+    await expect(ensureReferral('uid')).resolves.toBeNull()
+    await expect(ensureReferral(null)).resolves.toBeNull()
+  })
+  it('claimReferral never throws and resolves to null', async () => {
+    await expect(claimReferral('RALLY-ABC123', 'RALLY-SELF00')).resolves.toBeNull()
+    await expect(claimReferral(null)).resolves.toBeNull()
+  })
+  it('claimReferral guards self-referral (same code in and out → null)', async () => {
+    await expect(claimReferral('RALLY-SAME00', 'RALLY-SAME00')).resolves.toBeNull()
+  })
+  it('myDiscounts returns an empty array (reward surface renders clean)', async () => {
+    await expect(myDiscounts('uid')).resolves.toEqual([])
+    await expect(myDiscounts(null)).resolves.toEqual([])
   })
 })
 

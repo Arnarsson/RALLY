@@ -40,6 +40,45 @@ export function planShareUrl(planId, ref) {
   return ref ? `${base}?ref=${encodeURIComponent(ref)}` : base
 }
 
+// ---------------------------------------------------------------------------
+// §2 REFERRAL — a user's STABLE referral code, derived deterministically from
+// their (auth) id. Pure + side-effect-free so it's unit-testable and identical
+// on every device for the same user (no extra column on `profiles` needed).
+//
+// Shape: RALLY-XXXXXX — a short, human-ish, uppercase code. The derivation is a
+// tiny stable string hash (FNV-1a) over the id, base36-encoded and padded. It is
+// NOT a secret — it just has to be stable per user and collision-light across the
+// app's user base. The code travels as ?ref=<code> on the sharer's link and is
+// looked up server-side by the claim_referral RPC.
+// ---------------------------------------------------------------------------
+export function referralCodeFor(userId) {
+  if (!userId) return null
+  // FNV-1a 32-bit over the id, then a second pass over the reversed id so the
+  // 6 chars use more of the input (more spread than a single 32-bit word).
+  const fnv = (s) => {
+    let h = 0x811c9dc5
+    for (let i = 0; i < s.length; i++) {
+      h ^= s.charCodeAt(i)
+      h = Math.imul(h, 0x01000193)
+    }
+    return (h >>> 0)
+  }
+  const id = String(userId)
+  const a = fnv(id)
+  const b = fnv(id.split('').reverse().join(''))
+  const raw = (a.toString(36) + b.toString(36)).toUpperCase().replace(/[^A-Z0-9]/g, '')
+  const body = (raw + '000000').slice(0, 6)
+  return `RALLY-${body}`
+}
+
+// The referral-bearing plan link: a normal /p/<id> link that also carries the
+// sharer's referral code as ?ref. Thin convenience over planShareUrl so the
+// Share sheet has one obvious call. Falls back to a plain plan link when there's
+// no code yet (demo mode / pre-auth).
+export function referralLink(planId, userId) {
+  return planShareUrl(planId, referralCodeFor(userId) || undefined)
+}
+
 // The Open Graph / event-card image URL for a plan (served by /api/poster).
 // going is optional — it just pre-seeds the GOING pill for crawlers; the route
 // fetches the live count anyway.

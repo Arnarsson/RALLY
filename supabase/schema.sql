@@ -291,6 +291,80 @@ drop policy if exists discount_codes_update on discount_codes;
 create policy discount_codes_update on discount_codes
   for update using (auth.uid() = user_id) with check (auth.uid() = user_id);
 
+-- ---------------------------------------------------------------------------
+-- §2 RPC — claim_referral(p_code)  ·  the cross-user write the loop needs.
+--
+-- RLS GOTCHA solved here: referrals_update only allows auth.uid() = referrer_id,
+-- so the INVITEE (a different auth user) can neither mark the referral joined nor
+-- mint the REFERRER's reward under RLS. This SECURITY DEFINER function runs as
+-- the owner (bypassing RLS) but is tightly guarded so it can only ever do the one
+-- safe thing: attach the calling invitee to a pending referral and mint exactly
+-- one Miinto reward for that referral's referrer.
+--
+-- Called by the invitee right after they sign in (anon auth) and join, passing
+-- the ?ref code stashed in localStorage. Guards:
+--   * self-referral blocked (referrer_id <> auth.uid())
+--   * only a 'pending' referral is claimable (idempotent: re-calling is a no-op)
+--   * exactly one discount_codes row is minted per referral (status flips to
+--     'rewarded' in the same statement, so a double-call can't double-mint)
+-- Returns the minted/looked-up reward code (text), or null when nothing happened.
+-- ---------------------------------------------------------------------------
+create or replace function claim_referral(p_code text)
+returns text
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  v_uid       uuid := auth.uid();
+  v_ref       referrals%rowtype;
+  v_code      text;
+  v_existing  text;
+begin
+  if v_uid is null or p_code is null or length(trim(p_code)) = 0 then
+    return null;
+  end if;
+
+  -- Find a still-claimable (pending) referral for this code that isn't ours.
+  select * into v_ref
+  from referrals
+  where code = p_code
+    and status = 'pending'
+    and (referrer_id is distinct from v_uid)
+  limit 1
+  for update;
+
+  if not found then
+    -- Idempotent / already-handled / self-referral / unknown code → no-op.
+    -- If WE already claimed this code, surface the reward that was minted so the
+    -- caller can still show it (but never mint a second one).
+    select dc.code into v_existing
+    from referrals r
+    join discount_codes dc on dc.user_id = r.referrer_id and dc.partner = 'miinto'
+    where r.code = p_code and r.invitee_id = v_uid and r.status = 'rewarded'
+    limit 1;
+    return v_existing;  -- null when there's nothing to show
+  end if;
+
+  -- Mint a single-use, human-ish reward code for the REFERRER.
+  v_code := 'RALLY-' || upper(substr(replace(gen_random_uuid()::text, '-', ''), 1, 4));
+
+  insert into discount_codes (user_id, code, partner, pct, expires_at)
+  values (v_ref.referrer_id, v_code, 'miinto', 15, now() + interval '60 days');
+
+  -- Attach the invitee + flip straight to 'rewarded' (joined → rewarded in one
+  -- step; the row left 'pending' above guarantees this runs at most once).
+  update referrals
+  set invitee_id = v_uid, status = 'rewarded'
+  where id = v_ref.id;
+
+  return v_code;
+end;
+$$;
+
+revoke all on function claim_referral(text) from public;
+grant execute on function claim_referral(text) to anon, authenticated;
+
 -- ===========================================================================
 -- §3 — player_ratings (BUILT IN APP). Each row is one user's vote for one
 -- squad player in one match, in one category. Unique key prevents dup votes;

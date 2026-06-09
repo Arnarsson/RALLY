@@ -3,6 +3,7 @@
 import { describe, it, expect } from 'vitest'
 import {
   parseShareParams, planShareUrl, planCardUrl, shareText, SHARE_ORIGIN,
+  referralCodeFor, referralLink,
 } from './shareLinks.js'
 
 describe('parseShareParams', () => {
@@ -59,6 +60,41 @@ describe('planCardUrl', () => {
   })
   it('is safe with no match id', () => {
     expect(planCardUrl(null)).toBe(`${SHARE_ORIGIN}/`)
+  })
+})
+
+describe('referralCodeFor (§2 — stable, deterministic referral code)', () => {
+  it('is deterministic for the same id (stable across devices)', () => {
+    const id = '8c0e1d2f-aaaa-bbbb-cccc-1234567890ab'
+    expect(referralCodeFor(id)).toBe(referralCodeFor(id))
+  })
+  it('has the RALLY-XXXXXX shape (6 uppercase alnum chars)', () => {
+    expect(referralCodeFor('some-user-id')).toMatch(/^RALLY-[A-Z0-9]{6}$/)
+  })
+  it('differs for different ids (low collision)', () => {
+    expect(referralCodeFor('user-a')).not.toBe(referralCodeFor('user-b'))
+  })
+  it('is null-safe (demo mode / pre-auth)', () => {
+    expect(referralCodeFor(null)).toBeNull()
+    expect(referralCodeFor(undefined)).toBeNull()
+    expect(referralCodeFor('')).toBeNull()
+  })
+})
+
+describe('referralLink (§2 — plan link carrying the sharer code)', () => {
+  it('appends the sharer’s ?ref code', () => {
+    const code = referralCodeFor('host-1')
+    expect(referralLink('p_42', 'host-1')).toBe(`${SHARE_ORIGIN}/p/p_42?ref=${code}`)
+  })
+  it('round-trips: parseShareParams reads back the planId + ref', () => {
+    const url = referralLink('p_99', 'host-2')
+    const { pathname, search } = new URL(url)
+    const { planId, ref } = parseShareParams({ pathname, search })
+    expect(planId).toBe('p_99')
+    expect(ref).toBe(referralCodeFor('host-2'))
+  })
+  it('falls back to a plain plan link when there is no user (demo mode)', () => {
+    expect(referralLink('p_7', null)).toBe(`${SHARE_ORIGIN}/p/p_7`)
   })
 })
 

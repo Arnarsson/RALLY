@@ -9,8 +9,9 @@ import {
   loadPlans, loadPlan, subscribeRealtime, joinPlan, leavePlan, createPlanRow,
   loadTeamExtras,
   ratePlayer, unratePlayer, matchRatings, myRatings, playerSlug,
+  myReferralCode, ensureReferral, claimReferral, myDiscounts,
 } from './data/mockData.js'
-import { parseShareParams, planShareUrl, planCardUrl, shareText } from './data/shareLinks.js'
+import { parseShareParams, planShareUrl, planCardUrl, shareText, referralLink } from './data/shareLinks.js'
 import { activeCategories, MAX_PICKS_PER_CATEGORY } from './data/ratingConfig.js'
 import { OUTFIT_IMG } from './data/outfitImages.js'
 import { FLAG_PNG } from './data/flags.js'
@@ -448,6 +449,10 @@ export default function App() {
   const [beer, setBeer] = useState(false)
   const [splash, setSplash] = useState(true)
   const [, setRev] = useState(0)            // bump to re-render after live hydration
+  // §2 REFERRAL — the user's earned Miinto rewards + a one-time nudge toast when
+  // a fresh reward lands (someone joined their RALLY).
+  const [discounts, setDiscounts] = useState([])
+  const [referralNudge, setReferralNudge] = useState(null)
 
   // SHARE LOOP — a guest arriving via a shared link (/p/<id> or ?p=<id>). We
   // capture the planId once on mount and route straight to that plan after
@@ -492,6 +497,37 @@ export default function App() {
         if (!has) {
           const gp = await loadPlan(guestPlanId)
           if (gp && alive) setPlans((ps) => (ps.some((p) => p.id === gp.id) ? ps : [gp, ...ps]))
+        }
+      }
+      // §2 REFERRAL — close the viral loop, all guarded behind a real auth uid.
+      if (auth?.id && alive) {
+        // (a) Sharer side: ensure a pending referral row exists for MY code so a
+        //     future invitee's claim_referral(code) can find it.
+        ensureReferral(auth.id)
+        // (b) Invitee side: if a ?ref was stashed by §1 (and isn't my own code),
+        //     redeem it ONCE via the RPC, then clear it so it can't re-fire.
+        try {
+          const stashed = localStorage.getItem('rally_ref')
+          if (stashed) {
+            const claimed = await claimReferral(stashed, myReferralCode(auth.id))
+            localStorage.removeItem('rally_ref')
+            if (claimed && alive) setReferralNudge('joined')   // welcome the invitee
+          }
+        } catch { /* no localStorage (file://) — nothing to claim */ }
+        // (c) Reward surface + nudge: load my earned codes; if a brand-new one
+        //     landed since last app load, nudge the sharer ("someone joined").
+        const codes = await myDiscounts(auth.id)
+        if (alive) {
+          setDiscounts(codes)
+          try {
+            const top = codes[0]?.code
+            const seen = localStorage.getItem('rally_reward_seen')
+            if (top && top !== seen) {
+              localStorage.setItem('rally_reward_seen', top)
+              // Only nudge the SHARER here (the invitee already got their welcome).
+              setReferralNudge((n) => n || 'rewarded')
+            }
+          } catch { /* no localStorage — skip the nudge, codes still show */ }
         }
       }
       unsub = subscribeRealtime(async (kind) => {
@@ -592,7 +628,7 @@ export default function App() {
   } else if (view.name === 'create') {
     screen = <CreateScreen match={matchById(view.matchId)} onBack={back} onCreate={createPlan} />
   } else if (view.name === 'outfit') {
-    screen = <OutfitScreen />
+    screen = <OutfitScreen discounts={discounts} />
   } else if (view.name === 'leaders') {
     screen = <LeadersScreen plans={plans} onBuyBeer={() => setBeer(true)} />
   }
@@ -600,8 +636,9 @@ export default function App() {
   return (
     <UserCtx.Provider value={resolve}>
       <PhoneFrame tab={tab} onTab={goTab} footer={<>
-        {share && <ShareModal plan={share} onClose={() => setShare(null)} />}
+        {share && <ShareModal plan={share} refCode={myReferralCode(myId)} onClose={() => setShare(null)} />}
         {beer && <BuyBeerModal onClose={() => setBeer(false)} />}
+        {referralNudge && <ReferralNudge kind={referralNudge} onClose={() => setReferralNudge(null)} />}
       </>}>
         {screen}
       </PhoneFrame>
@@ -1339,7 +1376,7 @@ function CreateScreen({ match, onBack, onCreate }) {
 }
 
 // --- outfit (Style for the game · Miinto-ready) ----------------------------
-function OutfitScreen() {
+function OutfitScreen({ discounts = [] }) {
   const looks = [
     { img: OUTFIT_IMG.women, who: 'Women', title: 'Matchday looks', price: 'fr. 749 kr' },
     { img: OUTFIT_IMG.men, who: 'Men', title: 'Matchday looks', price: 'fr. 899 kr' },
@@ -1387,12 +1424,93 @@ function OutfitScreen() {
           </div>
         </button>
 
+        {/* §2 REFERRAL — the connector's reward. Earned 15% Miinto codes surface
+            here as a small gift, never a coupon dump. Hidden when there are none. */}
+        <RewardCard discounts={discounts} />
+
         <div className="rounded-2xl border-2 border-line p-4 mt-6 text-center">
           <div className="text-[11px] uppercase tracking-[0.18em] text-cream/50">Shop the looks · powered by</div>
           <div className="font-display text-2xl uppercase mt-1">{OUTFITS.partner}</div>
           <div className="text-xs text-cream/40 mt-1">Live product feed · tap any item to shop</div>
         </div>
         <p className="flourish text-center text-lg text-cream/30 mt-5">look the part. find your people.</p>
+      </div>
+    </div>
+  )
+}
+
+// --- §2 reward card --------------------------------------------------------
+// The connector's reward. Renders the earned single-use Miinto codes (15% off,
+// expiring) as a small gift on the Outfit screen. Returns null when there are
+// none (and in demo mode, where `discounts` is always []) so it never nags.
+function RewardCard({ discounts = [] }) {
+  const [copied, setCopied] = useState(null)
+  const live = discounts.filter((d) => !d.redeemed)
+  if (!live.length) return null
+
+  const fmtDate = (s) => {
+    try { return new Date(s).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' }) }
+    catch { return null }
+  }
+  const copy = async (code) => {
+    try { await navigator.clipboard.writeText(code) } catch { /* clipboard blocked */ }
+    setCopied(code); setTimeout(() => setCopied(null), 1600)
+  }
+
+  return (
+    <div className="rounded-2xl border-2 border-lime/60 bg-lime/[0.06] p-4 mt-6">
+      <div className="flex items-center justify-between">
+        <div className="text-[11px] font-bold uppercase tracking-[0.18em] text-lime">Your reward · for the connectors</div>
+        <span className="text-lg">🎟️</span>
+      </div>
+      <p className="text-sm text-cream/70 mt-1 leading-snug">
+        You pulled someone into a RALLY. Here’s <span className="font-bold text-cream">15% off at Miinto</span> — dress the part on us.
+      </p>
+      <div className="mt-3 space-y-2">
+        {live.map((d) => {
+          const exp = fmtDate(d.expires_at)
+          return (
+            <div key={d.code} className="flex items-center gap-2 bg-night/40 border border-line rounded-xl p-2 pl-3">
+              <div className="flex-1 min-w-0">
+                <div className="font-display text-lg uppercase tracking-wide truncate">{d.code}</div>
+                <div className="text-[10px] uppercase tracking-wide text-cream/40">
+                  {d.pct}% · {d.partner || 'Miinto'} · single-use{exp ? ` · ends ${exp}` : ''}
+                </div>
+              </div>
+              <button onClick={() => copy(d.code)}
+                className="shrink-0 rounded-lg bg-lime text-night px-3 py-2 text-[11px] font-bold uppercase tracking-wide active:scale-95 transition">
+                {copied === d.code ? 'Copied ✓' : 'Copy'}
+              </button>
+            </div>
+          )
+        })}
+      </div>
+    </div>
+  )
+}
+
+// --- §2 referral nudge -----------------------------------------------------
+// A one-time toast. Two voices: 'joined' welcomes a fresh INVITEE; 'rewarded'
+// tells the SHARER someone joined their RALLY and points them at their reward.
+function ReferralNudge({ kind, onClose }) {
+  useEffect(() => {
+    const t = setTimeout(onClose, 6000)
+    return () => clearTimeout(t)
+  }, [onClose])
+  const joined = kind === 'joined'
+  const head = joined ? 'Welcome to the RALLY' : 'Someone joined your RALLY'
+  const body = joined
+    ? 'You came in on a mate’s invite — good shout. Now go find your people.'
+    : 'Nice work, connector — 15% off at Miinto is waiting on the Outfit tab.'
+  return (
+    <div className="fixed inset-x-0 bottom-24 z-[60] flex justify-center px-4 pointer-events-none">
+      <div className="pointer-events-auto w-full max-w-[360px] rounded-2xl border-2 border-lime/60 bg-panel/95 backdrop-blur p-3.5 flex items-start gap-3 animate-pop shadow-xl"
+        onClick={onClose}>
+        <span className="text-xl leading-none mt-0.5">{joined ? '👋' : '🎟️'}</span>
+        <div className="flex-1">
+          <div className="font-display text-sm uppercase tracking-wide text-lime">{head}</div>
+          <div className="text-xs text-cream/70 mt-0.5 leading-snug">{body}</div>
+        </div>
       </div>
     </div>
   )
@@ -1456,13 +1574,15 @@ function LeadersScreen({ plans, onBuyBeer }) {
 // real guest-join link (rally.futbol/p/<id>) + the event-card image URL, and
 // fires navigator.share when available with a copy-link fallback. Sharing a
 // watch-party is how RALLY recruits new people.
-function ShareModal({ plan, onClose }) {
+function ShareModal({ plan, refCode, onClose }) {
   const venue = venueById(plan.venue_id)
   const match = matchById(plan.match_id)
   const [copied, setCopied] = useState(false)
 
   const going = plan.participant_ids?.length || 0
-  const link = planShareUrl(plan.id)
+  // §2 — the sharer's link carries THEIR referral code, so a new joiner earns
+  // them 15% at Miinto. Demo mode (no code) just hands out the plain plan link.
+  const link = refCode ? planShareUrl(plan.id, refCode) : planShareUrl(plan.id)
   const cardUrl = planCardUrl(plan.match_id, plan.id, going)
   const { title, text } = shareText({ teamA: match?.team_a, teamB: match?.team_b, venue: venue?.name })
 
@@ -1495,6 +1615,11 @@ function ShareModal({ plan, onClose }) {
           className="w-full mt-3 rounded-full bg-lime text-night font-bold uppercase tracking-widest py-3.5 active:scale-[0.98] transition">
           Share the rally
         </button>
+        {refCode && (
+          <p className="text-center text-[11px] text-cream/45 mt-2 px-4 leading-snug">
+            Pull a new face in and we’ll sort you <span className="text-lime font-bold">15% off at Miinto</span>. Dress the part on us.
+          </p>
+        )}
         <button onClick={() => window.open(cardUrl, '_blank')}
           className="w-full mt-2 text-center text-cream/50 text-xs uppercase tracking-widest py-2">
           Open the event card
