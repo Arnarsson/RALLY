@@ -15,6 +15,7 @@ import { SPLASH_IMG } from './data/splashImage.js'
 import { ACTIVE_THEME } from './theme.js'
 import PosterCard from './components/PosterCard'
 import { pushSupported, pushStatus, enablePush } from './lib/push'
+import { followMatch, unfollowMatch, loadMyFollows } from './lib/follows'
 
 // Code-split: every screen past Tonight is lazy. The initial chunk only carries
 // the splash + onboarding + Tonight (MatchesScreen), so the critical mobile
@@ -486,6 +487,11 @@ export default function App() {
   const [referralNudge, setReferralNudge] = useState(null)
   // ADD-TO-HOME-SCREEN — one-time iOS-Safari install hint (see InstallHint).
   const [installHint, setInstallHint] = useState(false)
+  // FOLLOW — match ids the user has starred to get goal alerts (no party needed).
+  // A Set, loaded from match_follows after auth (live) or kept local (demo).
+  // `followNudge` flashes a one-line in-voice toast on toggle ('on' | 'off').
+  const [follows, setFollows] = useState(() => new Set())
+  const [followNudge, setFollowNudge] = useState(null)
 
   // SHARE LOOP — a guest arriving via a shared link (/p/<id> or ?p=<id>). We
   // capture the planId once on mount and route straight to that plan after
@@ -523,6 +529,12 @@ export default function App() {
     ;(async () => {
       const auth = await ensureAuth()
       if (auth && alive) setProfile((p) => ({ ...p, id: auth.id, ...(auth.profile || {}) }))
+      // FOLLOW — pull the user's starred matches so the stars render in the
+      // followed state across devices/sessions.
+      if (auth?.id) {
+        const f = await loadMyFollows(auth.id)
+        if (alive) setFollows(f)
+      }
       const res = await hydrateFromSupabase()
       if (res && alive) { setPlans(res.plans); setRev((r) => r + 1) }
       // Guest-join: make sure the shared plan is present even if it's brand-new
@@ -634,6 +646,26 @@ export default function App() {
     // every "I'm going" can pull a friend in. (Only on join, not on leave.)
     if (willJoin) setShare(nextPlan)
   }
+  // FOLLOW — star/unstar a match for goal alerts (no party join required).
+  // Optimistic: flip the Set immediately, then persist. On the FIRST-ever follow
+  // we also ask for push permission so the alert can actually land — but a
+  // denied/unsupported prompt never blocks the follow (the row still gets
+  // written; they just won't get the push until they enable it elsewhere).
+  const toggleFollow = (matchId) => {
+    if (!matchId) return
+    const willFollow = !follows.has(matchId)
+    const wasEmpty = follows.size === 0
+    setFollows((prev) => {
+      const next = new Set(prev)
+      if (willFollow) next.add(matchId)
+      else next.delete(matchId)
+      return next
+    })
+    setFollowNudge(willFollow ? 'on' : 'off')
+    if (hasSupabase) (willFollow ? followMatch : unfollowMatch)(matchId, myId)
+    // First follow of the session → make sure they can receive the alert.
+    if (willFollow && wasEmpty) enablePush(myId)   // fails soft; never blocks
+  }
   const createPlan = ({ match_id, venue_id, time, vibe, note }) => {
     const id = 'p_' + Math.random().toString(36).slice(2, 7)
     const plan = { id, match_id, venue_id, host_id: myId, time, vibe, note: note || '', participant_ids: [myId], capacity_hint: 30 }
@@ -667,9 +699,9 @@ export default function App() {
 
   let screen
   if (view.name === 'matches') {
-    screen = <MatchesScreen plans={plans} flag={profile.flag} myId={myId} onOpenMatch={(m) => push({ name: 'match', matchId: m.id })} />
+    screen = <MatchesScreen plans={plans} flag={profile.flag} myId={myId} follows={follows} onToggleFollow={toggleFollow} onOpenMatch={(m) => push({ name: 'match', matchId: m.id })} />
   } else if (view.name === 'match') {
-    screen = <MatchScreen match={matchById(view.matchId)} plans={plans} myId={myId} onBack={back}
+    screen = <MatchScreen match={matchById(view.matchId)} plans={plans} myId={myId} following={follows.has(view.matchId)} onToggleFollow={toggleFollow} onBack={back}
       onOpenPlan={(p) => push({ name: 'plan', planId: p.id })} onCreate={() => push({ name: 'create', matchId: view.matchId })} />
   } else if (view.name === 'plan') {
     const plan = plans.find((p) => p.id === view.planId)
@@ -688,7 +720,8 @@ export default function App() {
         {share && <ShareModal plan={share} refCode={myReferralCode(myId)} onClose={() => setShare(null)} />}
         {beer && <BuyBeerModal onClose={() => setBeer(false)} />}
         {referralNudge && <ReferralNudge kind={referralNudge} onClose={() => setReferralNudge(null)} />}
-        {installHint && !referralNudge && <InstallHint onClose={dismissInstallHint} />}
+        {followNudge && !referralNudge && <FollowNudge kind={followNudge} onClose={() => setFollowNudge(null)} />}
+        {installHint && !referralNudge && !followNudge && <InstallHint onClose={dismissInstallHint} />}
       </>}>
         <Suspense fallback={<div className="min-h-[40vh]" />}>{screen}</Suspense>
       </PhoneFrame>
@@ -831,7 +864,7 @@ function ProfileSetup({ onDone }) {
 }
 
 // --- matches home ----------------------------------------------------------
-function MatchesScreen({ plans, onOpenMatch, flag, myId }) {
+function MatchesScreen({ plans, onOpenMatch, flag, myId, follows, onToggleFollow }) {
   const statsFor = (matchId) => {
     const ps = plans.filter((p) => p.match_id === matchId)
     return { planCount: ps.length, people: ps.reduce((n, p) => n + p.participant_ids.length, 0) }
@@ -926,7 +959,10 @@ function MatchesScreen({ plans, onOpenMatch, flag, myId }) {
                           : <div className="text-cream/40 text-xs my-0.5">versus</div>}
                         <div className="flex items-center gap-2"><FlagImg emoji={m.flag_b} team={m.team_b} size={17} /> {m.team_b}</div>
                       </div>
-                      <KickClock m={m} />
+                      <div className="flex items-start gap-1">
+                        <KickClock m={m} />
+                        <StarToggle on={follows?.has(m.id)} onToggle={() => onToggleFollow(m.id)} size={18} className="-mr-1 -mt-1" />
+                      </div>
                     </div>
                     <div className="flex items-center justify-between mt-4">
                       <TvChips tv={m.tv} small />
@@ -969,6 +1005,57 @@ function ReferralNudge({ kind, onClose }) {
       <div className="pointer-events-auto w-full max-w-[360px] rounded-2xl border-2 border-lime/60 bg-panel/95 backdrop-blur p-3.5 flex items-start gap-3 animate-pop shadow-xl"
         onClick={onClose}>
         <span className="text-xl leading-none mt-0.5">{joined ? '👋' : '🎟️'}</span>
+        <div className="flex-1">
+          <div className="font-display text-sm uppercase tracking-wide text-lime">{head}</div>
+          <div className="text-xs text-cream/70 mt-0.5 leading-snug">{body}</div>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+// --- follow (star) toggle --------------------------------------------------
+// A small star a user taps to follow a match for goal alerts WITHOUT joining a
+// watch party. Outline when off, filled lime when on. On a match card it must
+// not trigger the card's open-match navigation, so we stopPropagation. Exported
+// so the lazy MatchScreen header can reuse the exact same control.
+export function StarToggle({ on, onToggle, size = 22, className = '' }) {
+  return (
+    <button
+      type="button"
+      aria-pressed={on}
+      aria-label={on ? 'Following — tap to stop goal alerts' : 'Follow this match for goal alerts'}
+      onClick={(e) => { e.stopPropagation(); onToggle() }}
+      className={'inline-flex items-center justify-center rounded-full active:scale-90 transition shrink-0 ' + className}
+      style={{ width: size + 14, height: size + 14 }}
+    >
+      <svg viewBox="0 0 24 24" width={size} height={size} aria-hidden
+        fill={on ? '#A8FF00' : 'none'} stroke={on ? '#A8FF00' : 'currentColor'}
+        strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"
+        className={on ? 'drop-shadow' : 'text-cream/55'}>
+        <path d="M12 2.5l2.9 5.9 6.5.95-4.7 4.58 1.11 6.47L12 17.4l-5.81 3.05 1.11-6.47-4.7-4.58 6.5-.95L12 2.5z" />
+      </svg>
+    </button>
+  )
+}
+
+// --- follow nudge ----------------------------------------------------------
+// A one-line in-voice toast when a star is toggled. Same shape as ReferralNudge.
+function FollowNudge({ kind, onClose }) {
+  useEffect(() => {
+    const t = setTimeout(onClose, 4000)
+    return () => clearTimeout(t)
+  }, [onClose, kind])
+  const on = kind === 'on'
+  const head = on ? 'On the radar' : 'Off the radar'
+  const body = on
+    ? 'We’ll ping you the second they score. No need to pick a spot.'
+    : 'No more pings from this one. Your call.'
+  return (
+    <div className="fixed inset-x-0 bottom-24 z-[60] flex justify-center px-4 pointer-events-none">
+      <div className="pointer-events-auto w-full max-w-[360px] rounded-2xl border-2 border-lime/60 bg-panel/95 backdrop-blur p-3.5 flex items-start gap-3 animate-pop shadow-xl"
+        onClick={onClose}>
+        <span className="text-xl leading-none mt-0.5">{on ? '⭐' : '☆'}</span>
         <div className="flex-1">
           <div className="font-display text-sm uppercase tracking-wide text-lime">{head}</div>
           <div className="text-xs text-cream/70 mt-0.5 leading-snug">{body}</div>

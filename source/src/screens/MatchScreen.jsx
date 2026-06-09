@@ -313,7 +313,7 @@ function TeamExtras({ match, extras }) {
   )
 }
 
-export default function MatchScreen({ match, plans, myId, onBack, onOpenPlan, onCreate }) {
+export default function MatchScreen({ match, plans, myId, following, onToggleFollow, onBack, onOpenPlan, onCreate }) {
   const matchPlans = plans.filter((p) => p.match_id === match.id).sort((a, b) => b.participant_ids.length - a.participant_ids.length)
   const [extras, setExtras] = useState(null)
   const [showPoster, setShowPoster] = useState(false)
@@ -337,6 +337,17 @@ export default function MatchScreen({ match, plans, myId, onBack, onOpenPlan, on
           {match.venue && <div className="text-[11px] text-cream/55 mt-1">📍 {match.venue}</div>}
           <div className="mt-3 flex items-center gap-2 flex-wrap justify-center">
             <TvChips tv={match.tv} />
+            <button onClick={() => onToggleFollow?.(match.id)}
+              aria-pressed={!!following}
+              className={'inline-flex items-center gap-1.5 rounded-full font-bold uppercase tracking-wide px-3 py-1 text-[10px] active:scale-95 transition border '
+                + (following ? 'bg-lime text-night border-lime' : 'bg-night/40 text-cream border-cream/30 backdrop-blur-sm')}>
+              <svg viewBox="0 0 24 24" width="13" height="13" aria-hidden
+                fill={following ? 'currentColor' : 'none'} stroke="currentColor"
+                strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M12 2.5l2.9 5.9 6.5.95-4.7 4.58 1.11 6.47L12 17.4l-5.81 3.05 1.11-6.47-4.7-4.58 6.5-.95L12 2.5z" />
+              </svg>
+              {following ? 'Following' : 'Follow'}
+            </button>
             <button onClick={() => setShowPoster(true)}
               className="inline-flex items-center gap-1 rounded-full bg-lime text-night font-bold uppercase tracking-wide px-3 py-1 text-[10px] active:scale-95 transition">
               <span aria-hidden>⬆</span> Share
