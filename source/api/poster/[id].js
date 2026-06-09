@@ -169,7 +169,18 @@ function blendHex(hex, opacity) {
   }
 }
 
-// ── JSX template for satori ───────────────────────────────────────────────────
+// ── hyperscript helper for satori ─────────────────────────────────────────────
+// In a standalone (non-Next.js) Vercel function the builder does NOT transpile
+// JSX, so we emit Satori's element format directly. `h` mirrors React.createElement
+// but produces { type, props: { ...props, children } } which @vercel/og/satori
+// accepts directly. null/false/'' children are filtered out.
+
+function h(type, props, ...children) {
+  const kids = children.flat().filter((c) => c != null && c !== false && c !== '')
+  return { type, props: { ...(props || {}), children: kids.length === 0 ? undefined : kids.length === 1 ? kids[0] : kids } }
+}
+
+// ── element template for satori ───────────────────────────────────────────────
 // Satori supports a subset of CSS (no mix-blend-mode, no radial-gradient on
 // pseudo-elements, no box-shadow on children). We replicate the visual with
 // layered absolute divs.
@@ -215,9 +226,10 @@ function PosterElement({ match, planId, going, lowdownOverride, tvOverride }) {
   const glowA = blendHex(colorA, 0.55)
   const glowB = blendHex(colorB, 0.50)
 
-  return (
-    <div
-      style={{
+  return h(
+    'div',
+    {
+      style: {
         position: 'relative',
         width: W,
         height: H,
@@ -226,249 +238,312 @@ function PosterElement({ match, planId, going, lowdownOverride, tvOverride }) {
         flexDirection: 'column',
         fontFamily: 'Inter, sans-serif',
         overflow: 'hidden',
-      }}
-    >
-      {/* Archive photo layer */}
-      {archiveSrc && (
-        <img
-          src={archiveSrc}
-          style={{
+      },
+    },
+
+    // Archive photo layer
+    archiveSrc
+      ? h('img', {
+          src: archiveSrc,
+          alt: '',
+          style: {
             position: 'absolute',
             top: 0, left: 0, right: 0, bottom: 0,
             width: W, height: H,
             objectFit: 'cover',
             objectPosition: '50% 28%',
             filter: 'grayscale(1) contrast(1.08)',
-          }}
-          alt=""
-        />
-      )}
+          },
+        })
+      : null,
 
-      {/* Dark scrim */}
-      <div
-        style={{
-          position: 'absolute',
-          top: 0, left: 0, right: 0, bottom: 0,
-          background: 'linear-gradient(180deg, rgba(11,11,11,0.1) 0%, rgba(11,11,11,0.0) 28%, rgba(11,11,11,0.88) 72%, #0B0B0B 100%)',
-        }}
-      />
+    // Dark scrim
+    h('div', {
+      style: {
+        position: 'absolute',
+        top: 0, left: 0, right: 0, bottom: 0,
+        background: 'linear-gradient(180deg, rgba(11,11,11,0.1) 0%, rgba(11,11,11,0.0) 28%, rgba(11,11,11,0.88) 72%, #0B0B0B 100%)',
+      },
+    }),
 
-      {/* Team A colour glow — top-left corner */}
-      <div
-        style={{
-          position: 'absolute',
-          top: -60, left: -60,
-          width: W * 0.65,
-          height: H * 0.42,
-          background: `radial-gradient(ellipse at 30% 30%, ${glowA}, transparent 65%)`,
-          opacity: 0.65,
-        }}
-      />
+    // Team A colour glow — top-left corner
+    h('div', {
+      style: {
+        position: 'absolute',
+        top: -60, left: -60,
+        width: W * 0.65,
+        height: H * 0.42,
+        background: `radial-gradient(ellipse at 30% 30%, ${glowA}, transparent 65%)`,
+        opacity: 0.65,
+      },
+    }),
 
-      {/* Team B colour glow — top-right corner */}
-      <div
-        style={{
-          position: 'absolute',
-          top: -60, right: -60,
-          width: W * 0.65,
-          height: H * 0.42,
-          background: `radial-gradient(ellipse at 70% 30%, ${glowB}, transparent 65%)`,
-          opacity: 0.6,
-        }}
-      />
+    // Team B colour glow — top-right corner
+    h('div', {
+      style: {
+        position: 'absolute',
+        top: -60, right: -60,
+        width: W * 0.65,
+        height: H * 0.42,
+        background: `radial-gradient(ellipse at 70% 30%, ${glowB}, transparent 65%)`,
+        opacity: 0.6,
+      },
+    }),
 
-      {/* Content */}
-      <div
-        style={{
+    // Content
+    h(
+      'div',
+      {
+        style: {
           position: 'absolute',
           top: 0, left: 0, right: 0, bottom: 0,
           padding: PAD,
           display: 'flex',
           flexDirection: 'column',
           justifyContent: 'space-between',
-        }}
-      >
-        {/* TOP — brand + tag pill */}
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-          <div style={{
-            fontFamily: 'Archivo Black',
-            fontSize: 34,
-            letterSpacing: '-0.02em',
-            color: TEXT,
-            display: 'flex',
-          }}>
-            RALLY<span style={{ color: PINK }}>.</span>
-          </div>
-          <div style={{
-            fontFamily: 'Archivo Black',
-            fontSize: 16,
-            letterSpacing: '0.18em',
-            padding: '9px 15px',
-            borderRadius: 999,
-            background: isLive ? PINK : LIME,
-            color: isLive ? '#ffffff' : INK,
-          }}>
-            {tag}
-          </div>
-        </div>
+        },
+      },
 
-        {/* BOTTOM — match block */}
-        <div style={{ display: 'flex', flexDirection: 'column' }}>
-
-          {/* Flags */}
-          <div style={{ fontSize: 56, letterSpacing: '0.2em', marginBottom: 10, lineHeight: 1 }}>
-            {flagA} {flagB}
-          </div>
-
-          {/* Team A name */}
-          <div style={{
-            fontFamily: 'Archivo Black',
-            fontSize: 64,
-            lineHeight: 0.92,
-            letterSpacing: '-0.02em',
-            color: TEXT,
-            textTransform: 'uppercase',
-            display: 'flex',
-          }}>
-            {teamA}
-          </div>
-
-          {/* "versus" */}
-          <div style={{ display: 'flex', alignItems: 'center', margin: '8px 0' }}>
-            <span style={{
-              fontFamily: 'Instrument Serif',
-              fontStyle: 'italic',
-              fontSize: 48,
-              color: LIME,
-              lineHeight: 1,
-            }}>
-              versus
-            </span>
-          </div>
-
-          {/* Team B name */}
-          <div style={{
-            fontFamily: 'Archivo Black',
-            fontSize: 64,
-            lineHeight: 0.92,
-            letterSpacing: '-0.02em',
-            color: TEXT,
-            textTransform: 'uppercase',
-            display: 'flex',
-          }}>
-            {teamB}
-          </div>
-
-          {/* When line */}
-          {whenLine ? (
-            <div style={{
-              fontFamily: 'Instrument Serif',
-              fontStyle: 'italic',
-              fontSize: 36,
-              color: PAPER,
-              marginTop: 18,
-              opacity: 0.95,
-              display: 'flex',
-            }}>
-              {whenLine}
-            </div>
-          ) : null}
-
-          {/* Lowdown */}
-          {lowdown ? (
-            <div style={{
-              fontSize: 24,
-              lineHeight: 1.45,
-              color: '#e8e8e2',
-              marginTop: 18,
-              maxWidth: '90%',
-              display: 'flex',
-              flexWrap: 'wrap',
-            }}>
-              {lowdown}
-            </div>
-          ) : null}
-
-          {/* Pills */}
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 12, marginTop: 26 }}>
-            {prob ? (
-              <div style={{
-                fontFamily: 'Inter',
-                fontSize: 16,
-                fontWeight: 800,
-                letterSpacing: '0.12em',
-                textTransform: 'uppercase',
-                padding: '9px 15px',
-                borderRadius: 999,
-                background: LIME,
-                color: INK,
-                display: 'flex',
-              }}>
-                {prob.pct}% {prob.label}
-              </div>
-            ) : null}
-            {tvChannel ? (
-              <div style={{
-                fontFamily: 'Inter',
-                fontSize: 16,
-                fontWeight: 800,
-                letterSpacing: '0.12em',
-                textTransform: 'uppercase',
-                padding: '9px 14px',
-                borderRadius: 999,
-                background: 'transparent',
-                color: CYAN,
-                border: `1.5px solid ${blendHex(CYAN, 0.45)}`,
-                display: 'flex',
-              }}>
-                {`▶ ${tvChannel}`}
-              </div>
-            ) : null}
-            {going && Number(going) > 0 ? (
-              <div style={{
-                fontFamily: 'Inter',
-                fontSize: 16,
-                fontWeight: 800,
-                letterSpacing: '0.12em',
-                textTransform: 'uppercase',
-                padding: '9px 14px',
-                borderRadius: 999,
-                background: 'transparent',
-                color: '#dcdcd6',
-                border: '1.5px solid rgba(255,255,255,0.18)',
-                display: 'flex',
-              }}>
-                {going} GOING
-              </div>
-            ) : null}
-          </div>
-
-          {/* Footer CTA */}
-          <div style={{
-            marginTop: 26,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            borderTop: '1px solid rgba(255,255,255,0.12)',
-            paddingTop: 20,
-          }}>
-            <div style={{
+      // TOP — brand + tag pill
+      h(
+        'div',
+        { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' } },
+        h(
+          'div',
+          {
+            style: {
               fontFamily: 'Archivo Black',
-              fontSize: 24,
+              fontSize: 34,
+              letterSpacing: '-0.02em',
+              color: TEXT,
+              display: 'flex',
+            },
+          },
+          'RALLY',
+          h('span', { style: { color: PINK } }, '.'),
+        ),
+        h(
+          'div',
+          {
+            style: {
+              fontFamily: 'Archivo Black',
+              fontSize: 16,
+              letterSpacing: '0.18em',
+              padding: '9px 15px',
+              borderRadius: 999,
+              background: isLive ? PINK : LIME,
+              color: isLive ? '#ffffff' : INK,
+            },
+          },
+          tag,
+        ),
+      ),
+
+      // BOTTOM — match block
+      h(
+        'div',
+        { style: { display: 'flex', flexDirection: 'column' } },
+
+        // Flags
+        h(
+          'div',
+          { style: { fontSize: 56, letterSpacing: '0.2em', marginBottom: 10, lineHeight: 1 } },
+          `${flagA} ${flagB}`,
+        ),
+
+        // Team A name
+        h(
+          'div',
+          {
+            style: {
+              fontFamily: 'Archivo Black',
+              fontSize: 64,
+              lineHeight: 0.92,
+              letterSpacing: '-0.02em',
               color: TEXT,
               textTransform: 'uppercase',
               display: 'flex',
-            }}>
-              JOIN THE RALLY →
-            </div>
-            <div style={{ fontSize: 20, color: MUT, letterSpacing: '0.04em', display: 'flex' }}>
-              {footerUrl}
-            </div>
-          </div>
+            },
+          },
+          teamA,
+        ),
 
-        </div>
-      </div>
-    </div>
+        // "versus"
+        h(
+          'div',
+          { style: { display: 'flex', alignItems: 'center', margin: '8px 0' } },
+          h(
+            'span',
+            {
+              style: {
+                fontFamily: 'Instrument Serif',
+                fontStyle: 'italic',
+                fontSize: 48,
+                color: LIME,
+                lineHeight: 1,
+              },
+            },
+            'versus',
+          ),
+        ),
+
+        // Team B name
+        h(
+          'div',
+          {
+            style: {
+              fontFamily: 'Archivo Black',
+              fontSize: 64,
+              lineHeight: 0.92,
+              letterSpacing: '-0.02em',
+              color: TEXT,
+              textTransform: 'uppercase',
+              display: 'flex',
+            },
+          },
+          teamB,
+        ),
+
+        // When line
+        whenLine
+          ? h(
+              'div',
+              {
+                style: {
+                  fontFamily: 'Instrument Serif',
+                  fontStyle: 'italic',
+                  fontSize: 36,
+                  color: PAPER,
+                  marginTop: 18,
+                  opacity: 0.95,
+                  display: 'flex',
+                },
+              },
+              whenLine,
+            )
+          : null,
+
+        // Lowdown
+        lowdown
+          ? h(
+              'div',
+              {
+                style: {
+                  fontSize: 24,
+                  lineHeight: 1.45,
+                  color: '#e8e8e2',
+                  marginTop: 18,
+                  maxWidth: '90%',
+                  display: 'flex',
+                  flexWrap: 'wrap',
+                },
+              },
+              lowdown,
+            )
+          : null,
+
+        // Pills
+        h(
+          'div',
+          { style: { display: 'flex', flexWrap: 'wrap', gap: 12, marginTop: 26 } },
+          prob
+            ? h(
+                'div',
+                {
+                  style: {
+                    fontFamily: 'Inter',
+                    fontSize: 16,
+                    fontWeight: 800,
+                    letterSpacing: '0.12em',
+                    textTransform: 'uppercase',
+                    padding: '9px 15px',
+                    borderRadius: 999,
+                    background: LIME,
+                    color: INK,
+                    display: 'flex',
+                  },
+                },
+                `${prob.pct}% ${prob.label}`,
+              )
+            : null,
+          tvChannel
+            ? h(
+                'div',
+                {
+                  style: {
+                    fontFamily: 'Inter',
+                    fontSize: 16,
+                    fontWeight: 800,
+                    letterSpacing: '0.12em',
+                    textTransform: 'uppercase',
+                    padding: '9px 14px',
+                    borderRadius: 999,
+                    background: 'transparent',
+                    color: CYAN,
+                    border: `1.5px solid ${blendHex(CYAN, 0.45)}`,
+                    display: 'flex',
+                  },
+                },
+                `▶ ${tvChannel}`,
+              )
+            : null,
+          going && Number(going) > 0
+            ? h(
+                'div',
+                {
+                  style: {
+                    fontFamily: 'Inter',
+                    fontSize: 16,
+                    fontWeight: 800,
+                    letterSpacing: '0.12em',
+                    textTransform: 'uppercase',
+                    padding: '9px 14px',
+                    borderRadius: 999,
+                    background: 'transparent',
+                    color: '#dcdcd6',
+                    border: '1.5px solid rgba(255,255,255,0.18)',
+                    display: 'flex',
+                  },
+                },
+                `${going} GOING`,
+              )
+            : null,
+        ),
+
+        // Footer CTA
+        h(
+          'div',
+          {
+            style: {
+              marginTop: 26,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              borderTop: '1px solid rgba(255,255,255,0.12)',
+              paddingTop: 20,
+            },
+          },
+          h(
+            'div',
+            {
+              style: {
+                fontFamily: 'Archivo Black',
+                fontSize: 24,
+                color: TEXT,
+                textTransform: 'uppercase',
+                display: 'flex',
+              },
+            },
+            'JOIN THE RALLY →',
+          ),
+          h(
+            'div',
+            { style: { fontSize: 20, color: MUT, letterSpacing: '0.04em', display: 'flex' } },
+            footerUrl,
+          ),
+        ),
+      ),
+    ),
   )
 }
 
@@ -502,13 +577,7 @@ export default async function handler(req) {
 
   // ImageResponse IS a web Response — return it directly (edge runtime).
   return new ImageResponse(
-    <PosterElement
-      match={match}
-      planId={planId}
-      going={going}
-      lowdownOverride={lowdownParam}
-      tvOverride={tvParam}
-    />,
+    PosterElement({ match, planId, going, lowdownOverride: lowdownParam, tvOverride: tvParam }),
     {
       width: W,
       height: H,
