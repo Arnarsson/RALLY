@@ -336,6 +336,32 @@ export async function loadPlans() {
   }))
 }
 
+// Load ONE plan by id (for the guest-join / shared-link landing). Returns the
+// same { ...plan, participant_ids: [] } shape as loadPlans plus the resolved
+// match/venue so the guest screen can render even before a full hydrate. On the
+// demo path (no Supabase) it reads the seed PLANS so shared links still open.
+// Returns null when the plan doesn't exist.
+export async function loadPlan(planId) {
+  if (!planId) return null
+  if (!hasSupabase) {
+    const p = PLANS.find((x) => x.id === planId)
+    if (!p) return null
+    return { ...p, match: matchById(p.match_id) || null, venue: venueById(p.venue_id) || null }
+  }
+  const { data, error } = await supabase
+    .from('plans')
+    .select('id, match_id, venue_id, host_id, time, vibe, note, capacity_hint, plan_participants(user_id)')
+    .eq('id', planId)
+    .maybeSingle()
+  if (error || !data) return null
+  return {
+    id: data.id, match_id: data.match_id, venue_id: data.venue_id, host_id: data.host_id,
+    time: data.time, vibe: data.vibe, note: data.note || '', capacity_hint: data.capacity_hint,
+    participant_ids: (data.plan_participants || []).map((pp) => pp.user_id),
+    match: matchById(data.match_id) || null, venue: venueById(data.venue_id) || null,
+  }
+}
+
 // Replace array CONTENTS in place (keeps the const binding the helpers close over).
 function _replace(arr, next) { arr.length = 0; for (const x of next) arr.push(x) }
 

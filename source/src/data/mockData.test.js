@@ -5,8 +5,8 @@
 import { describe, it, expect } from 'vitest'
 import {
   _key, _formProb, _mapMatchRow,
-  loadMatches, loadVenues, loadPlans,
-  MATCHES, VENUES,
+  loadMatches, loadVenues, loadPlans, loadPlan,
+  MATCHES, VENUES, PLANS,
   playerSlug, ratePlayer, unratePlayer, matchRatings, myRatings,
 } from './mockData.js'
 import { activeCategories, isCategoryActive, RATING_CATEGORIES, MAX_PICKS_PER_CATEGORY } from './ratingConfig.js'
@@ -75,6 +75,19 @@ describe('loaders fall back to mock data with no Supabase configured', () => {
     const plans = await loadPlans()
     expect(Array.isArray(plans)).toBe(true)
     expect(Array.isArray(plans[0].participant_ids)).toBe(true)
+  })
+  it('loadPlan resolves one seed plan with its match + venue (guest-join)', async () => {
+    const seed = PLANS[0]
+    const p = await loadPlan(seed.id)
+    expect(p).not.toBeNull()
+    expect(p.id).toBe(seed.id)
+    expect(Array.isArray(p.participant_ids)).toBe(true)
+    expect(p.match?.id).toBe(seed.match_id)
+    expect(p.venue?.id).toBe(seed.venue_id)
+  })
+  it('loadPlan returns null for an unknown / missing id', async () => {
+    expect(await loadPlan('does-not-exist')).toBeNull()
+    expect(await loadPlan(null)).toBeNull()
   })
 })
 
