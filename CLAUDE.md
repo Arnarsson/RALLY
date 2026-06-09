@@ -1,8 +1,11 @@
 # CLAUDE.md — guide for Claude Code
 
 This file orients an AI agent (or human) working in the RALLY repo. Read it
-first. For the brand system read `SKILL.md`; for where the product is headed read
-`docs/RALLY-10x-plan.md`.
+first. The brand source-of-truth is a trinity: `SKILL.md` (the system — colours,
+type, tokens), `SOUL.md` (the voice — who RALLY is, how every word is written),
+and `RALLY-design-philosophy.md` ("Convergence" — the visual soul: the gathering
+as pattern, rationed colour, charged darkness). For where the product is headed
+read `docs/RALLY-10x-plan.md`.
 
 ## What RALLY is
 
