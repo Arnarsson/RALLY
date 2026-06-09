@@ -23,3 +23,9 @@ source/dist/
 # raw brand assets (not for public repo)
 WhatsApp Image*.jpeg
 *.jpeg
+.gstack/
+
+# Python
+__pycache__/
+*.pyc
+worker/node_modules/

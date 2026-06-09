@@ -10,9 +10,15 @@
 // This is the scalable version of the hand-placed opener photo: history on
 // every card that has a Commons image, colour-block art everywhere else.
 //
+// Targets (pick one with --target):
+//   json     : write src/data/fixtures.json .archive (default; current behaviour).
+//   supabase : write the matches.archive column in Supabase, by match id.
+//              Needs SUPABASE_URL + SUPABASE_SERVICE_ROLE_KEY in the env.
+//
 // Usage:
-//   node scripts/fetch-archive.mjs              # all fixtures
+//   node scripts/fetch-archive.mjs              # all fixtures → fixtures.json
 //   node scripts/fetch-archive.mjs --limit 20   # first N
+//   node scripts/fetch-archive.mjs --target supabase
 //   npm run archive
 // ---------------------------------------------------------------------------
 
@@ -76,8 +82,11 @@ async function searchCommons(a, b) {
   return best
 }
 
-async function main() {
-  const limit = process.argv.includes('--limit') ? Number(process.argv[process.argv.indexOf('--limit') + 1]) : Infinity
+const argVal = (flag, def) =>
+  process.argv.includes(flag) ? process.argv[process.argv.indexOf(flag) + 1] : def
+
+// --- target: json (write fixtures.json .archive) ----------------------------
+async function writeJson(limit) {
   const data = JSON.parse(await readFile(FIXTURES, 'utf8'))
   let hit = 0, n = 0
   for (const f of data.fixtures) {
@@ -93,6 +102,41 @@ async function main() {
   data.archive_meta = { matched: hit, scanned: Math.min(n, data.fixtures.length), source: 'Wikimedia Commons', updated_at: new Date().toISOString() }
   await writeFile(FIXTURES, JSON.stringify(data, null, 2))
   process.stderr.write(`\nArchive photos for ${hit}/${Math.min(n, data.fixtures.length)} fixtures (commercial-OK only).\n`)
+}
+
+// --- target: supabase (write matches.archive by id) -------------------------
+async function writeSupabase(limit) {
+  const url = process.env.SUPABASE_URL
+  const key = process.env.SUPABASE_SERVICE_ROLE_KEY
+  if (!url || !key) throw new Error('set SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY')
+  const { createClient } = await import('@supabase/supabase-js')
+  const sb = createClient(url, key, { auth: { persistSession: false } })
+
+  const { data: rows, error } = await sb.from('matches').select('id, team_a, team_b, archive')
+  if (error) throw new Error(`read matches: ${error.message}`)
+
+  let hit = 0, n = 0
+  for (const r of rows || []) {
+    if (n++ >= limit) break
+    if (r.archive) { hit++; continue } // idempotent: leave existing photos
+    try {
+      const img = await searchCommons(r.team_a, r.team_b)
+      if (img) {
+        const { error: upErr } = await sb.from('matches').update({ archive: img }).eq('id', r.id)
+        if (upErr) { process.stderr.write(`  ! ${r.team_a} v ${r.team_b}  ${upErr.message}\n`); continue }
+        hit++; process.stderr.write(`  ✓ ${r.team_a} v ${r.team_b}  ${img.license}\n`)
+      } else process.stderr.write(`  · ${r.team_a} v ${r.team_b}  (colour-art fallback)\n`)
+    } catch (e) { process.stderr.write(`  ! ${r.team_a} v ${r.team_b}  ${e.message}\n`) }
+    await new Promise((r) => setTimeout(r, 140))
+  }
+  process.stderr.write(`\nArchive photos for ${hit}/${Math.min(n, (rows || []).length)} matches rows (commercial-OK only).\n`)
+}
+
+async function main() {
+  const limit = process.argv.includes('--limit') ? Number(argVal('--limit', Infinity)) : Infinity
+  const target = argVal('--target', 'json')
+  if (target === 'supabase') await writeSupabase(limit)
+  else await writeJson(limit)
 }
 
 main().catch((e) => { console.error(e.message); process.exit(1) })

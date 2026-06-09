@@ -9,9 +9,11 @@
     "channels": "node scripts/fetch-channels.mjs",
     "archive": "node scripts/fetch-archive.mjs",
     "build": "vite build",
-    "preview": "vite preview --host"
+    "preview": "vite preview --host",
+    "test": "vitest run"
   },
   "dependencies": {
+    "@supabase/supabase-js": "^2.108.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1"
   },
@@ -21,6 +23,7 @@
     "postcss": "^8.4.38",
     "tailwindcss": "^3.4.4",
     "vite": "^5.3.1",
-    "vite-plugin-singlefile": "^2.0.0"
+    "vite-plugin-singlefile": "^2.0.0",
+    "vitest": "^4.1.8"
   }
 }

@@ -2,33 +2,40 @@
 // ---------------------------------------------------------------------------
 // RALLY — live fixtures fetcher
 //
-// Pulls the REAL 2026 FIFA World Cup schedule from ESPN's hidden site API
-// (the same "secret-identity" endpoint the Printing Press `espn` CLI sniffs —
-// no key, no scraping, just JSON) and rewrites it into RALLY's match shape:
-// Copenhagen kickoff times, live status (scheduled / in-play / full-time),
-// live score, match minute, recent form, real venue.
+// Pulls the REAL 2026 FIFA World Cup schedule from football-data.org (v4) —
+// a free, European, no-scraping JSON API (competition code "WC") — and
+// rewrites it into RALLY's match shape: Copenhagen kickoff times, live
+// status (scheduled / in-play / full-time), live score, recent form (n/a
+// here), real venue.
 //
-// Endpoint: site.api.espn.com/apis/site/v2/sports/soccer/fifa.world/scoreboard
+// Endpoint: https://api.football-data.org/v4/competitions/WC/matches
+//   Auth header: X-Auth-Token: <FOOTBALL_DATA_TOKEN>
 //
 // Usage:
-//   node scripts/fetch-fixtures.mjs                  # whole group stage
+//   node scripts/fetch-fixtures.mjs                  # whole competition
 //   node scripts/fetch-fixtures.mjs 20260611 20260614  # a date window
 //   FIXTURES_OUT=src/data/fixtures.json node scripts/fetch-fixtures.mjs
+//   node scripts/fetch-fixtures.mjs --target=supabase  # upsert into Supabase
 //
-// Production path: in the real app this runs on a backend cron (or the
-// `espn-pp-mcp` MCP server) every ~30s during live windows, writing into
-// Supabase. The app just reads the table. Same JSON, same shape.
+// --target=json (DEFAULT) writes src/data/fixtures.json (the standalone demo
+//   reads this). --target=supabase upserts each match into the `matches`
+//   table (needs SUPABASE_URL + SUPABASE_SERVICE_ROLE_KEY).
+//
+// Production path: in the real app this runs on a backend cron every ~30s
+// during live windows, writing into Supabase. The app just reads the table.
+// Same JSON, same shape — swapping the data source never touches the UI.
 // ---------------------------------------------------------------------------
 
 import { writeFile, mkdir } from 'node:fs/promises'
 import { dirname } from 'node:path'
 
-const LEAGUE = 'fifa.world'
-const BASE = `https://site.api.espn.com/apis/site/v2/sports/soccer/${LEAGUE}/scoreboard`
+const COMP = 'WC'
+const BASE = `https://api.football-data.org/v4/competitions/${COMP}/matches`
+const TOKEN = process.env.FOOTBALL_DATA_TOKEN
 const TZ = 'Europe/Copenhagen'
 const OUT = process.env.FIXTURES_OUT || 'src/data/fixtures.json'
 
-// ESPN abbreviation -> flag emoji. Covers the 2026 field + likely qualifiers;
+// Team code (TLA) -> flag emoji. Covers the 2026 field + likely qualifiers;
 // unknown codes fall back to 🏴 so the app never renders blank.
 const FLAG = {
   MEX:'🇲🇽', RSA:'🇿🇦', KOR:'🇰🇷', CZE:'🇨🇿', CAN:'🇨🇦', BIH:'🇧🇦', USA:'🇺🇸', PAR:'🇵🇾',
@@ -40,7 +47,7 @@ const FLAG = {
   WAL:'🏴', GRE:'🇬🇷', IRL:'🇮🇪', CHI:'🇨🇱', PER:'🇵🇪', VEN:'🇻🇪', CIV:'🇨🇮', MLI:'🇲🇱',
   NZL:'🇳🇿', HON:'🇭🇳', JAM:'🇯🇲', CUW:'🇨🇼', HAI:'🇭🇹', CPV:'🇨🇻', RSA2:'🇿🇦',
 }
-const flag = (abbr, name) => FLAG[abbr] || '🏴'
+const flag = (tla, name) => FLAG[tla] || '🏴'
 
 const fmt = (iso, opts) => new Intl.DateTimeFormat('en-GB', { timeZone: TZ, ...opts }).format(new Date(iso))
 // "2026-06-11T19:00Z" -> { date:'2026-06-12', time:'21:00', day:'THU 11 JUN' }
@@ -60,103 +67,102 @@ function cph(iso) {
 // like the original mock). Marquee/openers default to free-to-air DR.
 const dkTv = (hot) => hot ? [{ name:'DR1', free:true }] : [{ name:'TV2 Sport', free:false }]
 
-async function fetchDate(yyyymmdd) {
-  const url = `${BASE}?dates=${yyyymmdd}`
-  const r = await fetch(url, { headers: { 'User-Agent': 'rally-fixtures/1.0' } })
-  if (!r.ok) throw new Error(`${yyyymmdd}: HTTP ${r.status}`)
+// football-data status -> RALLY state (pre | in | post)
+function mapStatus(s) {
+  switch (s) {
+    case 'IN_PLAY':
+    case 'PAUSED':
+      return 'in'
+    case 'FINISHED':
+      return 'post'
+    case 'SCHEDULED':
+    case 'TIMED':
+    default:
+      return 'pre'
+  }
+}
+
+// Human-readable detail for the card subtitle.
+function statusDetail(s, state) {
+  if (state === 'in') return s === 'PAUSED' ? 'Half-time' : 'Live'
+  if (state === 'post') return 'Full time'
+  return 'Scheduled'
+}
+
+async function fetchMatches({ dateFrom, dateTo } = {}) {
+  if (!TOKEN) throw new Error('FOOTBALL_DATA_TOKEN is not set (see .env.example)')
+  const qs = new URLSearchParams()
+  if (dateFrom) qs.set('dateFrom', dateFrom)
+  if (dateTo) qs.set('dateTo', dateTo)
+  const url = qs.toString() ? `${BASE}?${qs}` : BASE
+  const r = await fetch(url, { headers: { 'X-Auth-Token': TOKEN, 'User-Agent': 'rally-fixtures/1.0' } })
+  if (!r.ok) throw new Error(`HTTP ${r.status} ${r.statusText}`)
   return r.json()
 }
 
-// American odds -> implied probability.
-const implied = (o) => { const n = Number(o); if (!n) return null; return n < 0 ? (-n) / (-n + 100) : 100 / (n + 100) }
-
-function mapEvent(ev) {
-  const comp = ev.competitions[0]
-  const home = comp.competitors.find(c => c.homeAway === 'home') || comp.competitors[0]
-  const away = comp.competitors.find(c => c.homeAway === 'away') || comp.competitors[1]
-  const t = comp.status?.type || {}
-  const state = t.state || 'pre'            // pre | in | post
-  const { date, time, day, iso_local } = cph(ev.date)
-  // Win probability from moneyline odds (vig removed by normalising to 1).
-  const ml = comp.odds?.[0]?.moneyline
-  let prob = null
-  if (ml) {
-    const ph = implied(ml.home?.close?.odds ?? ml.home?.open?.odds)
-    const pd = implied(ml.draw?.close?.odds ?? ml.draw?.open?.odds)
-    const pa = implied(ml.away?.close?.odds ?? ml.away?.open?.odds)
-    if (ph && pa) { const s = ph + (pd || 0) + pa; prob = { a: +(ph / s).toFixed(3), draw: pd ? +(pd / s).toFixed(3) : null, b: +(pa / s).toFixed(3) } }
-  }
+function mapMatch(m) {
+  const home = m.homeTeam || {}
+  const away = m.awayTeam || {}
+  const state = mapStatus(m.status)            // pre | in | post
+  const { iso_local, day } = cph(m.utcDate)
+  const ft = m.score?.fullTime || {}
   // RALLY renders team_a (home) v team_b (away)
   return {
-    id: 'wc_' + ev.id,
-    espn_id: ev.id,
-    team_a: home.team.shortDisplayName || home.team.name,
-    flag_a: flag(home.team.abbreviation, home.team.name),
-    logo_a: home.team.logo || null,        // crisp flag image (cross-platform)
-    color_a: home.team.color ? '#' + home.team.color : null,
-    form_a: home.form || null,             // e.g. "WWWDD"
-    team_b: away.team.shortDisplayName || away.team.name,
-    flag_b: flag(away.team.abbreviation, away.team.name),
-    logo_b: away.team.logo || null,
-    color_b: away.team.color ? '#' + away.team.color : null,
-    form_b: away.form || null,
-    prob_a: prob?.a ?? null, prob_draw: prob?.draw ?? null, prob_b: prob?.b ?? null,
+    id: 'wc_' + m.id,
+    fd_id: m.id,
+    team_a: home.shortName || home.name || home.tla || 'TBD',
+    flag_a: flag(home.tla, home.name),
+    logo_a: home.crest || null,            // crisp crest image (cross-platform)
+    color_a: null,                         // football-data has no team colour
+    form_a: null,                          // not provided (UI _formProb fallback)
+    team_b: away.shortName || away.name || away.tla || 'TBD',
+    flag_b: flag(away.tla, away.name),
+    logo_b: away.crest || null,
+    color_b: null,
+    form_b: null,
+    prob_a: null, prob_draw: null, prob_b: null,  // no odds (form fallback downstream)
     kickoff: iso_local,                    // Copenhagen local, matches mock shape
-    kickoff_utc: ev.date,
+    kickoff_utc: m.utcDate,
     day,
-    stage: (ev.season?.slug === 'group-stage' ? 'Group Stage' : (t.description || 'Knockout')),
-    venue: comp.venue ? `${comp.venue.fullName}${comp.venue.address?.city ? ' · ' + comp.venue.address.city : ''}` : null,
+    stage: m.stage ? prettyStage(m.stage) : 'Knockout',
+    venue: m.venue || null,
     tv: dkTv(false),
     // --- live status (auto-fills once the tournament kicks off) -------------
     status: state,                         // 'pre' | 'in' | 'post'
-    status_detail: t.shortDetail || t.detail || 'Scheduled',
-    clock: comp.status?.displayClock || null,   // "67'"
-    completed: !!t.completed,
-    score_a: state === 'pre' ? null : Number(home.score ?? 0),
-    score_b: state === 'pre' ? null : Number(away.score ?? 0),
+    status_detail: statusDetail(m.status, state),
+    clock: state === 'pre' ? null : (m.minute != null ? `${m.minute}'` : null),
+    completed: state === 'post',
+    score_a: state === 'pre' ? null : Number(ft.home ?? 0),
+    score_b: state === 'pre' ? null : Number(ft.away ?? 0),
   }
 }
 
-async function main() {
-  const [from, to] = process.argv.slice(2)
-  // Default window: group stage (11–27 Jun 2026). Pull the calendar to be exact.
-  let dates = []
-  if (from) {
-    let d = new Date(`${from.slice(0,4)}-${from.slice(4,6)}-${from.slice(6,8)}T12:00:00Z`)
-    const end = to ? new Date(`${to.slice(0,4)}-${to.slice(4,6)}-${to.slice(6,8)}T12:00:00Z`) : d
-    while (d <= end) {
-      dates.push(`${d.getUTCFullYear()}${String(d.getUTCMonth()+1).padStart(2,'0')}${String(d.getUTCDate()).padStart(2,'0')}`)
-      d = new Date(d.getTime() + 864e5)
-    }
-  } else {
-    const base = await fetchDate('20260611')
-    const cal = base.leagues?.[0]?.calendar?.[0]?.entries || []
-    const group = cal.find(e => /group/i.test(e.label)) || cal[0]
-    let d = new Date(group.startDate), end = new Date(group.endDate)
-    while (d <= end) {
-      dates.push(`${d.getUTCFullYear()}${String(d.getUTCMonth()+1).padStart(2,'0')}${String(d.getUTCDate()).padStart(2,'0')}`)
-      d = new Date(d.getTime() + 864e5)
-    }
-  }
+// football-data stage enum ("GROUP_STAGE", "ROUND_OF_16", "FINAL") -> label.
+function prettyStage(stage) {
+  if (stage === 'GROUP_STAGE') return 'Group Stage'
+  return stage.toLowerCase().replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase())
+}
 
-  const fixtures = []
-  for (const ymd of dates) {
-    try {
-      const data = await fetchDate(ymd)
-      for (const ev of (data.events || [])) fixtures.push(mapEvent(ev))
-      process.stderr.write(`  ${ymd}: ${data.events?.length || 0} matches\n`)
-    } catch (e) {
-      process.stderr.write(`  ${ymd}: ${e.message}\n`)
-    }
-  }
-  // de-dupe + sort by kickoff
-  const seen = new Set()
-  const out = fixtures.filter(f => !seen.has(f.id) && seen.add(f.id))
-    .sort((a,b) => a.kickoff_utc.localeCompare(b.kickoff_utc))
+// "20260611" -> "2026-06-11" (football-data wants ISO date strings).
+function isoDate(yyyymmdd) {
+  return `${yyyymmdd.slice(0,4)}-${yyyymmdd.slice(4,6)}-${yyyymmdd.slice(6,8)}`
+}
 
+async function writeSupabase(fixtures) {
+  const url = process.env.SUPABASE_URL
+  const key = process.env.SUPABASE_SERVICE_ROLE_KEY
+  if (!url || !key) throw new Error('SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY must be set for --target=supabase')
+  const { createClient } = await import('@supabase/supabase-js')
+  const supa = createClient(url, key, { auth: { persistSession: false } })
+  const { error } = await supa.from('matches').upsert(fixtures, { onConflict: 'id' })
+  if (error) throw new Error(`Supabase upsert failed: ${error.message}`)
+  process.stderr.write(`\n✓ upserted ${fixtures.length} fixtures → Supabase matches\n`)
+}
+
+async function writeJson(out) {
   const payload = {
-    source: 'ESPN site API (fifa.world/scoreboard)',
-    league: LEAGUE,
+    source: 'football-data.org v4 (competitions/WC/matches)',
+    league: COMP,
     fetched_at: new Date().toISOString(),
     timezone: TZ,
     count: out.length,
@@ -165,6 +171,44 @@ async function main() {
   await mkdir(dirname(OUT), { recursive: true })
   await writeFile(OUT, JSON.stringify(payload, null, 2))
   process.stderr.write(`\n✓ wrote ${out.length} fixtures → ${OUT}\n`)
+}
+
+async function main() {
+  const args = process.argv.slice(2)
+  const targetArg = args.find(a => a.startsWith('--target='))
+  const target = targetArg ? targetArg.split('=')[1] : 'json'
+  const positional = args.filter(a => !a.startsWith('--'))
+  const [from, to] = positional
+
+  // Optional date window (mirrors the old YYYYMMDD args). football-data also
+  // caps a single request to a 10-day span, so a window is the safe default
+  // when given; without args we pull the whole competition.
+  const query = {}
+  if (from) {
+    query.dateFrom = isoDate(from)
+    query.dateTo = isoDate(to || from)
+  }
+
+  let fixtures = []
+  try {
+    const data = await fetchMatches(query)
+    for (const m of (data.matches || [])) fixtures.push(mapMatch(m))
+    process.stderr.write(`  fetched ${data.matches?.length || 0} matches\n`)
+  } catch (e) {
+    process.stderr.write(`  ${e.message}\n`)
+    throw e
+  }
+
+  // de-dupe + sort by kickoff
+  const seen = new Set()
+  const out = fixtures.filter(f => !seen.has(f.id) && seen.add(f.id))
+    .sort((a,b) => a.kickoff_utc.localeCompare(b.kickoff_utc))
+
+  if (target === 'supabase') {
+    await writeSupabase(out)
+  } else {
+    await writeJson(out)
+  }
 }
 
 main().catch(e => { console.error(e); process.exit(1) })
