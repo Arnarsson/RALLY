@@ -6,10 +6,11 @@ import {
   PLANS as SEED_PLANS,
   OUTFITS,
   hasSupabase, ensureAuth, saveProfile, hydrateFromSupabase,
-  loadPlans, subscribeRealtime, joinPlan, leavePlan, createPlanRow,
+  loadPlans, loadPlan, subscribeRealtime, joinPlan, leavePlan, createPlanRow,
   loadTeamExtras,
   ratePlayer, unratePlayer, matchRatings, myRatings, playerSlug,
 } from './data/mockData.js'
+import { parseShareParams, planShareUrl, planCardUrl, shareText } from './data/shareLinks.js'
 import { activeCategories, MAX_PICKS_PER_CATEGORY } from './data/ratingConfig.js'
 import { OUTFIT_IMG } from './data/outfitImages.js'
 import { FLAG_PNG } from './data/flags.js'
@@ -448,13 +449,29 @@ export default function App() {
   const [splash, setSplash] = useState(true)
   const [, setRev] = useState(0)            // bump to re-render after live hydration
 
+  // SHARE LOOP — a guest arriving via a shared link (/p/<id> or ?p=<id>). We
+  // capture the planId once on mount and route straight to that plan after
+  // onboarding (no account wall). ?ref is stashed for §2 referrals (no logic).
+  const [guestPlanId] = useState(() => {
+    try { return parseShareParams(window.location).planId } catch { return null }
+  })
+
   // Identity: the Supabase auth uid once signed in, else the mock "me".
   const myId = profile?.id || ME.id
 
+  // Stash any ?ref code for §2 (referral credit) — capture only, no logic here.
   useEffect(() => {
-    const t = setTimeout(() => setSplash(false), 2200)
-    return () => clearTimeout(t)
+    try {
+      const { ref } = parseShareParams(window.location)
+      if (ref) localStorage.setItem('rally_ref', ref)
+    } catch { /* no-op (file:// / no localStorage) */ }
   }, [])
+
+  // A guest arriving on a shared link skips the splash so the invite lands fast.
+  useEffect(() => {
+    const t = setTimeout(() => setSplash(false), guestPlanId ? 600 : 2200)
+    return () => clearTimeout(t)
+  }, [guestPlanId])
 
   // Backend bootstrap — no-op on the standalone demo (hasSupabase === false).
   // Anonymous auth → profile, hydrate the live arrays in place, then subscribe
@@ -468,6 +485,15 @@ export default function App() {
       if (auth && alive) setProfile((p) => ({ ...p, id: auth.id, ...(auth.profile || {}) }))
       const res = await hydrateFromSupabase()
       if (res && alive) { setPlans(res.plans); setRev((r) => r + 1) }
+      // Guest-join: make sure the shared plan is present even if it's brand-new
+      // (created after this device's last hydrate).
+      if (guestPlanId && alive) {
+        const has = (res?.plans || []).some((p) => p.id === guestPlanId)
+        if (!has) {
+          const gp = await loadPlan(guestPlanId)
+          if (gp && alive) setPlans((ps) => (ps.some((p) => p.id === gp.id) ? ps : [gp, ...ps]))
+        }
+      }
       unsub = subscribeRealtime(async (kind) => {
         if (!alive) return
         if (kind === 'plans') setPlans(await loadPlans())
@@ -483,6 +509,19 @@ export default function App() {
     if (el) el.scrollTo({ top: 0 })
   }, [stack])
 
+  // SHARE LOOP — once a guest is onboarded and the shared plan is loaded, route
+  // the view-stack straight to that plan's detail (with the one-tap Join CTA).
+  // Runs once. On the demo path the plan comes from the seed PLANS so /p/ links
+  // still open the prototype.
+  const [guestRouted, setGuestRouted] = useState(false)
+  useEffect(() => {
+    if (!guestPlanId || guestRouted || splash || !onboarded) return
+    const target = plans.find((p) => p.id === guestPlanId)
+    if (!target) return
+    setStack([{ name: 'matches' }, { name: 'plan', planId: guestPlanId }])
+    setGuestRouted(true)
+  }, [guestPlanId, guestRouted, splash, onboarded, plans])
+
   const resolve = (id) => (id === myId ? profile : (userById(id) || profile))
   const view = stack[stack.length - 1]
   const push = (v) => setStack((s) => [...s, v])
@@ -492,14 +531,23 @@ export default function App() {
 
   const isJoined = (plan) => plan.participant_ids.includes(myId)
   const toggleJoin = (planId) => {
-    let willJoin = false
-    setPlans((ps) => ps.map((p) => {
-      if (p.id !== planId) return p
-      const joined = p.participant_ids.includes(myId)
-      willJoin = !joined
-      return { ...p, participant_ids: joined ? p.participant_ids.filter((id) => id !== myId) : [...p.participant_ids, myId] }
-    }))
+    // Decide intent from the current snapshot (NOT inside the setState updater —
+    // StrictMode double-invokes updaters, which would flip willJoin on the 2nd
+    // pass and break the side-effects below).
+    const cur = plans.find((p) => p.id === planId)
+    if (!cur) return
+    const willJoin = !cur.participant_ids.includes(myId)
+    const nextPlan = {
+      ...cur,
+      participant_ids: willJoin
+        ? [...cur.participant_ids, myId]
+        : cur.participant_ids.filter((id) => id !== myId),
+    }
+    setPlans((ps) => ps.map((p) => (p.id === planId ? nextPlan : p)))
     if (hasSupabase) (willJoin ? joinPlan : leavePlan)(planId, myId)   // realtime echoes to others
+    // SHARE LOOP — going is the moment to recruit: surface the share sheet so
+    // every "I'm going" can pull a friend in. (Only on join, not on leave.)
+    if (willJoin) setShare(nextPlan)
   }
   const createPlan = ({ match_id, venue_id, time, vibe, note }) => {
     const id = 'p_' + Math.random().toString(36).slice(2, 7)
@@ -507,9 +555,19 @@ export default function App() {
     setPlans((ps) => [plan, ...ps])
     if (hasSupabase) {
       createPlanRow({ match_id, venue_id, host_id: myId, time, vibe, note, capacity_hint: 30 })
-        .then((realId) => { if (realId) setPlans((ps) => ps.map((p) => (p.id === id ? { ...p, id: realId } : p))) })
+        .then((realId) => {
+          if (!realId) return
+          setPlans((ps) => ps.map((p) => (p.id === id ? { ...p, id: realId } : p)))
+          // Re-point the open stack + share sheet at the persisted id so the
+          // shared link resolves for guests.
+          setStack((s) => s.map((v) => (v.name === 'plan' && v.planId === id ? { ...v, planId: realId } : v)))
+          setShare((sh) => (sh && sh.id === id ? { ...sh, id: realId } : sh))
+        })
     }
     resetTo({ name: 'matches' }); push({ name: 'match', matchId: match_id }); push({ name: 'plan', planId: id })
+    // SHARE LOOP — surface the share sheet on create success so a new plan
+    // immediately recruits people.
+    setShare(plan)
     return plan
   }
 
@@ -1394,34 +1452,54 @@ function LeadersScreen({ plans, onBuyBeer }) {
 }
 
 // --- share modal -----------------------------------------------------------
+// SHARE LOOP — the share sheet. Renders the branded event PosterCard, builds the
+// real guest-join link (rally.futbol/p/<id>) + the event-card image URL, and
+// fires navigator.share when available with a copy-link fallback. Sharing a
+// watch-party is how RALLY recruits new people.
 function ShareModal({ plan, onClose }) {
   const venue = venueById(plan.venue_id)
   const match = matchById(plan.match_id)
   const [copied, setCopied] = useState(false)
-  const channels = [{ label: 'WhatsApp', emoji: '💬' }, { label: 'iMessage', emoji: '📱' }, { label: 'Instagram', emoji: '📸' }, { label: 'Copy link', emoji: '🔗' }]
+
+  const going = plan.participant_ids?.length || 0
+  const link = planShareUrl(plan.id)
+  const cardUrl = planCardUrl(plan.match_id, plan.id, going)
+  const { title, text } = shareText({ teamA: match?.team_a, teamB: match?.team_b, venue: venue?.name })
+
+  const copyLink = async () => {
+    try { await navigator.clipboard.writeText(link) } catch { /* clipboard blocked */ }
+    setCopied(true); setTimeout(() => setCopied(false), 1600)
+  }
+  const nativeShare = async () => {
+    if (navigator.share) {
+      try { await navigator.share({ url: link, title, text }); return } catch { /* cancelled → fall through */ }
+    }
+    copyLink()
+  }
+
   return (
     <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/80 p-4 text-cream" onClick={onClose}>
       <div className="w-full sm:max-w-[380px] animate-pop" onClick={(e) => e.stopPropagation()}>
-        <div className="rounded-3xl overflow-hidden bg-lime text-night p-6 text-center">
-          <div className="font-display text-2xl uppercase tracking-tight">RALLY</div>
-          <div className="text-[10px] uppercase tracking-[0.2em] text-night/60">Copenhagen</div>
-          <div className="text-6xl my-3">{venue.emoji}</div>
-          <div className="font-display uppercase text-xl leading-[0.95]">I’m watching<br />{match.flag_a} {match.team_a} v {match.team_b} {match.flag_b}</div>
-          <div className="flourish text-2xl mt-2">at {venue.name}</div>
-          <div className="text-xs text-night/60 uppercase tracking-wide mt-1">{venue.area} · from {plan.time}</div>
-          <div className="mt-4 flex items-center justify-center gap-2"><AvatarStack ids={plan.participant_ids} size={28} /><span className="text-sm font-bold">join us 👇</span></div>
-          <div className="mt-4 inline-block bg-night text-lime font-bold text-sm px-4 py-2 rounded-full">rally.app/p/{plan.id.replace('p_', '')}</div>
+        <div className="flex justify-center">
+          <PosterCard match={match} plan={{ ...plan, venue }} planId={plan.id} width={260} />
         </div>
-        <div className="grid grid-cols-4 gap-2 mt-4">
-          {channels.map((c) => (
-            <button key={c.label} onClick={() => { if (c.label === 'Copy link') { setCopied(true); setTimeout(() => setCopied(false), 1500) } }}
-              className="flex flex-col items-center gap-1 bg-panel border border-line rounded-2xl py-3 active:scale-95 transition">
-              <span className="text-2xl">{c.emoji}</span><span className="text-[10px] uppercase tracking-wide text-cream/60">{c.label}</span>
-            </button>
-          ))}
+
+        <div className="mt-4 flex items-center gap-2 bg-panel border border-line rounded-2xl p-2 pl-4">
+          <span className="flex-1 truncate text-sm text-cream/70">{link}</span>
+          <button onClick={copyLink} className="shrink-0 rounded-xl bg-panel2 border border-line px-3 py-2 text-[11px] font-bold uppercase tracking-wide active:scale-95 transition">
+            {copied ? 'Copied ✓' : 'Copy'}
+          </button>
         </div>
-        {copied && <div className="text-center text-lime text-sm font-bold mt-2">Link copied ✓</div>}
-        <button onClick={onClose} className="w-full text-center text-cream/60 text-sm mt-4 py-2">Close</button>
+
+        <button onClick={nativeShare}
+          className="w-full mt-3 rounded-full bg-lime text-night font-bold uppercase tracking-widest py-3.5 active:scale-[0.98] transition">
+          Share the rally
+        </button>
+        <button onClick={() => window.open(cardUrl, '_blank')}
+          className="w-full mt-2 text-center text-cream/50 text-xs uppercase tracking-widest py-2">
+          Open the event card
+        </button>
+        <button onClick={onClose} className="w-full text-center text-cream/60 text-sm mt-1 py-2">Close</button>
       </div>
     </div>
   )

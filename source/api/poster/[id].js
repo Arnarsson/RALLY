@@ -112,6 +112,52 @@ async function getMatch(id) {
   return Array.isArray(rows) && rows.length ? rows[0] : null
 }
 
+// Resolve the EVENT framing for a shared plan: venue name, host name, kickoff
+// time, and a live "going" count. All Supabase REST (service-role). Resilient by
+// design — any failed lookup degrades to null so the caller can fall back to the
+// plain matchday poster rather than 500. Returns null when planId/env missing.
+async function getPlanEvent(planId) {
+  const url = process.env.SUPABASE_URL
+  const key = process.env.SUPABASE_SERVICE_ROLE_KEY
+  if (!planId || !url || !key) return null
+  const headers = { apikey: key, Authorization: `Bearer ${key}` }
+  try {
+    const r = await fetch(
+      `${url}/rest/v1/plans?id=eq.${encodeURIComponent(planId)}` +
+        `&select=id,venue_id,host_id,time&limit=1`,
+      { headers },
+    )
+    if (!r.ok) return null
+    const rows = await r.json()
+    const plan = Array.isArray(rows) && rows.length ? rows[0] : null
+    if (!plan) return null
+
+    // venue name, host name, and live participant count — best-effort, parallel.
+    const venueP = plan.venue_id
+      ? fetch(`${url}/rest/v1/venues?id=eq.${encodeURIComponent(plan.venue_id)}&select=name&limit=1`, { headers })
+          .then((x) => (x.ok ? x.json() : [])).then((a) => a[0]?.name || null).catch(() => null)
+      : Promise.resolve(null)
+    const hostP = plan.host_id
+      ? fetch(`${url}/rest/v1/profiles?id=eq.${encodeURIComponent(plan.host_id)}&select=name&limit=1`, { headers })
+          .then((x) => (x.ok ? x.json() : [])).then((a) => a[0]?.name || null).catch(() => null)
+      : Promise.resolve(null)
+    // count=exact via Prefer header → Content-Range "0-N/total"
+    const countP = fetch(
+      `${url}/rest/v1/plan_participants?plan_id=eq.${encodeURIComponent(planId)}&select=user_id`,
+      { headers: { ...headers, Prefer: 'count=exact', Range: '0-0' } },
+    ).then((x) => {
+      const cr = x.headers.get('content-range') || ''
+      const total = cr.split('/')[1]
+      return total && total !== '*' ? Number(total) : null
+    }).catch(() => null)
+
+    const [venue, host, going] = await Promise.all([venueP, hostP, countP])
+    return { id: plan.id, time: plan.time || null, venue, host, going }
+  } catch {
+    return null
+  }
+}
+
 function safeColor(c, fallback) {
   return (c && /^#[0-9a-fA-F]{3,8}$/.test(c.trim())) ? c.trim() : fallback
 }
@@ -202,7 +248,7 @@ function h(type, props, ...children) {
 // pseudo-elements, no box-shadow on children). We replicate the visual with
 // layered absolute divs.
 
-function PosterElement({ match, planId, going, lowdownOverride, tvOverride }) {
+function PosterElement({ match, planId, going, lowdownOverride, tvOverride, event }) {
   const teamA = match.team_a || 'Team A'
   const teamB = match.team_b || 'Team B'
   const flagA = match.flag_a || ''
@@ -215,8 +261,16 @@ function PosterElement({ match, planId, going, lowdownOverride, tvOverride }) {
   const tonight = isTonight(match.kickoff)
   const isLive = match.status === 'in'
 
+  // EVENT mode — a shared watch-plan. Reframes the poster as an invite: venue +
+  // time + host + "N going", with the lime "WATCH PARTY" tag and the plan link.
+  const isEvent = !!(event && (event.venue || event.host || event.going != null))
+  // The plan time wins over kickoff when this is an event invite.
+  const eventTime = (event && event.time) || kickoffStr
+  const eventGoing = event && event.going != null ? event.going : (going != null ? Number(going) : null)
+
   let tag = 'UPCOMING'
-  if (isLive) tag = `LIVE ${match.clock || ''}`
+  if (isEvent && !isLive) tag = 'WATCH PARTY'
+  else if (isLive) tag = `LIVE ${match.clock || ''}`
   else if (match.status === 'post') tag = 'FULL TIME'
   else if (tonight) tag = 'TONIGHT'
   else if (dayLabel) tag = dayLabel
@@ -227,14 +281,24 @@ function PosterElement({ match, planId, going, lowdownOverride, tvOverride }) {
   const prob = winProb(match)
   const tvChannel = tvOverride || firstTvName(match)
 
-  const planSlug = planId || null
+  const planSlug = planId || (event && event.id) || null
   const footerUrl = planSlug ? `rally.futbol/p/${planSlug}` : 'rally.futbol'
 
-  const whenParts = []
-  if (tonight) whenParts.push('tonight')
-  else if (dayLabel) whenParts.push(dayLabel)
-  if (kickoffStr) whenParts.push(kickoffStr)
-  const whenLine = whenParts.join(' · ')
+  // When-line: in event mode it's the venue + time invite; otherwise the
+  // day/kickoff line as before.
+  let whenLine
+  if (isEvent) {
+    const parts = []
+    if (event.venue) parts.push(event.venue)
+    if (eventTime) parts.push(`from ${eventTime}`)
+    whenLine = parts.join(' · ')
+  } else {
+    const whenParts = []
+    if (tonight) whenParts.push('tonight')
+    else if (dayLabel) whenParts.push(dayLabel)
+    if (kickoffStr) whenParts.push(kickoffStr)
+    whenLine = whenParts.join(' · ')
+  }
 
   const PAD = 36
   const FONT_SCALE = W / 340
@@ -506,7 +570,28 @@ function PosterElement({ match, planId, going, lowdownOverride, tvOverride }) {
                 `▶ ${tvChannel}`,
               )
             : null,
-          going && Number(going) > 0
+          eventGoing != null && eventGoing > 0
+            ? h(
+                'div',
+                {
+                  style: {
+                    fontFamily: 'Inter',
+                    fontSize: 16,
+                    fontWeight: 800,
+                    letterSpacing: '0.12em',
+                    textTransform: 'uppercase',
+                    padding: '9px 14px',
+                    borderRadius: 999,
+                    background: isEvent ? PINK : 'transparent',
+                    color: isEvent ? '#ffffff' : '#dcdcd6',
+                    border: isEvent ? 'none' : '1.5px solid rgba(255,255,255,0.18)',
+                    display: 'flex',
+                  },
+                },
+                `${eventGoing} GOING`,
+              )
+            : null,
+          isEvent && event.host
             ? h(
                 'div',
                 {
@@ -524,7 +609,7 @@ function PosterElement({ match, planId, going, lowdownOverride, tvOverride }) {
                     display: 'flex',
                   },
                 },
-                `${going} GOING`,
+                `HOST ${event.host}`,
               )
             : null,
         ),
@@ -585,6 +670,14 @@ export default async function handler(req, res) {
   catch (err) { res.status(500).send('Data fetch failed: ' + err.message); return }
   if (!match) { res.status(404).send(`Match not found: ${id}`); return }
 
+  // EVENT variant — when a planId is present, resolve the plan's venue/host/time
+  // and a live going-count so the poster renders as a watch-party invite. Any
+  // failure leaves `event` null and the plain matchday poster renders.
+  let event = null
+  if (planId) {
+    try { event = await getPlanEvent(planId) } catch { event = null }
+  }
+
   // Embed the archive photo as a data URI (handles Commons redirects); drop it
   // gracefully if it can't be fetched so the poster always renders.
   if (match.archive && match.archive.src) {
@@ -600,7 +693,7 @@ export default async function handler(req, res) {
 
   try {
     const ir = new ImageResponse(
-      PosterElement({ match, planId, going, lowdownOverride: lowdownParam, tvOverride: tvParam }),
+      PosterElement({ match, planId, going, lowdownOverride: lowdownParam, tvOverride: tvParam, event }),
       { width: W, height: H, fonts },
     )
     const buf = Buffer.from(await ir.arrayBuffer())
