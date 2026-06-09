@@ -156,9 +156,21 @@ const EDITORIAL = [
 
 // Merge editorial + live. Editorial cards win (keep id, commentary, plans) and
 // pick up live status/score/form/venue; every other real fixture is appended.
+// Lightweight win-probability from recent form (W=3, D=1, L=0). A real
+// Dixon-Coles model (penaltyblog) replaces this in production; until then every
+// match shows a data-derived estimate instead of a blank.
+const _formPts = (f) => [...(f || '')].reduce((n, r) => n + (r === 'W' ? 3 : r === 'D' ? 1 : 0), 0)
+function _formProb(fa, fb) {
+  if (!fa || !fb) return null
+  const a = _formPts(fa) + 1.5, b = _formPts(fb) + 1.5, draw = 0.26
+  const pa = +((1 - draw) * a / (a + b)).toFixed(3)
+  return { a: pa, draw, b: +(1 - draw - pa).toFixed(3) }
+}
+
 function _enrich(m) {
   const f = _liveByKey[_key(m.team_a, m.team_b)]
   if (!f) return { ...m, status: 'pre' }
+  const fp = _formProb(f.form_a, f.form_b)
   return {
     ...m,
     status: f.status, status_detail: f.status_detail, clock: f.clock,
@@ -166,21 +178,28 @@ function _enrich(m) {
     form_a: f.form_a, form_b: f.form_b, venue: f.venue,
     color_a: f.color_a, color_b: f.color_b,
     archive: m.archive || f.archive,
+    prob_a: m.prob_a ?? fp?.a ?? null, prob_draw: m.prob_draw ?? fp?.draw ?? null,
+    prob_b: m.prob_b ?? fp?.b ?? null, prob_source: m.prob_source || (fp ? 'form' : null),
     kickoff_utc: f.kickoff_utc, espn_id: f.espn_id, day: f.day || m.day,
   }
 }
 const _usedKeys = new Set(EDITORIAL.map((m) => _key(m.team_a, m.team_b)))
 const _extra = LIVE_FIXTURES
   .filter((f) => !_usedKeys.has(_key(f.team_a, f.team_b)))
-  .map((f) => ({
-    id: f.id, team_a: f.team_a, flag_a: f.flag_a, team_b: f.team_b, flag_b: f.flag_b,
-    kickoff: f.kickoff, day: f.day, stage: f.stage, tv: f.tv,
-    status: f.status, status_detail: f.status_detail, clock: f.clock,
-    completed: f.completed, score_a: f.score_a, score_b: f.score_b,
-    form_a: f.form_a, form_b: f.form_b, venue: f.venue,
-    color_a: f.color_a, color_b: f.color_b, archive: f.archive,
-    kickoff_utc: f.kickoff_utc, espn_id: f.espn_id,
-  }))
+  .map((f) => {
+    const fp = _formProb(f.form_a, f.form_b)
+    return {
+      id: f.id, team_a: f.team_a, flag_a: f.flag_a, team_b: f.team_b, flag_b: f.flag_b,
+      kickoff: f.kickoff, day: f.day, stage: f.stage, tv: f.tv,
+      status: f.status, status_detail: f.status_detail, clock: f.clock,
+      completed: f.completed, score_a: f.score_a, score_b: f.score_b,
+      form_a: f.form_a, form_b: f.form_b, venue: f.venue,
+      color_a: f.color_a, color_b: f.color_b, archive: f.archive,
+      prob_a: fp?.a ?? null, prob_draw: fp?.draw ?? null, prob_b: fp?.b ?? null,
+      prob_source: fp ? 'form' : null,
+      kickoff_utc: f.kickoff_utc, espn_id: f.espn_id,
+    }
+  })
 
 export const MATCHES = [...EDITORIAL.map(_enrich), ..._extra]
   .sort((a, b) => a.kickoff.localeCompare(b.kickoff))

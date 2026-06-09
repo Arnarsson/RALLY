@@ -469,6 +469,9 @@ function MatchesScreen({ plans, onOpenMatch }) {
     return { planCount: ps.length, people: ps.reduce((n, p) => n + p.participant_ids.length, 0) }
   }
   const days = [...new Set(MATCHES.map((m) => m.day))]
+  const topPlan = plans && plans.length ? [...plans].sort((a, b) => b.participant_ids.length - a.participant_ids.length)[0] : null
+  const topVenue = topPlan && venueById(topPlan.venue_id)
+  const topMatch = topPlan && matchById(topPlan.match_id)
   return (
     <div className="pb-6">
       <header className="relative mb-6">
@@ -483,6 +486,21 @@ function MatchesScreen({ plans, onOpenMatch }) {
         </div>
       </header>
       <div className="px-5">
+
+      {topPlan && topVenue && topMatch && (
+        <button onClick={() => onOpenMatch(topMatch)} className="w-full text-left mb-4 rounded-2xl bg-lime text-night p-4 active:scale-[0.98] transition">
+          <div className="flex items-center justify-between">
+            <div className="text-[10px] font-bold uppercase tracking-[0.2em] flex items-center gap-1.5">
+              <span className="w-1.5 h-1.5 rounded-full bg-night animate-pulse" />Busiest tonight
+            </div>
+            <span className="text-[11px] font-bold">{topPlan.participant_ids.length} going →</span>
+          </div>
+          <div className="font-display uppercase text-2xl leading-none mt-2">{topVenue.emoji} {topVenue.name}</div>
+          <div className="text-[12px] font-bold mt-1 flex items-center gap-1.5">
+            <FlagImg emoji={topMatch.flag_a} team={topMatch.team_a} size={13} /> {topMatch.team_a} v {topMatch.team_b} <FlagImg emoji={topMatch.flag_b} team={topMatch.team_b} size={13} /> · {topMatch.kickoff.slice(11, 16)}
+          </div>
+        </button>
+      )}
 
       <div className="flex items-center gap-2 text-[10px] uppercase tracking-[0.18em] text-cream/40 mb-4">
         <span className="w-1.5 h-1.5 rounded-full bg-lime" />{MATCHES.length} fixtures · live schedule
@@ -615,7 +633,7 @@ function WinProbBar({ m }) {
     <div className="mb-6">
       <div className="flex items-center justify-between text-[9px] font-bold uppercase tracking-[0.2em] text-cream/40 mb-1.5">
         <span>Win probability</span>
-        <span className="text-cream/30">{m.prob_source === 'illustrative' ? 'model · illustrative' : 'model'}</span>
+        <span className="text-cream/30">{m.prob_source === 'illustrative' ? 'model · illustrative' : m.prob_source === 'form' ? 'based on form' : 'model'}</span>
       </div>
       <div className="flex h-2.5 rounded-full overflow-hidden">
         <div style={{ width: pa + '%', background: m.color_a || '#8ACE00' }} />
