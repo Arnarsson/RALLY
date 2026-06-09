@@ -97,13 +97,25 @@ function TvChips({ tv, small = false }) {
 
 // --- live status (real ESPN data) -----------------------------------------
 // Recent form, e.g. "WWWDD" -> coloured pips.
+const FORM_COLOR = { W: '#8ACE00', D: '#8a8a8a', L: '#FF5A1F' }
+const FORM_LABEL = { W: 'Win', D: 'Draw', L: 'Loss' }
 function FormPips({ form }) {
   if (!form) return null
-  const c = { W: '#8ACE00', D: '#8a8a8a', L: '#FF5A1F' }
   return (
     <span className="inline-flex items-center gap-0.5 align-middle">
       {form.split('').slice(0, 5).map((r, i) => (
-        <span key={i} className="w-1.5 h-1.5 rounded-full" style={{ background: c[r] || '#555' }} />
+        <span key={i} title={FORM_LABEL[r] || r} className="w-1.5 h-1.5 rounded-full" style={{ background: FORM_COLOR[r] || '#555' }} />
+      ))}
+    </span>
+  )
+}
+function FormLegend() {
+  return (
+    <span className="inline-flex items-center gap-2 text-[9px] uppercase tracking-[0.14em] text-cream/35">
+      {['W', 'D', 'L'].map((r) => (
+        <span key={r} className="inline-flex items-center gap-1">
+          <span className="w-1.5 h-1.5 rounded-full" style={{ background: FORM_COLOR[r] }} />{FORM_LABEL[r]}
+        </span>
       ))}
     </span>
   )
@@ -500,9 +512,15 @@ function MatchScreen({ match, plans, onBack, onOpenPlan, onCreate }) {
           <div className="text-[11px] uppercase tracking-[0.18em] text-cream/80 mt-2"><MatchStatusLine m={match} /></div>
           {match.venue && <div className="text-[11px] text-cream/55 mt-1">📍 {match.venue}</div>}
           {(match.form_a || match.form_b) && (
-            <div className="flex items-center gap-4 text-[10px] uppercase tracking-[0.16em] text-cream/45 mt-2">
-              <span className="flex items-center gap-1.5">{match.team_a} <FormPips form={match.form_a} /></span>
-              <span className="flex items-center gap-1.5"><FormPips form={match.form_b} /> {match.team_b}</span>
+            <div className="mt-3">
+              <div className="flex items-center gap-2 mb-1.5">
+                <span className="text-[9px] font-bold uppercase tracking-[0.2em] text-cream/40">Recent form · last 5</span>
+                <FormLegend />
+              </div>
+              <div className="flex items-center gap-4 text-[10px] uppercase tracking-[0.16em] text-cream/55">
+                <span className="flex items-center gap-1.5">{match.team_a} <FormPips form={match.form_a} /></span>
+                <span className="flex items-center gap-1.5"><FormPips form={match.form_b} /> {match.team_b}</span>
+              </div>
             </div>
           )}
           <div className="mt-3"><TvChips tv={match.tv} /></div>
