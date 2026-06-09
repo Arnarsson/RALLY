@@ -722,7 +722,7 @@ function MatchesScreen({ plans, onOpenMatch, flag }) {
                   ) : m.archive ? (
                     // Every other card with a real photo: show it, but faint behind a heavy
                     // scrim so it never competes with the opening match.
-                    <><div className="absolute inset-0 opacity-[0.28]"><MatchArt m={m} className="w-full h-full" /></div><div className="absolute inset-0 bg-night/80" /></>
+                    <><div className="absolute inset-0 opacity-[0.5]"><MatchArt m={m} className="w-full h-full" /></div><div className="absolute inset-0 bg-night/65" /></>
                   ) : null}
                   <div className="relative" style={IS_FLOODLIGHT ? { paddingLeft: 8 } : {}}>
                     {m.featured && <div className="text-[10px] font-bold tracking-[0.2em] text-lime mb-3">★ OPENING MATCH</div>}
