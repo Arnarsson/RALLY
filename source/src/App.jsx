@@ -7,6 +7,7 @@ import {
   OUTFITS,
   hasSupabase, ensureAuth, saveProfile, hydrateFromSupabase,
   loadPlans, subscribeRealtime, joinPlan, leavePlan, createPlanRow,
+  loadTeamExtras,
 } from './data/mockData.js'
 import { OUTFIT_IMG } from './data/outfitImages.js'
 import { FLAG_PNG } from './data/flags.js'
@@ -616,6 +617,13 @@ function MatchesScreen({ plans, onOpenMatch, flag }) {
 // --- match (plans) ---------------------------------------------------------
 function MatchScreen({ match, plans, onBack, onOpenPlan, onCreate }) {
   const matchPlans = plans.filter((p) => p.match_id === match.id).sort((a, b) => b.participant_ids.length - a.participant_ids.length)
+  const [extras, setExtras] = useState(null)
+  useEffect(() => {
+    let alive = true
+    setExtras(null)
+    loadTeamExtras(match.team_a, match.team_b).then((e) => { if (alive) setExtras(e) })
+    return () => { alive = false }
+  }, [match.id])
   return (
     <div className="pb-28">
       <TopBar onBack={onBack} title={match.stage} />
@@ -644,6 +652,8 @@ function MatchScreen({ match, plans, onBack, onOpenPlan, onCreate }) {
         )}
 
         <HeadToHead match={match} m={match} />
+
+        <TeamExtras match={match} extras={extras} />
 
         <div className="flex items-end justify-between mb-3">
           <h2 className="font-display text-2xl uppercase leading-none">Spots</h2>
@@ -740,6 +750,82 @@ function HeadToHead({ m }) {
       ) : (
         <p className="flourish text-xl leading-snug text-cream/80">First-ever meeting. New history tonight.</p>
       )}
+    </div>
+  )
+}
+
+// Teams panel — all-time World Cup record (6-stat card) + a collapsible squad
+// (players by position + coach). Data comes from Supabase (squads /
+// team_records). Renders nothing on the demo path or for teams with no data.
+const POS_GROUPS = [['G', 'Goalkeepers'], ['D', 'Defenders'], ['M', 'Midfielders'], ['F', 'Forwards']]
+function WCRecord({ r }) {
+  if (!r || !r.played) return null
+  const cell = (label, val, color) => (
+    <div className="text-center">
+      <div className="text-[7px] font-bold uppercase tracking-wide text-cream/40 leading-tight">{label}</div>
+      <div className="font-display text-lg leading-none mt-1" style={{ color }}>{val}</div>
+    </div>
+  )
+  return (
+    <div className="grid grid-cols-6 gap-1 rounded-xl bg-night border border-line p-3 mt-2">
+      {cell('Played', r.played, '#F4F2EC')}
+      {cell('Wins', r.wins, '#8ACE00')}
+      {cell('Draws', r.draws, '#FF9F1C')}
+      {cell('Losses', r.losses, '#FF5A1F')}
+      {cell('Scored', r.gf, '#FF3E9A')}
+      {cell('Against', r.ga, '#8a8a8a')}
+    </div>
+  )
+}
+function TeamPanel({ team, flag, squad, record }) {
+  const [open, setOpen] = useState(false)
+  if (!squad && (!record || !record.played)) return null
+  const players = squad?.players || []
+  const grouped = POS_GROUPS.map(([code, label]) => [label, players.filter((p) => p.pos === code)])
+  const others = players.filter((p) => !['G', 'D', 'M', 'F'].includes(p.pos))
+  if (others.length) grouped.push(['Other', others])
+  return (
+    <div className="rounded-2xl bg-panel border border-line p-4 mb-3">
+      <div className="flex items-center gap-2">
+        <FlagImg emoji={flag} team={team} size={16} />
+        <span className="font-display uppercase text-lg leading-none">{team}</span>
+        {record?.played > 0 && <span className="text-[9px] uppercase tracking-[0.16em] text-cream/40 ml-auto">World Cup record</span>}
+      </div>
+      <WCRecord r={record} />
+      {players.length > 0 && (
+        <>
+          <button onClick={() => setOpen((o) => !o)} className="w-full flex items-center justify-between mt-3 pt-3 border-t border-line text-sm font-bold active:scale-[0.99] transition">
+            <span>Squad <span className="text-cream/35">· {players.length}</span></span>
+            <span className="text-lime text-lg leading-none">{open ? '−' : '+'}</span>
+          </button>
+          {open && (
+            <div className="mt-3 space-y-3">
+              {grouped.map(([label, ps]) => ps.length > 0 && (
+                <div key={label}>
+                  <div className="text-[9px] font-bold uppercase tracking-[0.2em] text-lime mb-1.5">{label}</div>
+                  <div className="flex flex-wrap gap-x-3 gap-y-1 text-[13px] text-cream/80">
+                    {ps.map((p, i) => <span key={i}>{p.no ? <span className="text-cream/35">{p.no} </span> : null}{p.name}</span>)}
+                  </div>
+                </div>
+              ))}
+              {squad?.coach && <div className="text-[12px] text-cream/50 pt-1 border-t border-line/60 mt-1">Coach · <span className="text-cream/80">{squad.coach}</span></div>}
+            </div>
+          )}
+        </>
+      )}
+    </div>
+  )
+}
+function TeamExtras({ match, extras }) {
+  if (!extras) return null
+  const { a, b } = extras
+  const has = (t) => t?.squad || (t?.record && t.record.played)
+  if (!has(a) && !has(b)) return null
+  return (
+    <div className="mb-6">
+      <h2 className="font-display text-2xl uppercase leading-none mb-3">Teams</h2>
+      <TeamPanel team={match.team_a} flag={match.flag_a} squad={a?.squad} record={a?.record} />
+      <TeamPanel team={match.team_b} flag={match.flag_b} squad={b?.squad} record={b?.record} />
     </div>
   )
 }

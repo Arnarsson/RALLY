@@ -414,3 +414,20 @@ export function subscribeRealtime(onChange) {
     .subscribe()
   return () => { try { supabase.removeChannel(ch) } catch {} }
 }
+
+// Squad lists + all-time WC records for a match's two teams. Keyed by the same
+// normalised team name as squads/team_records. Returns null on the demo path
+// (no Supabase) so the UI panel simply doesn't render.
+export async function loadTeamExtras(teamA, teamB) {
+  if (!hasSupabase) return null
+  const keys = [_norm(teamA), _norm(teamB)]
+  const [sq, rec] = await Promise.all([
+    supabase.from('squads').select('team_key, team, players, coach').in('team_key', keys),
+    supabase.from('team_records').select('team_key, played, wins, draws, losses, gf, ga').in('team_key', keys),
+  ])
+  const pick = (res, k) => (res.data || []).find((x) => x.team_key === k) || null
+  return {
+    a: { squad: pick(sq, keys[0]), record: pick(rec, keys[0]) },
+    b: { squad: pick(sq, keys[1]), record: pick(rec, keys[1]) },
+  }
+}
