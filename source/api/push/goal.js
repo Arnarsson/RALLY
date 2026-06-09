@@ -24,8 +24,9 @@ async function readBody(req) {
   try { return JSON.parse(raw || '{}') } catch { return {} }
 }
 
-// Only the people with a plan for THIS match: the plan host(s) + everyone
-// "going". Returns their push subscriptions. No plan → empty → nobody buzzed.
+// Everyone who cares about THIS match: people with a plan for it (host + going)
+// AND people who simply starred it (match_follows) — no watch party needed.
+// Returns their push subscriptions. Nobody interested → empty → nobody buzzed.
 async function getSubsForMatch(matchId) {
   const url = process.env.SUPABASE_URL
   const key = process.env.SUPABASE_SERVICE_ROLE_KEY
@@ -33,12 +34,17 @@ async function getSubsForMatch(matchId) {
   const H = { apikey: key, Authorization: `Bearer ${key}` }
   const j = async (path) => { const r = await fetch(`${url}/rest/v1/${path}`, { headers: H }); return r.ok ? r.json() : [] }
 
-  const plans = await j(`plans?match_id=eq.${encodeURIComponent(matchId)}&select=id,host_id`)
-  if (!plans.length) return []
-  const planIds = plans.map((p) => p.id)
+  const [plans, follows] = await Promise.all([
+    j(`plans?match_id=eq.${encodeURIComponent(matchId)}&select=id,host_id`),
+    j(`match_follows?match_id=eq.${encodeURIComponent(matchId)}&select=user_id`),
+  ])
   const hostIds = plans.map((p) => p.host_id).filter(Boolean)
-  const parts = await j(`plan_participants?plan_id=in.(${planIds.join(',')})&select=user_id`)
-  const userIds = [...new Set([...hostIds, ...parts.map((p) => p.user_id).filter(Boolean)])]
+  let partUserIds = []
+  if (plans.length) {
+    const parts = await j(`plan_participants?plan_id=in.(${plans.map((p) => p.id).join(',')})&select=user_id`)
+    partUserIds = parts.map((p) => p.user_id).filter(Boolean)
+  }
+  const userIds = [...new Set([...hostIds, ...partUserIds, ...follows.map((f) => f.user_id).filter(Boolean)])]
   if (!userIds.length) return []
   return j(`push_subscriptions?user_id=in.(${userIds.join(',')})&select=endpoint,p256dh,auth`)
 }
