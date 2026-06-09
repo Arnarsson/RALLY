@@ -10,6 +10,7 @@ import {
 } from './data/mockData.js'
 import { OUTFIT_IMG } from './data/outfitImages.js'
 import { FLAG_PNG } from './data/flags.js'
+import { HERO_IMG, HERO_GENERIC } from './data/heroImages.js'
 
 // ===========================================================================
 // RALLY — editorial football-culture design system, DARK (white on black).
@@ -209,6 +210,7 @@ function MatchArt({ m, className = '', credit = false }) {
     return (
       <div className={'relative overflow-hidden bg-night ' + className}>
         <img src={m.archive.src} alt="" loading="lazy" className="absolute inset-0 w-full h-full object-cover"
+          onError={(e) => { e.currentTarget.style.opacity = 0 }}
           style={{ filter: 'grayscale(1) contrast(1.06) brightness(0.82)' }} />
         <div className="absolute inset-0 grain opacity-30" />
         <div className="absolute inset-0" style={{ background: `linear-gradient(112deg, ${a} 0%, transparent 45%, ${b} 100%)`, mixBlendMode: 'overlay', opacity: 0.45 }} />
@@ -392,7 +394,7 @@ export default function App() {
 
   let screen
   if (view.name === 'matches') {
-    screen = <MatchesScreen plans={plans} onOpenMatch={(m) => push({ name: 'match', matchId: m.id })} />
+    screen = <MatchesScreen plans={plans} flag={profile.flag} onOpenMatch={(m) => push({ name: 'match', matchId: m.id })} />
   } else if (view.name === 'match') {
     screen = <MatchScreen match={matchById(view.matchId)} plans={plans} onBack={back}
       onOpenPlan={(p) => push({ name: 'plan', planId: p.id })} onCreate={() => push({ name: 'create', matchId: view.matchId })} />
@@ -514,7 +516,7 @@ function ProfileSetup({ onDone }) {
 }
 
 // --- matches home ----------------------------------------------------------
-function MatchesScreen({ plans, onOpenMatch }) {
+function MatchesScreen({ plans, onOpenMatch, flag }) {
   const statsFor = (matchId) => {
     const ps = plans.filter((p) => p.match_id === matchId)
     return { planCount: ps.length, people: ps.reduce((n, p) => n + p.participant_ids.length, 0) }
@@ -526,7 +528,14 @@ function MatchesScreen({ plans, onOpenMatch }) {
   return (
     <div className="pb-6">
       <header className="relative mb-6">
-        <Img seed="rally-cph-night-crowd" h="h-[330px]" />
+        <div className="relative h-[330px] overflow-hidden bg-night">
+          <img src={HERO_IMG[flag] || HERO_GENERIC} alt="" className="absolute inset-0 w-full h-full object-cover"
+            style={{ filter: 'grayscale(1) contrast(1.05) brightness(0.78)' }}
+            onError={(e) => { if (e.currentTarget.src !== HERO_GENERIC) e.currentTarget.src = HERO_GENERIC }} />
+          <div className="absolute inset-0 grain opacity-30" />
+          <div className="absolute inset-0 bg-gradient-to-t from-night via-night/40 to-night/10" />
+          <div className="absolute inset-0" style={{ background: 'radial-gradient(120% 80% at 0% 100%, rgba(138,206,0,0.18), transparent 55%)' }} />
+        </div>
         <div className="absolute inset-0 flex flex-col justify-between p-5">
           <div className="flex items-center justify-between text-[11px] font-bold tracking-[0.18em] uppercase text-cream/80">
             <span>📍 Copenhagen</span><span>World Cup ’26</span>

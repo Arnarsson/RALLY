@@ -35,10 +35,11 @@
       "score_b": null,
       "tv_source": "guide:sample",
       "archive": {
-        "src": "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c0/First_game_of_the_2010_FIFA_World_Cup%2C_South_Africa_vs_Mexico.jpg/1280px-First_game_of_the_2010_FIFA_World_Cup%2C_South_Africa_vs_Mexico.jpg",
-        "credit": "2010 World Cup - Shine 2010 · CC BY 2.0",
-        "license": "CC BY 2.0",
-        "source": "https://commons.wikimedia.org/wiki/File:First_game_of_the_2010_FIFA_World_Cup,_South_Africa_vs_Mexico.jpg"
+        "src": "https://commons.wikimedia.org/wiki/Special:FilePath/FIFA_World_Cup_2006_-_ARG_vs_MEX.jpg?width=1100",
+        "credit": "Wikimedia Commons",
+        "license": "Commons (free licence)",
+        "source": "https://commons.wikimedia.org/wiki/File:FIFA_World_Cup_2006_-_ARG_vs_MEX.jpg",
+        "kind": "team"
       }
     },
     {
@@ -69,7 +70,14 @@
       "completed": false,
       "score_a": null,
       "score_b": null,
-      "tv_source": "guide:sample"
+      "tv_source": "guide:sample",
+      "archive": {
+        "src": "https://commons.wikimedia.org/wiki/Special:FilePath/2010_FIFA_World_Cup_Korea_Republic_vs_Uruguay.jpg?width=1100",
+        "credit": "Wikimedia Commons",
+        "license": "Commons (free licence)",
+        "source": "https://commons.wikimedia.org/wiki/File:2010_FIFA_World_Cup_Korea_Republic_vs_Uruguay.jpg",
+        "kind": "team"
+      }
     },
     {
       "id": "wc_760416",
@@ -99,7 +107,14 @@
       "completed": false,
       "score_a": null,
       "score_b": null,
-      "tv_source": "guide:sample"
+      "tv_source": "guide:sample",
+      "archive": {
+        "src": "https://commons.wikimedia.org/wiki/Special:FilePath/Canada_national_football_team_WC2022.jpg?width=1100",
+        "credit": "Wikimedia Commons",
+        "license": "Commons (free licence)",
+        "source": "https://commons.wikimedia.org/wiki/File:Canada_national_football_team_WC2022.jpg",
+        "kind": "team"
+      }
     },
     {
       "id": "wc_760417",
@@ -131,10 +146,11 @@
       "score_b": null,
       "tv_source": "guide:sample",
       "archive": {
-        "src": "https://upload.wikimedia.org/wikipedia/commons/3/31/Usa_team_v_paraguay.jpg",
-        "credit": "Unknown author Unknown author · Public domain",
-        "license": "Public domain",
-        "source": "https://commons.wikimedia.org/wiki/File:Usa_team_v_paraguay.jpg"
+        "src": "https://commons.wikimedia.org/wiki/Special:FilePath/Clint_Dempsey_2013.jpg?width=1100",
+        "credit": "Wikimedia Commons",
+        "license": "Commons (free licence)",
+        "source": "https://commons.wikimedia.org/wiki/File:Clint_Dempsey_2013.jpg",
+        "kind": "team"
       }
     },
     {
@@ -165,7 +181,14 @@
       "completed": false,
       "score_a": null,
       "score_b": null,
-      "tv_source": "guide:sample"
+      "tv_source": "guide:sample",
+      "archive": {
+        "src": "https://commons.wikimedia.org/wiki/Special:FilePath/2022_FIFA_World_Cup_Qatar_0%E2%80%932_Ecuador_-_(16).jpg?width=1100",
+        "credit": "Wikimedia Commons",
+        "license": "Commons (free licence)",
+        "source": "https://commons.wikimedia.org/wiki/File:2022_FIFA_World_Cup_Qatar_0%E2%80%932_Ecuador_-_(16).jpg",
+        "kind": "team"
+      }
     },
     {
       "id": "wc_760419",
@@ -195,7 +218,14 @@
       "completed": false,
       "score_a": null,
       "score_b": null,
-      "tv_source": "guide:sample"
+      "tv_source": "guide:sample",
+      "archive": {
+        "src": "https://commons.wikimedia.org/wiki/Special:FilePath/Brazil_%26_Chile_match_at_World_Cup_2010-06-28_6.jpg?width=1100",
+        "credit": "Wikimedia Commons",
+        "license": "Commons (free licence)",
+        "source": "https://commons.wikimedia.org/wiki/File:Brazil_%26_Chile_match_at_World_Cup_2010-06-28_6.jpg",
+        "kind": "team"
+      }
     },
     {
       "id": "wc_760418",
@@ -227,10 +257,11 @@
       "score_b": null,
       "tv_source": "guide:sample",
       "archive": {
-        "src": "https://upload.wikimedia.org/wikipedia/commons/thumb/d/d8/Scoreboard_at_San_Francisco_Bay_Area_Stadium.jpg/1280px-Scoreboard_at_San_Francisco_Bay_Area_Stadium.jpg",
-        "credit": "Mxn · CC BY-SA 4.0",
-        "license": "CC BY-SA 4.0",
-        "source": "https://commons.wikimedia.org/wiki/File:Scoreboard_at_San_Francisco_Bay_Area_Stadium.jpg"
+        "src": "https://commons.wikimedia.org/wiki/Special:FilePath/Bundesarchiv_Bild_183-N0615-0032%2C_Fu%C3%9Fball-WM%2C_Italien_-_Haiti_3-1.jpg?width=1100",
+        "credit": "Wikimedia Commons",
+        "license": "Commons (free licence)",
+        "source": "https://commons.wikimedia.org/wiki/File:Bundesarchiv_Bild_183-N0615-0032%2C_Fu%C3%9Fball-WM%2C_Italien_-_Haiti_3-1.jpg",
+        "kind": "team"
       }
     },
     {
@@ -263,10 +294,11 @@
       "score_b": null,
       "tv_source": "guide:sample",
       "archive": {
-        "src": "https://upload.wikimedia.org/wikipedia/commons/0/07/Joe_Pearce_%281912%29.jpeg",
-        "credit": "Anonymous photographer · Public domain",
-        "license": "Public domain",
-        "source": "https://commons.wikimedia.org/wiki/File:Joe_Pearce_(1912).jpeg"
+        "src": "https://commons.wikimedia.org/wiki/Special:FilePath/Bundesarchiv_Bild_183-N0615-0012%2C_Fu%C3%9Fball-WM%2C_DDR_-_Australien_2-0.jpg?width=1100",
+        "credit": "Wikimedia Commons",
+        "license": "Commons (free licence)",
+        "source": "https://commons.wikimedia.org/wiki/File:Bundesarchiv_Bild_183-N0615-0012%2C_Fu%C3%9Fball-WM%2C_DDR_-_Australien_2-0.jpg",
+        "kind": "team"
       }
     },
     {
@@ -297,7 +329,14 @@
       "completed": false,
       "score_a": null,
       "score_b": null,
-      "tv_source": "guide:sample"
+      "tv_source": "guide:sample",
+      "archive": {
+        "src": "https://commons.wikimedia.org/wiki/Special:FilePath/2022_FIFA_World_Cup_Germany_1%E2%80%932_Japan_-_Germany_lineup.jpg?width=1100",
+        "credit": "Wikimedia Commons",
+        "license": "Commons (free licence)",
+        "source": "https://commons.wikimedia.org/wiki/File:2022_FIFA_World_Cup_Germany_1%E2%80%932_Japan_-_Germany_lineup.jpg",
+        "kind": "team"
+      }
     },
     {
       "id": "wc_760425",
@@ -329,10 +368,11 @@
       "score_b": null,
       "tv_source": "guide:sample",
       "archive": {
-        "src": "https://upload.wikimedia.org/wikipedia/commons/thumb/9/9c/FIFA_World_Cup_2010_Netherlands_Japan.jpg/1280px-FIFA_World_Cup_2010_Netherlands_Japan.jpg",
-        "credit": "Patrick de Laive · CC BY-SA 2.0",
-        "license": "CC BY-SA 2.0",
-        "source": "https://commons.wikimedia.org/wiki/File:FIFA_World_Cup_2010_Netherlands_Japan.jpg"
+        "src": "https://commons.wikimedia.org/wiki/Special:FilePath/FIFA_World_Cup_2010_Final_Netherlands_team.JPG?width=1100",
+        "credit": "Wikimedia Commons",
+        "license": "Commons (free licence)",
+        "source": "https://commons.wikimedia.org/wiki/File:FIFA_World_Cup_2010_Final_Netherlands_team.JPG",
+        "kind": "team"
       }
     },
     {
@@ -363,7 +403,14 @@
       "completed": false,
       "score_a": null,
       "score_b": null,
-      "tv_source": "guide:sample"
+      "tv_source": "guide:sample",
+      "archive": {
+        "src": "https://commons.wikimedia.org/wiki/Special:FilePath/Cote_d'Iviore_NT_2010.jpg?width=1100",
+        "credit": "Wikimedia Commons",
+        "license": "Commons (free licence)",
+        "source": "https://commons.wikimedia.org/wiki/File:Cote_d'Iviore_NT_2010.jpg",
+        "kind": "team"
+      }
     },
     {
       "id": "wc_760424",
@@ -395,10 +442,11 @@
       "score_b": null,
       "tv_source": "guide:sample",
       "archive": {
-        "src": "https://upload.wikimedia.org/wikipedia/commons/thumb/1/15/Amor_Layouni_%28H%C3%A4cken_vs_Qaraba%C4%9F%2C_UEFA_Europa_League%2C_5_October_2023%29.jpg/1280px-Amor_Layouni_%28H%C3%A4cken_vs_Qaraba%C4%9F%2C_UEFA_Europa_League%2C_5_October_2023%29.jpg",
-        "credit": "Amanda Aikioniemi · Public domain",
-        "license": "Public domain",
-        "source": "https://commons.wikimedia.org/wiki/File:Amor_Layouni_(H%C3%A4cken_vs_Qaraba%C4%9F,_UEFA_Europa_League,_5_October_2023).jpg"
+        "src": "https://commons.wikimedia.org/wiki/Special:FilePath/FIFA_World_Cup_2006_-_GER_vs_SWE.jpg?width=1100",
+        "credit": "Wikimedia Commons",
+        "license": "Commons (free licence)",
+        "source": "https://commons.wikimedia.org/wiki/File:FIFA_World_Cup_2006_-_GER_vs_SWE.jpg",
+        "kind": "team"
       }
     },
     {
@@ -429,7 +477,14 @@
       "completed": false,
       "score_a": null,
       "score_b": null,
-      "tv_source": "guide:sample"
+      "tv_source": "guide:sample",
+      "archive": {
+        "src": "https://commons.wikimedia.org/wiki/Special:FilePath/2010_FIFA_World_Cup_Spain_with_cup.JPG?width=1100",
+        "credit": "Wikimedia Commons",
+        "license": "Commons (free licence)",
+        "source": "https://commons.wikimedia.org/wiki/File:2010_FIFA_World_Cup_Spain_with_cup.JPG",
+        "kind": "team"
+      }
     },
     {
       "id": "wc_760426",
@@ -459,7 +514,14 @@
       "completed": false,
       "score_a": null,
       "score_b": null,
-      "tv_source": "guide:sample"
+      "tv_source": "guide:sample",
+      "archive": {
+        "src": "https://commons.wikimedia.org/wiki/Special:FilePath/Argentina_v_belgica_1986.jpg?width=1100",
+        "credit": "Wikimedia Commons",
+        "license": "Commons (free licence)",
+        "source": "https://commons.wikimedia.org/wiki/File:Argentina_v_belgica_1986.jpg",
+        "kind": "team"
+      }
     },
     {
       "id": "wc_760429",
@@ -491,10 +553,11 @@
       "score_b": null,
       "tv_source": "estimated",
       "archive": {
-        "src": "https://upload.wikimedia.org/wikipedia/commons/thumb/0/0e/Partido_Arabia_Saudita_-_Uruguay_01.jpg/1280px-Partido_Arabia_Saudita_-_Uruguay_01.jpg",
-        "credit": "Fadesga · CC BY-SA 4.0",
-        "license": "CC BY-SA 4.0",
-        "source": "https://commons.wikimedia.org/wiki/File:Partido_Arabia_Saudita_-_Uruguay_01.jpg"
+        "src": "https://commons.wikimedia.org/wiki/Special:FilePath/Asian_Cup_1984%2C_match_Saudi_Arabia_and_China.jpg?width=1100",
+        "credit": "Wikimedia Commons",
+        "license": "Commons (free licence)",
+        "source": "https://commons.wikimedia.org/wiki/File:Asian_Cup_1984%2C_match_Saudi_Arabia_and_China.jpg",
+        "kind": "team"
       }
     },
     {
@@ -527,10 +590,11 @@
       "score_b": null,
       "tv_source": "estimated",
       "archive": {
-        "src": "https://upload.wikimedia.org/wikipedia/commons/thumb/d/d0/Hammer_DeRoburt_Invite_%2814615214235%29.jpg/1280px-Hammer_DeRoburt_Invite_%2814615214235%29.jpg",
-        "credit": "Archives New Zealand from New Zealand · CC BY-SA 2.0",
-        "license": "CC BY-SA 2.0",
-        "source": "https://commons.wikimedia.org/wiki/File:Hammer_DeRoburt_Invite_(14615214235).jpg"
+        "src": "https://commons.wikimedia.org/wiki/Special:FilePath/2022_FIFA_World_Cup_England_6%E2%80%932_Iran_-_(7).jpg?width=1100",
+        "credit": "Wikimedia Commons",
+        "license": "Commons (free licence)",
+        "source": "https://commons.wikimedia.org/wiki/File:2022_FIFA_World_Cup_England_6%E2%80%932_Iran_-_(7).jpg",
+        "kind": "team"
       }
     },
     {
@@ -563,10 +627,11 @@
       "score_b": null,
       "tv_source": "guide:sample",
       "archive": {
-        "src": "https://upload.wikimedia.org/wikipedia/commons/thumb/c/ca/2000%EB%85%84%EB%8C%80_%EC%B4%88%EB%B0%98_%EC%84%9C%EC%9A%B8%EC%86%8C%EB%B0%A9_%EC%86%8C%EB%B0%A9%EA%B3%B5%EB%AC%B4%EC%9B%90%28%EC%86%8C%EB%B0%A9%EA%B4%80%29_%ED%99%9C%EB%8F%99_%EC%82%AC%EC%A7%84_%EC%86%8C%EB%B0%A9%EC%95%88%EC%A0%84%EA%B7%BC%EB%AC%B4-1.jpg/1280px-2000%EB%85%84%EB%8C%80_%EC%B4%88%EB%B0%98_%EC%84%9C%EC%9A%B8%EC%86%8C%EB%B0%A9_%EC%86%8C%EB%B0%A9%EA%B3%B5%EB%AC%B4%EC%9B%90%28%EC%86%8C%EB%B0%A9%EA%B4%80%29_%ED%99%9C%EB%8F%99_%EC%82%AC%EC%A7%84_%EC%86%8C%EB%B0%A9%EC%95%88%EC%A0%84%EA%B7%BC%EB%AC%B4-1.jpg",
-        "credit": "서울특별시 소방재난본부 · CC BY-SA 4.0",
-        "license": "CC BY-SA 4.0",
-        "source": "https://commons.wikimedia.org/wiki/File:2000%EB%85%84%EB%8C%80_%EC%B4%88%EB%B0%98_%EC%84%9C%EC%9A%B8%EC%86%8C%EB%B0%A9_%EC%86%8C%EB%B0%A9%EA%B3%B5%EB%AC%B4%EC%9B%90(%EC%86%8C%EB%B0%A9%EA%B4%80)_%ED%99%9C%EB%8F%99_%EC%82%AC%EC%A7%84_%EC%86%8C%EB%B0%A9%EC%95%88%EC%A0%84%EA%B7%BC%EB%AC%B4-1.jpg"
+        "src": "https://commons.wikimedia.org/wiki/Special:FilePath/Didier_Deschamps_in_2018.jpg?width=1100",
+        "credit": "Wikimedia Commons",
+        "license": "Commons (free licence)",
+        "source": "https://commons.wikimedia.org/wiki/File:Didier_Deschamps_in_2018.jpg",
+        "kind": "team"
       }
     },
     {
@@ -599,10 +664,11 @@
       "score_b": null,
       "tv_source": "estimated",
       "archive": {
-        "src": "https://upload.wikimedia.org/wikipedia/commons/e/e6/USMC-08957.jpg",
-        "credit": "Wikimedia Commons · Public domain",
-        "license": "Public domain",
-        "source": "https://commons.wikimedia.org/wiki/File:USMC-08957.jpg"
+        "src": "https://commons.wikimedia.org/wiki/Special:FilePath/Asian_Cup_Australia-Iraq_II.jpg?width=1100",
+        "credit": "Wikimedia Commons",
+        "license": "Commons (free licence)",
+        "source": "https://commons.wikimedia.org/wiki/File:Asian_Cup_Australia-Iraq_II.jpg",
+        "kind": "team"
       }
     },
     {
@@ -635,10 +701,11 @@
       "score_b": null,
       "tv_source": "estimated",
       "archive": {
-        "src": "https://upload.wikimedia.org/wikipedia/commons/b/b8/Argentina_algeria_calderon.jpg",
-        "credit": "Unknown author Unknown author · Public domain",
-        "license": "Public domain",
-        "source": "https://commons.wikimedia.org/wiki/File:Argentina_algeria_calderon.jpg"
+        "src": "https://commons.wikimedia.org/wiki/Special:FilePath/Argentina_equipo_v_combinadopaulista_1908.jpg?width=1100",
+        "credit": "Wikimedia Commons",
+        "license": "Commons (free licence)",
+        "source": "https://commons.wikimedia.org/wiki/File:Argentina_equipo_v_combinadopaulista_1908.jpg",
+        "kind": "team"
       }
     },
     {
@@ -671,10 +738,11 @@
       "score_b": null,
       "tv_source": "estimated",
       "archive": {
-        "src": "https://upload.wikimedia.org/wikipedia/commons/b/bf/U-19_EC-Qualifikation_Austria_vs._France_2013-06-10_%28104%29.jpg",
-        "credit": "Steindy ( talk ) 22:54, 13 June 2013 (UTC) · CC BY-SA 3.0",
-        "license": "CC BY-SA 3.0",
-        "source": "https://commons.wikimedia.org/wiki/File:U-19_EC-Qualifikation_Austria_vs._France_2013-06-10_(104).jpg"
+        "src": "https://commons.wikimedia.org/wiki/Special:FilePath/FIFA_WC-qualification_2014_-_Austria_vs._Germany_2012-09-11_(01).jpg?width=1100",
+        "credit": "Wikimedia Commons",
+        "license": "Commons (free licence)",
+        "source": "https://commons.wikimedia.org/wiki/File:FIFA_WC-qualification_2014_-_Austria_vs._Germany_2012-09-11_(01).jpg",
+        "kind": "team"
       }
     },
     {
@@ -705,7 +773,14 @@
       "completed": false,
       "score_a": null,
       "score_b": null,
-      "tv_source": "estimated"
+      "tv_source": "estimated",
+      "archive": {
+        "src": "https://commons.wikimedia.org/wiki/Special:FilePath/Charisteas'_Siegtreffer_im_Finale_der_Euro_2004.jpg?width=1100",
+        "credit": "Wikimedia Commons",
+        "license": "Commons (free licence)",
+        "source": "https://commons.wikimedia.org/wiki/File:Charisteas'_Siegtreffer_im_Finale_der_Euro_2004.jpg",
+        "kind": "team"
+      }
     },
     {
       "id": "wc_760437",
@@ -737,10 +812,11 @@
       "score_b": null,
       "tv_source": "guide:sample",
       "archive": {
-        "src": "https://upload.wikimedia.org/wikipedia/commons/3/3f/Raheem_Sterling_2018.jpg",
-        "credit": "Антон Зайцев · CC BY-SA 3.0",
-        "license": "CC BY-SA 3.0",
-        "source": "https://commons.wikimedia.org/wiki/File:Raheem_Sterling_2018.jpg"
+        "src": "https://commons.wikimedia.org/wiki/Special:FilePath/2018_World_Cup_Semifinal_-_England_v_Croatia.jpg?width=1100",
+        "credit": "Wikimedia Commons",
+        "license": "Commons (free licence)",
+        "source": "https://commons.wikimedia.org/wiki/File:2018_World_Cup_Semifinal_-_England_v_Croatia.jpg",
+        "kind": "team"
       }
     },
     {
@@ -771,7 +847,14 @@
       "completed": false,
       "score_a": null,
       "score_b": null,
-      "tv_source": "estimated"
+      "tv_source": "estimated",
+      "archive": {
+        "src": "https://commons.wikimedia.org/wiki/Special:FilePath/Black_Stars_(World_Cup).jpg?width=1100",
+        "credit": "Wikimedia Commons",
+        "license": "Commons (free licence)",
+        "source": "https://commons.wikimedia.org/wiki/File:Black_Stars_(World_Cup).jpg",
+        "kind": "team"
+      }
     },
     {
       "id": "wc_760436",
@@ -801,7 +884,14 @@
       "completed": false,
       "score_a": null,
       "score_b": null,
-      "tv_source": "estimated"
+      "tv_source": "estimated",
+      "archive": {
+        "src": "https://commons.wikimedia.org/wiki/Special:FilePath/Bunyodkor_stadium2.jpg?width=1100",
+        "credit": "Wikimedia Commons",
+        "license": "Commons (free licence)",
+        "source": "https://commons.wikimedia.org/wiki/File:Bunyodkor_stadium2.jpg",
+        "kind": "team"
+      }
     },
     {
       "id": "wc_760438",
@@ -831,7 +921,14 @@
       "completed": false,
       "score_a": null,
       "score_b": null,
-      "tv_source": "estimated"
+      "tv_source": "estimated",
+      "archive": {
+        "src": "https://commons.wikimedia.org/wiki/Special:FilePath/Closeup_Czech_Republic_versus_Ghana_at_2006_World_Cup.jpg?width=1100",
+        "credit": "Wikimedia Commons",
+        "license": "Commons (free licence)",
+        "source": "https://commons.wikimedia.org/wiki/File:Closeup_Czech_Republic_versus_Ghana_at_2006_World_Cup.jpg",
+        "kind": "team"
+      }
     },
     {
       "id": "wc_760439",
@@ -861,7 +958,14 @@
       "completed": false,
       "score_a": null,
       "score_b": null,
-      "tv_source": "estimated"
+      "tv_source": "estimated",
+      "archive": {
+        "src": "https://commons.wikimedia.org/wiki/Special:FilePath/Alex-frei-2011.jpg?width=1100",
+        "credit": "Wikimedia Commons",
+        "license": "Commons (free licence)",
+        "source": "https://commons.wikimedia.org/wiki/File:Alex-frei-2011.jpg",
+        "kind": "team"
+      }
     },
     {
       "id": "wc_760440",
@@ -893,10 +997,11 @@
       "score_b": null,
       "tv_source": "estimated",
       "archive": {
-        "src": "https://upload.wikimedia.org/wikipedia/commons/6/68/Eden_Hazard_WC2022.jpg",
-        "credit": "Hossein Zohrevand · CC BY 4.0",
-        "license": "CC BY 4.0",
-        "source": "https://commons.wikimedia.org/wiki/File:Eden_Hazard_WC2022.jpg"
+        "src": "https://commons.wikimedia.org/wiki/Special:FilePath/Canada_national_football_team_WC2022.jpg?width=1100",
+        "credit": "Wikimedia Commons",
+        "license": "Commons (free licence)",
+        "source": "https://commons.wikimedia.org/wiki/File:Canada_national_football_team_WC2022.jpg",
+        "kind": "team"
       }
     },
     {
@@ -929,10 +1034,11 @@
       "score_b": null,
       "tv_source": "estimated",
       "archive": {
-        "src": "https://upload.wikimedia.org/wikipedia/commons/thumb/d/db/Cor%C3%A9ia_do_Sul_x_M%C3%A9xico_-_Futebol_masculino_-_Olimp%C3%ADada_Rio_2016_%2828899235235%29.jpg/1280px-Cor%C3%A9ia_do_Sul_x_M%C3%A9xico_-_Futebol_masculino_-_Olimp%C3%ADada_Rio_2016_%2828899235235%29.jpg",
-        "credit": "Agência Brasília · CC BY 2.0",
-        "license": "CC BY 2.0",
-        "source": "https://commons.wikimedia.org/wiki/File:Cor%C3%A9ia_do_Sul_x_M%C3%A9xico_-_Futebol_masculino_-_Olimp%C3%ADada_Rio_2016_(28899235235).jpg"
+        "src": "https://commons.wikimedia.org/wiki/Special:FilePath/FIFA_World_Cup_2006_-_ARG_vs_MEX.jpg?width=1100",
+        "credit": "Wikimedia Commons",
+        "license": "Commons (free licence)",
+        "source": "https://commons.wikimedia.org/wiki/File:FIFA_World_Cup_2006_-_ARG_vs_MEX.jpg",
+        "kind": "team"
       }
     },
     {
@@ -965,10 +1071,11 @@
       "score_b": null,
       "tv_source": "estimated",
       "archive": {
-        "src": "https://upload.wikimedia.org/wikipedia/commons/7/78/Columbia_Park_Boys_Club_Field_Australian_Football_Team.png",
-        "credit": "San Francisco Examiner · Public domain",
-        "license": "Public domain",
-        "source": "https://commons.wikimedia.org/wiki/File:Columbia_Park_Boys_Club_Field_Australian_Football_Team.png"
+        "src": "https://commons.wikimedia.org/wiki/Special:FilePath/Clint_Dempsey_2013.jpg?width=1100",
+        "credit": "Wikimedia Commons",
+        "license": "Commons (free licence)",
+        "source": "https://commons.wikimedia.org/wiki/File:Clint_Dempsey_2013.jpg",
+        "kind": "team"
       }
     },
     {
@@ -999,7 +1106,14 @@
       "completed": false,
       "score_a": null,
       "score_b": null,
-      "tv_source": "estimated"
+      "tv_source": "estimated",
+      "archive": {
+        "src": "https://commons.wikimedia.org/wiki/Special:FilePath/1872_engl_v_scotland-2.jpg?width=1100",
+        "credit": "Wikimedia Commons",
+        "license": "Commons (free licence)",
+        "source": "https://commons.wikimedia.org/wiki/File:1872_engl_v_scotland-2.jpg",
+        "kind": "team"
+      }
     },
     {
       "id": "wc_760444",
@@ -1029,7 +1143,14 @@
       "completed": false,
       "score_a": null,
       "score_b": null,
-      "tv_source": "estimated"
+      "tv_source": "estimated",
+      "archive": {
+        "src": "https://commons.wikimedia.org/wiki/Special:FilePath/Brazil_%26_Chile_match_at_World_Cup_2010-06-28_6.jpg?width=1100",
+        "credit": "Wikimedia Commons",
+        "license": "Commons (free licence)",
+        "source": "https://commons.wikimedia.org/wiki/File:Brazil_%26_Chile_match_at_World_Cup_2010-06-28_6.jpg",
+        "kind": "team"
+      }
     },
     {
       "id": "wc_760443",
@@ -1059,7 +1180,14 @@
       "completed": false,
       "score_a": null,
       "score_b": null,
-      "tv_source": "estimated"
+      "tv_source": "estimated",
+      "archive": {
+        "src": "https://commons.wikimedia.org/wiki/Special:FilePath/Baku_Olympic_Stadium_hosted_final_stage_of_European_Football_Championship_Turkey-Wales_Azerbaijani_and_Turkish_presidents_watched_the_game%2C_June_2021_10.jpg?width=1100",
+        "credit": "Wikimedia Commons",
+        "license": "Commons (free licence)",
+        "source": "https://commons.wikimedia.org/wiki/File:Baku_Olympic_Stadium_hosted_final_stage_of_European_Football_Championship_Turkey-Wales_Azerbaijani_and_Turkish_presidents_watched_the_game%2C_June_2021_10.jpg",
+        "kind": "team"
+      }
     },
     {
       "id": "wc_760447",
@@ -1089,7 +1217,14 @@
       "completed": false,
       "score_a": null,
       "score_b": null,
-      "tv_source": "guide:sample"
+      "tv_source": "guide:sample",
+      "archive": {
+        "src": "https://commons.wikimedia.org/wiki/Special:FilePath/FIFA_World_Cup_2010_Final_Netherlands_team.JPG?width=1100",
+        "credit": "Wikimedia Commons",
+        "license": "Commons (free licence)",
+        "source": "https://commons.wikimedia.org/wiki/File:FIFA_World_Cup_2010_Final_Netherlands_team.JPG",
+        "kind": "team"
+      }
     },
     {
       "id": "wc_760448",
@@ -1119,7 +1254,14 @@
       "completed": false,
       "score_a": null,
       "score_b": null,
-      "tv_source": "estimated"
+      "tv_source": "estimated",
+      "archive": {
+        "src": "https://commons.wikimedia.org/wiki/Special:FilePath/2022_FIFA_World_Cup_Germany_1%E2%80%932_Japan_-_Germany_lineup.jpg?width=1100",
+        "credit": "Wikimedia Commons",
+        "license": "Commons (free licence)",
+        "source": "https://commons.wikimedia.org/wiki/File:2022_FIFA_World_Cup_Germany_1%E2%80%932_Japan_-_Germany_lineup.jpg",
+        "kind": "team"
+      }
     },
     {
       "id": "wc_760446",
@@ -1149,7 +1291,14 @@
       "completed": false,
       "score_a": null,
       "score_b": null,
-      "tv_source": "estimated"
+      "tv_source": "estimated",
+      "archive": {
+        "src": "https://commons.wikimedia.org/wiki/Special:FilePath/Ecuador_v_uruguay_1942.jpg?width=1100",
+        "credit": "Wikimedia Commons",
+        "license": "Commons (free licence)",
+        "source": "https://commons.wikimedia.org/wiki/File:Ecuador_v_uruguay_1942.jpg",
+        "kind": "team"
+      }
     },
     {
       "id": "wc_760449",
@@ -1179,7 +1328,14 @@
       "completed": false,
       "score_a": null,
       "score_b": null,
-      "tv_source": "estimated"
+      "tv_source": "estimated",
+      "archive": {
+        "src": "https://commons.wikimedia.org/wiki/Special:FilePath/Bel-Tun_(23).jpg?width=1100",
+        "credit": "Wikimedia Commons",
+        "license": "Commons (free licence)",
+        "source": "https://commons.wikimedia.org/wiki/File:Bel-Tun_(23).jpg",
+        "kind": "team"
+      }
     },
     {
       "id": "wc_760453",
@@ -1209,7 +1365,14 @@
       "completed": false,
       "score_a": null,
       "score_b": null,
-      "tv_source": "estimated"
+      "tv_source": "estimated",
+      "archive": {
+        "src": "https://commons.wikimedia.org/wiki/Special:FilePath/2010_FIFA_World_Cup_Spain_with_cup.JPG?width=1100",
+        "credit": "Wikimedia Commons",
+        "license": "Commons (free licence)",
+        "source": "https://commons.wikimedia.org/wiki/File:2010_FIFA_World_Cup_Spain_with_cup.JPG",
+        "kind": "team"
+      }
     },
     {
       "id": "wc_760451",
@@ -1239,7 +1402,14 @@
       "completed": false,
       "score_a": null,
       "score_b": null,
-      "tv_source": "estimated"
+      "tv_source": "estimated",
+      "archive": {
+        "src": "https://commons.wikimedia.org/wiki/Special:FilePath/Argentina_v_belgica_1986.jpg?width=1100",
+        "credit": "Wikimedia Commons",
+        "license": "Commons (free licence)",
+        "source": "https://commons.wikimedia.org/wiki/File:Argentina_v_belgica_1986.jpg",
+        "kind": "team"
+      }
     },
     {
       "id": "wc_760450",
@@ -1269,7 +1439,14 @@
       "completed": false,
       "score_a": null,
       "score_b": null,
-      "tv_source": "estimated"
+      "tv_source": "estimated",
+      "archive": {
+        "src": "https://commons.wikimedia.org/wiki/Special:FilePath/2018_FIFA_World_Cup_Group_A_march_URU-KSA_-_Anthems.jpg?width=1100",
+        "credit": "Wikimedia Commons",
+        "license": "Commons (free licence)",
+        "source": "https://commons.wikimedia.org/wiki/File:2018_FIFA_World_Cup_Group_A_march_URU-KSA_-_Anthems.jpg",
+        "kind": "team"
+      }
     },
     {
       "id": "wc_760452",
@@ -1299,7 +1476,14 @@
       "completed": false,
       "score_a": null,
       "score_b": null,
-      "tv_source": "estimated"
+      "tv_source": "estimated",
+      "archive": {
+        "src": "https://commons.wikimedia.org/wiki/Special:FilePath/1934-World-Cup-Egypt.jpg?width=1100",
+        "credit": "Wikimedia Commons",
+        "license": "Commons (free licence)",
+        "source": "https://commons.wikimedia.org/wiki/File:1934-World-Cup-Egypt.jpg",
+        "kind": "team"
+      }
     },
     {
       "id": "wc_760456",
@@ -1329,7 +1513,14 @@
       "completed": false,
       "score_a": null,
       "score_b": null,
-      "tv_source": "estimated"
+      "tv_source": "estimated",
+      "archive": {
+        "src": "https://commons.wikimedia.org/wiki/Special:FilePath/Argentina_equipo_v_combinadopaulista_1908.jpg?width=1100",
+        "credit": "Wikimedia Commons",
+        "license": "Commons (free licence)",
+        "source": "https://commons.wikimedia.org/wiki/File:Argentina_equipo_v_combinadopaulista_1908.jpg",
+        "kind": "team"
+      }
     },
     {
       "id": "wc_760457",
@@ -1359,7 +1550,14 @@
       "completed": false,
       "score_a": null,
       "score_b": null,
-      "tv_source": "estimated"
+      "tv_source": "estimated",
+      "archive": {
+        "src": "https://commons.wikimedia.org/wiki/Special:FilePath/Didier_Deschamps_in_2018.jpg?width=1100",
+        "credit": "Wikimedia Commons",
+        "license": "Commons (free licence)",
+        "source": "https://commons.wikimedia.org/wiki/File:Didier_Deschamps_in_2018.jpg",
+        "kind": "team"
+      }
     },
     {
       "id": "wc_760454",
@@ -1389,7 +1587,14 @@
       "completed": false,
       "score_a": null,
       "score_b": null,
-      "tv_source": "estimated"
+      "tv_source": "estimated",
+      "archive": {
+        "src": "https://commons.wikimedia.org/wiki/Special:FilePath/Erling_Haaland_June_2025.jpg?width=1100",
+        "credit": "Wikimedia Commons",
+        "license": "Commons (free licence)",
+        "source": "https://commons.wikimedia.org/wiki/File:Erling_Haaland_June_2025.jpg",
+        "kind": "team"
+      }
     },
     {
       "id": "wc_760455",
@@ -1419,7 +1624,14 @@
       "completed": false,
       "score_a": null,
       "score_b": null,
-      "tv_source": "estimated"
+      "tv_source": "estimated",
+      "archive": {
+        "src": "https://commons.wikimedia.org/wiki/Special:FilePath/AUS-JOR_20190106_Asian_Cup_2.jpg?width=1100",
+        "credit": "Wikimedia Commons",
+        "license": "Commons (free licence)",
+        "source": "https://commons.wikimedia.org/wiki/File:AUS-JOR_20190106_Asian_Cup_2.jpg",
+        "kind": "team"
+      }
     },
     {
       "id": "wc_760461",
@@ -1449,7 +1661,14 @@
       "completed": false,
       "score_a": null,
       "score_b": null,
-      "tv_source": "estimated"
+      "tv_source": "estimated",
+      "archive": {
+        "src": "https://commons.wikimedia.org/wiki/Special:FilePath/Charisteas'_Siegtreffer_im_Finale_der_Euro_2004.jpg?width=1100",
+        "credit": "Wikimedia Commons",
+        "license": "Commons (free licence)",
+        "source": "https://commons.wikimedia.org/wiki/File:Charisteas'_Siegtreffer_im_Finale_der_Euro_2004.jpg",
+        "kind": "team"
+      }
     },
     {
       "id": "wc_760458",
@@ -1479,7 +1698,14 @@
       "completed": false,
       "score_a": null,
       "score_b": null,
-      "tv_source": "estimated"
+      "tv_source": "estimated",
+      "archive": {
+        "src": "https://commons.wikimedia.org/wiki/Special:FilePath/2018_World_Cup_Semifinal_-_England_v_Croatia.jpg?width=1100",
+        "credit": "Wikimedia Commons",
+        "license": "Commons (free licence)",
+        "source": "https://commons.wikimedia.org/wiki/File:2018_World_Cup_Semifinal_-_England_v_Croatia.jpg",
+        "kind": "team"
+      }
     },
     {
       "id": "wc_760460",
@@ -1509,7 +1735,14 @@
       "completed": false,
       "score_a": null,
       "score_b": null,
-      "tv_source": "estimated"
+      "tv_source": "estimated",
+      "archive": {
+        "src": "https://commons.wikimedia.org/wiki/Special:FilePath/ENG-PAN_(15)_(cropped).jpg?width=1100",
+        "credit": "Wikimedia Commons",
+        "license": "Commons (free licence)",
+        "source": "https://commons.wikimedia.org/wiki/File:ENG-PAN_(15)_(cropped).jpg",
+        "kind": "team"
+      }
     },
     {
       "id": "wc_760459",
@@ -1539,7 +1772,14 @@
       "completed": false,
       "score_a": null,
       "score_b": null,
-      "tv_source": "estimated"
+      "tv_source": "estimated",
+      "archive": {
+        "src": "https://commons.wikimedia.org/wiki/Special:FilePath/Colombia_national_football_team_in_1985.jpg?width=1100",
+        "credit": "Wikimedia Commons",
+        "license": "Commons (free licence)",
+        "source": "https://commons.wikimedia.org/wiki/File:Colombia_national_football_team_in_1985.jpg",
+        "kind": "team"
+      }
     },
     {
       "id": "wc_760462",
@@ -1569,7 +1809,14 @@
       "completed": false,
       "score_a": null,
       "score_b": null,
-      "tv_source": "estimated"
+      "tv_source": "estimated",
+      "archive": {
+        "src": "https://commons.wikimedia.org/wiki/Special:FilePath/20150331_2026_AUT_BIH_2176.jpg?width=1100",
+        "credit": "Wikimedia Commons",
+        "license": "Commons (free licence)",
+        "source": "https://commons.wikimedia.org/wiki/File:20150331_2026_AUT_BIH_2176.jpg",
+        "kind": "team"
+      }
     },
     {
       "id": "wc_760463",
@@ -1599,7 +1846,14 @@
       "completed": false,
       "score_a": null,
       "score_b": null,
-      "tv_source": "estimated"
+      "tv_source": "estimated",
+      "archive": {
+        "src": "https://commons.wikimedia.org/wiki/Special:FilePath/Alex-frei-2011.jpg?width=1100",
+        "credit": "Wikimedia Commons",
+        "license": "Commons (free licence)",
+        "source": "https://commons.wikimedia.org/wiki/File:Alex-frei-2011.jpg",
+        "kind": "team"
+      }
     },
     {
       "id": "wc_760464",
@@ -1629,7 +1883,14 @@
       "completed": false,
       "score_a": null,
       "score_b": null,
-      "tv_source": "estimated"
+      "tv_source": "estimated",
+      "archive": {
+        "src": "https://commons.wikimedia.org/wiki/Special:FilePath/Iran-Morocco_by_soccer.ru_14.jpg?width=1100",
+        "credit": "Wikimedia Commons",
+        "license": "Commons (free licence)",
+        "source": "https://commons.wikimedia.org/wiki/File:Iran-Morocco_by_soccer.ru_14.jpg",
+        "kind": "team"
+      }
     },
     {
       "id": "wc_760465",
@@ -1659,7 +1920,14 @@
       "completed": false,
       "score_a": null,
       "score_b": null,
-      "tv_source": "estimated"
+      "tv_source": "estimated",
+      "archive": {
+        "src": "https://commons.wikimedia.org/wiki/Special:FilePath/1872_engl_v_scotland-2.jpg?width=1100",
+        "credit": "Wikimedia Commons",
+        "license": "Commons (free licence)",
+        "source": "https://commons.wikimedia.org/wiki/File:1872_engl_v_scotland-2.jpg",
+        "kind": "team"
+      }
     },
     {
       "id": "wc_760467",
@@ -1689,7 +1957,14 @@
       "completed": false,
       "score_a": null,
       "score_b": null,
-      "tv_source": "estimated"
+      "tv_source": "estimated",
+      "archive": {
+        "src": "https://commons.wikimedia.org/wiki/Special:FilePath/Closeup_Czech_Republic_versus_Ghana_at_2006_World_Cup.jpg?width=1100",
+        "credit": "Wikimedia Commons",
+        "license": "Commons (free licence)",
+        "source": "https://commons.wikimedia.org/wiki/File:Closeup_Czech_Republic_versus_Ghana_at_2006_World_Cup.jpg",
+        "kind": "team"
+      }
     },
     {
       "id": "wc_760466",
@@ -1719,7 +1994,14 @@
       "completed": false,
       "score_a": null,
       "score_b": null,
-      "tv_source": "estimated"
+      "tv_source": "estimated",
+      "archive": {
+        "src": "https://commons.wikimedia.org/wiki/Special:FilePath/First_game_of_the_2010_FIFA_World_Cup%2C_South_Africa_vs_Mexico4.jpg?width=1100",
+        "credit": "Wikimedia Commons",
+        "license": "Commons (free licence)",
+        "source": "https://commons.wikimedia.org/wiki/File:First_game_of_the_2010_FIFA_World_Cup%2C_South_Africa_vs_Mexico4.jpg",
+        "kind": "team"
+      }
     },
     {
       "id": "wc_760473",
@@ -1749,7 +2031,14 @@
       "completed": false,
       "score_a": null,
       "score_b": null,
-      "tv_source": "estimated"
+      "tv_source": "estimated",
+      "archive": {
+        "src": "https://commons.wikimedia.org/wiki/Special:FilePath/Stadion_Ergilio_Hato.jpg?width=1100",
+        "credit": "Wikimedia Commons",
+        "license": "Commons (free licence)",
+        "source": "https://commons.wikimedia.org/wiki/File:Stadion_Ergilio_Hato.jpg",
+        "kind": "team"
+      }
     },
     {
       "id": "wc_760468",
@@ -1779,7 +2068,14 @@
       "completed": false,
       "score_a": null,
       "score_b": null,
-      "tv_source": "estimated"
+      "tv_source": "estimated",
+      "archive": {
+        "src": "https://commons.wikimedia.org/wiki/Special:FilePath/Ecuador_v_uruguay_1942.jpg?width=1100",
+        "credit": "Wikimedia Commons",
+        "license": "Commons (free licence)",
+        "source": "https://commons.wikimedia.org/wiki/File:Ecuador_v_uruguay_1942.jpg",
+        "kind": "team"
+      }
     },
     {
       "id": "wc_760471",
@@ -1809,7 +2105,14 @@
       "completed": false,
       "score_a": null,
       "score_b": null,
-      "tv_source": "estimated"
+      "tv_source": "estimated",
+      "archive": {
+        "src": "https://commons.wikimedia.org/wiki/Special:FilePath/2022_FIFA_World_Cup_Germany_1%E2%80%932_Japan_-_(5).jpg?width=1100",
+        "credit": "Wikimedia Commons",
+        "license": "Commons (free licence)",
+        "source": "https://commons.wikimedia.org/wiki/File:2022_FIFA_World_Cup_Germany_1%E2%80%932_Japan_-_(5).jpg",
+        "kind": "team"
+      }
     },
     {
       "id": "wc_760472",
@@ -1839,7 +2142,14 @@
       "completed": false,
       "score_a": null,
       "score_b": null,
-      "tv_source": "estimated"
+      "tv_source": "estimated",
+      "archive": {
+        "src": "https://commons.wikimedia.org/wiki/Special:FilePath/Bel-Tun_(23).jpg?width=1100",
+        "credit": "Wikimedia Commons",
+        "license": "Commons (free licence)",
+        "source": "https://commons.wikimedia.org/wiki/File:Bel-Tun_(23).jpg",
+        "kind": "team"
+      }
     },
     {
       "id": "wc_760469",
@@ -1869,7 +2179,14 @@
       "completed": false,
       "score_a": null,
       "score_b": null,
-      "tv_source": "estimated"
+      "tv_source": "estimated",
+      "archive": {
+        "src": "https://commons.wikimedia.org/wiki/Special:FilePath/FIFA_World_Cup_2010_Italy_Paraguay3.jpg?width=1100",
+        "credit": "Wikimedia Commons",
+        "license": "Commons (free licence)",
+        "source": "https://commons.wikimedia.org/wiki/File:FIFA_World_Cup_2010_Italy_Paraguay3.jpg",
+        "kind": "team"
+      }
     },
     {
       "id": "wc_760470",
@@ -1899,7 +2216,14 @@
       "completed": false,
       "score_a": null,
       "score_b": null,
-      "tv_source": "estimated"
+      "tv_source": "estimated",
+      "archive": {
+        "src": "https://commons.wikimedia.org/wiki/Special:FilePath/Baku_Olympic_Stadium_hosted_final_stage_of_European_Football_Championship_Turkey-Wales_Azerbaijani_and_Turkish_presidents_watched_the_game%2C_June_2021_10.jpg?width=1100",
+        "credit": "Wikimedia Commons",
+        "license": "Commons (free licence)",
+        "source": "https://commons.wikimedia.org/wiki/File:Baku_Olympic_Stadium_hosted_final_stage_of_European_Football_Championship_Turkey-Wales_Azerbaijani_and_Turkish_presidents_watched_the_game%2C_June_2021_10.jpg",
+        "kind": "team"
+      }
     },
     {
       "id": "wc_760475",
@@ -1929,7 +2253,14 @@
       "completed": false,
       "score_a": null,
       "score_b": null,
-      "tv_source": "guide:sample"
+      "tv_source": "guide:sample",
+      "archive": {
+        "src": "https://commons.wikimedia.org/wiki/Special:FilePath/Erling_Haaland_June_2025.jpg?width=1100",
+        "credit": "Wikimedia Commons",
+        "license": "Commons (free licence)",
+        "source": "https://commons.wikimedia.org/wiki/File:Erling_Haaland_June_2025.jpg",
+        "kind": "team"
+      }
     },
     {
       "id": "wc_760474",
@@ -1959,7 +2290,14 @@
       "completed": false,
       "score_a": null,
       "score_b": null,
-      "tv_source": "estimated"
+      "tv_source": "estimated",
+      "archive": {
+        "src": "https://commons.wikimedia.org/wiki/Special:FilePath/Finales_CAN_2021_(13).jpg?width=1100",
+        "credit": "Wikimedia Commons",
+        "license": "Commons (free licence)",
+        "source": "https://commons.wikimedia.org/wiki/File:Finales_CAN_2021_(13).jpg",
+        "kind": "team"
+      }
     },
     {
       "id": "wc_760478",
@@ -1989,7 +2327,14 @@
       "completed": false,
       "score_a": null,
       "score_b": null,
-      "tv_source": "estimated"
+      "tv_source": "estimated",
+      "archive": {
+        "src": "https://commons.wikimedia.org/wiki/Special:FilePath/Carlos_Lima_Calu_2013_Catalonia.jpg?width=1100",
+        "credit": "Wikimedia Commons",
+        "license": "Commons (free licence)",
+        "source": "https://commons.wikimedia.org/wiki/File:Carlos_Lima_Calu_2013_Catalonia.jpg",
+        "kind": "team"
+      }
     },
     {
       "id": "wc_760479",
@@ -2019,7 +2364,14 @@
       "completed": false,
       "score_a": null,
       "score_b": null,
-      "tv_source": "estimated"
+      "tv_source": "estimated",
+      "archive": {
+        "src": "https://commons.wikimedia.org/wiki/Special:FilePath/2018_FIFA_World_Cup_Group_A_march_URU-KSA_-_Anthems.jpg?width=1100",
+        "credit": "Wikimedia Commons",
+        "license": "Commons (free licence)",
+        "source": "https://commons.wikimedia.org/wiki/File:2018_FIFA_World_Cup_Group_A_march_URU-KSA_-_Anthems.jpg",
+        "kind": "team"
+      }
     },
     {
       "id": "wc_760476",
@@ -2049,7 +2401,14 @@
       "completed": false,
       "score_a": null,
       "score_b": null,
-      "tv_source": "estimated"
+      "tv_source": "estimated",
+      "archive": {
+        "src": "https://commons.wikimedia.org/wiki/Special:FilePath/1934-World-Cup-Egypt.jpg?width=1100",
+        "credit": "Wikimedia Commons",
+        "license": "Commons (free licence)",
+        "source": "https://commons.wikimedia.org/wiki/File:1934-World-Cup-Egypt.jpg",
+        "kind": "team"
+      }
     },
     {
       "id": "wc_760477",
@@ -2079,7 +2438,14 @@
       "completed": false,
       "score_a": null,
       "score_b": null,
-      "tv_source": "estimated"
+      "tv_source": "estimated",
+      "archive": {
+        "src": "https://commons.wikimedia.org/wiki/Special:FilePath/Argentina_v_belgica_1986.jpg?width=1100",
+        "credit": "Wikimedia Commons",
+        "license": "Commons (free licence)",
+        "source": "https://commons.wikimedia.org/wiki/File:Argentina_v_belgica_1986.jpg",
+        "kind": "team"
+      }
     },
     {
       "id": "wc_760480",
@@ -2109,7 +2475,14 @@
       "completed": false,
       "score_a": null,
       "score_b": null,
-      "tv_source": "estimated"
+      "tv_source": "estimated",
+      "archive": {
+        "src": "https://commons.wikimedia.org/wiki/Special:FilePath/Brazil_and_Croatia_match_at_the_FIFA_World_Cup_2014-06-12_(10).jpg?width=1100",
+        "credit": "Wikimedia Commons",
+        "license": "Commons (free licence)",
+        "source": "https://commons.wikimedia.org/wiki/File:Brazil_and_Croatia_match_at_the_FIFA_World_Cup_2014-06-12_(10).jpg",
+        "kind": "team"
+      }
     },
     {
       "id": "wc_760485",
@@ -2139,7 +2512,14 @@
       "completed": false,
       "score_a": null,
       "score_b": null,
-      "tv_source": "estimated"
+      "tv_source": "estimated",
+      "archive": {
+        "src": "https://commons.wikimedia.org/wiki/Special:FilePath/ENG-PAN_(15)_(cropped).jpg?width=1100",
+        "credit": "Wikimedia Commons",
+        "license": "Commons (free licence)",
+        "source": "https://commons.wikimedia.org/wiki/File:ENG-PAN_(15)_(cropped).jpg",
+        "kind": "team"
+      }
     },
     {
       "id": "wc_760481",
@@ -2169,7 +2549,14 @@
       "completed": false,
       "score_a": null,
       "score_b": null,
-      "tv_source": "estimated"
+      "tv_source": "estimated",
+      "archive": {
+        "src": "https://commons.wikimedia.org/wiki/Special:FilePath/Colombia_national_football_team_in_1985.jpg?width=1100",
+        "credit": "Wikimedia Commons",
+        "license": "Commons (free licence)",
+        "source": "https://commons.wikimedia.org/wiki/File:Colombia_national_football_team_in_1985.jpg",
+        "kind": "team"
+      }
     },
     {
       "id": "wc_760482",
@@ -2199,7 +2586,14 @@
       "completed": false,
       "score_a": null,
       "score_b": null,
-      "tv_source": "estimated"
+      "tv_source": "estimated",
+      "archive": {
+        "src": "https://commons.wikimedia.org/wiki/Special:FilePath/Bundesarchiv_Bild_183-N0614-0028%2C_Fu%C3%9Fball-WM%2C_Zaire_-_Schottland_0-2.jpg?width=1100",
+        "credit": "Wikimedia Commons",
+        "license": "Commons (free licence)",
+        "source": "https://commons.wikimedia.org/wiki/File:Bundesarchiv_Bild_183-N0614-0028%2C_Fu%C3%9Fball-WM%2C_Zaire_-_Schottland_0-2.jpg",
+        "kind": "team"
+      }
     },
     {
       "id": "wc_760484",
@@ -2229,7 +2623,14 @@
       "completed": false,
       "score_a": null,
       "score_b": null,
-      "tv_source": "estimated"
+      "tv_source": "estimated",
+      "archive": {
+        "src": "https://commons.wikimedia.org/wiki/Special:FilePath/FIFA_World_Cup_2010_England_Algeria.jpg?width=1100",
+        "credit": "Wikimedia Commons",
+        "license": "Commons (free licence)",
+        "source": "https://commons.wikimedia.org/wiki/File:FIFA_World_Cup_2010_England_Algeria.jpg",
+        "kind": "team"
+      }
     },
     {
       "id": "wc_760483",
@@ -2259,7 +2660,14 @@
       "completed": false,
       "score_a": null,
       "score_b": null,
-      "tv_source": "estimated"
+      "tv_source": "estimated",
+      "archive": {
+        "src": "https://commons.wikimedia.org/wiki/Special:FilePath/AUS-JOR_20190106_Asian_Cup_2.jpg?width=1100",
+        "credit": "Wikimedia Commons",
+        "license": "Commons (free licence)",
+        "source": "https://commons.wikimedia.org/wiki/File:AUS-JOR_20190106_Asian_Cup_2.jpg",
+        "kind": "team"
+      }
     }
   ],
   "broadcasters": {
@@ -2269,9 +2677,9 @@
     "updated_at": "2026-06-09T06:38:23.430Z"
   },
   "archive_meta": {
-    "matched": 16,
-    "scanned": 31,
-    "source": "Wikimedia Commons",
-    "updated_at": "2026-06-09T07:02:48.479Z"
+    "source": "Wikimedia Commons via wikimedia-pp-cli (national-team page images)",
+    "matched": 72,
+    "total": 72,
+    "updated_at": "2026-06-09T09:54:22.477Z"
   }
 }

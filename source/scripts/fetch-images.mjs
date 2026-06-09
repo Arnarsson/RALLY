@@ -1,0 +1,82 @@
+#!/usr/bin/env node
+// ---------------------------------------------------------------------------
+// RALLY — historic football image finder (Wikimedia, via wikimedia-pp-cli)
+//
+// Sources a real, historically-relevant photo for every national team by
+// reading the IMAGES USED ON that team's Wikipedia article (its curated
+// infobox + body photos — e.g. "Brazil 1970", "Argentina 1908", "England v
+// Croatia 2018"). We go through the `wikimedia-pp-cli` gateway, which has a
+// local SQLite cache + proper rate-limit handling — the thing that makes the
+// raw Commons API unusable at scale.
+//
+// Why this beats raw Commons search/category/Wikidata:
+//   - text search → wrong-country junk; categories → year-subcategories +
+//     429s; Wikidata P18 → empty for most big teams. Wikipedia article images
+//     are human-curated and reliable, and every Commons file is free-licensed.
+//
+// Writes:
+//   - src/data/fixtures.json   .archive  (per match: home team's photo, else away)
+//   - src/data/heroImages.js   HERO_IMG  (per onboarding flag → country photo)
+//
+// Prereq (Claude Code): install the skill, which installs the CLI:
+//   npx skills add mvanhorn/printing-press-library/cli-skills/pp-wikimedia -g
+// or build it: git clone github.com/Pimmetjeoss/wikimedia-pp-cli && go build ./cmd/wikimedia-pp-cli
+//
+// Usage:  WM=wikimedia-pp-cli node scripts/fetch-images.mjs
+// ---------------------------------------------------------------------------
+
+import { execFileSync } from 'node:child_process'
+import { readFileSync, writeFileSync } from 'node:fs'
+
+const WM = process.env.WM || 'wikimedia-pp-cli'
+const FIXTURES = new URL('../src/data/fixtures.json', import.meta.url)
+const HERO_OUT = new URL('../src/data/heroImages.js', import.meta.url)
+
+// Wikipedia page title per team where it isn't "<team> national football team".
+const PAGE = {
+  USA: "United States men's national soccer team", Czechia: 'Czech Republic national football team',
+  'Bosnia-Herz': 'Bosnia and Herzegovina national football team', 'Türkiye': 'Turkey national football team',
+  'Congo DR': 'DR Congo national football team', 'Curaçao': 'Curaçao national football team',
+}
+const page = (t) => PAGE[t] || `${t} national football team`
+// Reject non-photographs (crests, charts, kits, aircraft used in articles, …).
+const BAD = /logo|crest|badge|\bflag\b|\.svg|\bmap\b|icon|airbus|boeing|varig|aircraft|stamp|\bcoin\b|kit|location|trophy|medal|portrait|coat[_ ]of[_ ]arms|signature|diagram/i
+const score = (n) => (/world cup|fifa/i.test(n) ? 4 : 0) + (/match|final|squad|team|vs|&|copa|euro|afcon|cup/i.test(n) ? 2 : 0) + (/celebrat|champion|win/i.test(n) ? 2 : 0)
+const fileURL = (f) => `https://commons.wikimedia.org/wiki/Special:FilePath/${encodeURIComponent(f.replace(/ /g, '_'))}?width=1100`
+const filePage = (f) => `https://commons.wikimedia.org/wiki/File:${encodeURIComponent(f.replace(/ /g, '_'))}`
+
+function bestPhoto(title) {
+  let raw
+  try { raw = execFileSync(WM, ['concept', 'commons-images', title, '--agent', '--limit', '60'], { encoding: 'utf8', timeout: 20000 }) }
+  catch { return null }
+  let j; try { j = JSON.parse(raw) } catch { return null }
+  const imgs = (j.query?.pages?.[0]?.images || []).map((x) => x.title.replace(/^File:/, ''))
+  const photos = imgs.filter((n) => /\.jpe?g$/i.test(n) && !BAD.test(n)).sort((a, b) => score(b) - score(a))
+  if (!photos.length) return null
+  const file = photos[0]
+  return { src: fileURL(file), credit: 'Wikimedia Commons', license: 'Commons (free licence)', source: filePage(file), kind: 'team' }
+}
+function photoFor(team) {
+  for (const t of [page(team), `${team} at the FIFA World Cup`, `Football in ${team}`]) {
+    const p = bestPhoto(t); if (p) return p
+  }
+  return null
+}
+
+const data = JSON.parse(readFileSync(FIXTURES, 'utf8'))
+const teams = [...new Set(data.fixtures.flatMap((f) => [f.team_a, f.team_b]))]
+const cache = {}
+for (const t of teams) { cache[t] = photoFor(t); process.stderr.write(`  ${cache[t] ? '✓' : '·'} ${t}\n`) }
+
+let n = 0
+for (const f of data.fixtures) { const p = cache[f.team_a] || cache[f.team_b]; if (p) { f.archive = p; n++ } }
+data.archive_meta = { source: 'Wikimedia Commons via wikimedia-pp-cli', matched: n, total: data.fixtures.length, updated_at: new Date().toISOString() }
+writeFileSync(FIXTURES, JSON.stringify(data, null, 2))
+
+// Hero images for the onboarding flags (country the user picks).
+const FLAGS = { '🇩🇰': 'Denmark', '🇧🇷': 'Brazil', '🇦🇷': 'Argentina', '🇪🇸': 'Spain', '🇫🇷': 'France', '🏴': 'England', '🇲🇦': 'Morocco', '🇵🇱': 'Poland', '🇳🇴': 'Norway', '🇲🇽': 'Mexico', '🇺🇸': 'USA', '🇯🇵': 'Japan', '🇭🇷': 'Croatia', '🇨🇭': 'Switzerland', '🇰🇷': 'South Korea' }
+const hero = {}
+for (const [fl, c] of Object.entries(FLAGS)) { const p = cache[c] || photoFor(c); if (p) hero[fl] = p.src }
+const GEN = 'https://commons.wikimedia.org/wiki/Special:FilePath/FIFA_World_Cup_Trophy_(Ank_Kumar,_Infosys_Limited)_04.jpg?width=1100'
+writeFileSync(HERO_OUT, `// GENERATED by scripts/fetch-images.mjs — historic football photo per onboarding flag.\nexport const HERO_IMG = ${JSON.stringify(hero, null, 2)}\nexport const HERO_GENERIC = ${JSON.stringify(GEN)}\n`)
+process.stderr.write(`\n✓ ${n}/${data.fixtures.length} match photos · ${Object.keys(hero).length}/15 hero flags\n`)

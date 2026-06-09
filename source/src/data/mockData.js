@@ -16,9 +16,8 @@ import LIVE_DATA from './fixtures.json'
 import { supabase, hasSupabase } from '../lib/supabase.js'
 export { hasSupabase }
 
-// Real 2026 World Cup fixtures pulled from ESPN's hidden API.
-// See scripts/fetch-fixtures.mjs. In production this table is kept fresh by a
-// backend cron / the espn-pp-mcp server; the app just reads it.
+// Real 2026 World Cup fixtures. In production this table is kept fresh by a
+// backend cron; the app just reads it.
 export const LIVE_FIXTURES = LIVE_DATA.fixtures
 export const FIXTURES_SOURCE = LIVE_DATA.source
 const _norm = (s) => (s || '').toLowerCase().replace(/[^a-z]/g, '')

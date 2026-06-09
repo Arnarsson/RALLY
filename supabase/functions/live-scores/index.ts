@@ -16,6 +16,9 @@
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SERVICE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 const API_KEY = Deno.env.get("API_FOOTBALL_KEY") ?? "";
+// Live feed endpoint is supplied via secret, never hardcoded — the provider is
+// not named anywhere in this repo or surfaced to clients.
+const FEED_URL = Deno.env.get("LIVE_FEED_URL") ?? "";
 const CRON_SECRET = Deno.env.get("CRON_SECRET") ?? "";
 
 const POLLS = 3;           // polls per invocation
@@ -68,7 +71,48 @@ async function inMatchWindow(): Promise<boolean> {
   return Array.isArray(rows) && rows.length > 0;
 }
 
-async function pollOnce(pairMap: Record<string, string>): Promise<number> {
+async function updateMatch(id: string, patch: Record<string, unknown>): Promise<boolean> {
+  const up = await sbFetch(`matches?id=eq.${id}`, {
+    method: "PATCH", headers: { Prefer: "return=minimal" },
+    body: JSON.stringify(patch),
+  });
+  return up.ok;
+}
+
+// FREE / NO KEY / NO QUOTA — a public scoreboard feed (URL from LIVE_FEED_URL
+// secret). Returns live state, score and the match clock with no auth. Default
+// live source (zero keys). Server-side only; provider never named or surfaced.
+async function pollFeed(pairMap: Record<string, string>): Promise<number> {
+  const r = await fetch(FEED_URL, { headers: { "User-Agent": "rally-live/1.0" } });
+  if (!r.ok) { console.error(`feed ${r.status}`); return 0; }
+  const data = await r.json();
+  let updated = 0;
+  for (const ev of data.events ?? []) {
+    const comp = ev.competitions?.[0]; if (!comp) continue;
+    const t = comp.status?.type ?? {};
+    if (t.state === "pre") continue; // nothing live to write yet
+    const home = comp.competitors?.find((c: any) => c.homeAway === "home") ?? comp.competitors?.[0];
+    const away = comp.competitors?.find((c: any) => c.homeAway === "away") ?? comp.competitors?.[1];
+    if (!home || !away) continue;
+    const id = pairMap[pairKey(
+      home.team?.shortDisplayName ?? home.team?.name,
+      away.team?.shortDisplayName ?? away.team?.name,
+    )];
+    if (!id) continue;
+    const done = t.state === "post" || !!t.completed;
+    if (await updateMatch(id, {
+      status: done ? "post" : "in",
+      score_a: Number(home.score ?? 0),
+      score_b: Number(away.score ?? 0),
+      clock: comp.status?.displayClock ?? null,
+      completed: done,
+    })) updated++;
+  }
+  return updated;
+}
+
+// OPTIONAL UPGRADE — API-Football (richer events), used only if a key is set.
+async function pollApiFootball(pairMap: Record<string, string>): Promise<number> {
   const r = await fetch("https://v3.football.api-sports.io/fixtures?live=all", {
     headers: { "x-apisports-key": API_KEY },
   });
@@ -76,24 +120,18 @@ async function pollOnce(pairMap: Record<string, string>): Promise<number> {
   const body = await r.json();
   let updated = 0;
   for (const fx of body.response ?? []) {
-    const home = fx.teams?.home?.name, away = fx.teams?.away?.name;
-    const id = pairMap[pairKey(home, away)];
-    if (!id) continue; // non-WC or alias gap
-    const elapsed = fx.fixture?.status?.elapsed;
-    const short = fx.fixture?.status?.short; // 1H,HT,2H,FT...
+    const id = pairMap[pairKey(fx.teams?.home?.name, fx.teams?.away?.name)];
+    if (!id) continue;
+    const short = fx.fixture?.status?.short;
     const done = ["FT", "AET", "PEN"].includes(short);
-    const patch = {
+    const elapsed = fx.fixture?.status?.elapsed;
+    if (await updateMatch(id, {
       status: done ? "post" : "in",
       score_a: fx.goals?.home ?? 0,
       score_b: fx.goals?.away ?? 0,
       clock: elapsed != null ? `${elapsed}'` : null,
       completed: done,
-    };
-    const up = await sbFetch(`matches?id=eq.${id}`, {
-      method: "PATCH", headers: { Prefer: "return=minimal" },
-      body: JSON.stringify(patch),
-    });
-    if (up.ok) updated++;
+    })) updated++;
   }
   return updated;
 }
@@ -103,20 +141,22 @@ Deno.serve(async (req) => {
   if (CRON_SECRET && req.headers.get("x-cron-secret") !== CRON_SECRET) {
     return new Response("forbidden", { status: 403 });
   }
-  if (!API_KEY) {
-    console.log("live-scores: dormant (no API_FOOTBALL_KEY set)");
-    return Response.json({ ok: true, dormant: true });
+  if (!API_KEY && !FEED_URL) {
+    console.log("live-scores: no live source configured");
+    return Response.json({ ok: true, unconfigured: true });
   }
   if (!(await inMatchWindow())) {
-    console.log("live-scores: no match window — skipping API call");
+    console.log("live-scores: no match window — skipping");
     return Response.json({ ok: true, idle: true });
   }
   const pairMap = await loadPairMap();
+  const poll = API_KEY ? pollApiFootball : pollFeed; // free public feed, no key/quota
+  const source = API_KEY ? "api-football" : "live";
   let total = 0;
   for (let i = 0; i < POLLS; i++) {
-    total += await pollOnce(pairMap);
+    total += await poll(pairMap);
     if (i < POLLS - 1) await sleep(GAP_MS);
   }
-  console.log(`live-scores: ${total} updates across ${POLLS} polls`);
-  return Response.json({ ok: true, updated: total });
+  console.log(`live-scores: ${total} updates via ${source}`);
+  return Response.json({ ok: true, updated: total, source });
 });
