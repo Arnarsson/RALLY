@@ -373,10 +373,10 @@ export async function ensureAuth() {
 // Persist the onboarding profile (id = auth uid) so it survives + is shareable.
 export async function saveProfile(id, p) {
   if (!hasSupabase || !id) return
-  await supabase.from('profiles').upsert(
-    { id, name: p.name || 'You', flag: p.flag || '🇩🇰', color: p.color || '#8ACE00' },
-    { onConflict: 'id' },
-  )
+  const row = { id, name: p.name || 'You', flag: p.flag || '🇩🇰', color: p.color || '#8ACE00' }
+  // gender is opt-in: persist only when explicitly provided (default 'na').
+  if (p.gender !== undefined && p.gender !== null) row.gender = p.gender || 'na'
+  await supabase.from('profiles').upsert(row, { onConflict: 'id' })
 }
 
 // Join / leave a plan → plan_participants row. Realtime echoes it to all devices.
@@ -430,4 +430,88 @@ export async function loadTeamExtras(teamA, teamB) {
     a: { squad: pick(sq, keys[0]), record: pick(rec, keys[0]) },
     b: { squad: pick(sq, keys[1]), record: pick(rec, keys[1]) },
   }
+}
+
+// ===========================================================================
+// Match Ratings (social §3) + gender insights (§4).
+// Ratings are of ADULT PRO PLAYERS from the squad layer only — never RALLY
+// users, never minors. Display is AGGREGATE / ANONYMOUS (matchRatings returns
+// per-player counts; an individual's vote is never exposed). All loaders are
+// guarded by `hasSupabase` so the standalone demo build is a clean no-op.
+// ===========================================================================
+import { MAX_PICKS_PER_CATEGORY } from './ratingConfig.js'
+
+// Stable player_id: slug of (player name + team). Squads store {name,pos,no}
+// with no id, so we derive a deterministic key that survives across devices.
+export const playerSlug = (name, team) =>
+  `${_norm(name)}__${_norm(team)}`
+
+// Cast a vote. Enforces max-N per (user, match, category): counts the user's
+// existing rows for that category in this match and REFUSES the (N+1)th.
+// Upserts on the unique key so a re-tap of an already-picked player is a no-op.
+// Returns { ok, reason? }. No-op (ok:false) on the demo path.
+export async function ratePlayer(matchId, teamId, playerId, category) {
+  if (!hasSupabase) return { ok: false, reason: 'demo' }
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { ok: false, reason: 'no_auth' }
+
+  // Already picked? upsert is idempotent — allow it (no count bump).
+  const { count } = await supabase
+    .from('player_ratings')
+    .select('id', { count: 'exact', head: true })
+    .eq('user_id', user.id).eq('match_id', matchId).eq('category', category)
+
+  const { count: already } = await supabase
+    .from('player_ratings')
+    .select('id', { count: 'exact', head: true })
+    .eq('user_id', user.id).eq('match_id', matchId)
+    .eq('category', category).eq('player_id', playerId)
+
+  if (!already && (count ?? 0) >= MAX_PICKS_PER_CATEGORY) {
+    return { ok: false, reason: 'max' }
+  }
+  const { error } = await supabase.from('player_ratings').upsert(
+    { user_id: user.id, match_id: matchId, team_id: teamId, player_id: playerId, category },
+    { onConflict: 'user_id,match_id,category,player_id' },
+  )
+  return error ? { ok: false, reason: 'error' } : { ok: true }
+}
+
+// Remove a vote.
+export async function unratePlayer(matchId, playerId, category) {
+  if (!hasSupabase) return { ok: false, reason: 'demo' }
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { ok: false, reason: 'no_auth' }
+  const { error } = await supabase.from('player_ratings').delete()
+    .eq('user_id', user.id).eq('match_id', matchId)
+    .eq('category', category).eq('player_id', playerId)
+  return error ? { ok: false, reason: 'error' } : { ok: true }
+}
+
+// The current user's own picks for this match (so the UI can highlight them and
+// enforce the per-category cap). Returns { [category]: Set(player_id) } or null.
+export async function myRatings(matchId) {
+  if (!hasSupabase) return null
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return null
+  const { data } = await supabase.from('player_ratings')
+    .select('player_id, category').eq('user_id', user.id).eq('match_id', matchId)
+  const out = {}
+  for (const r of data || []) (out[r.category] ||= new Set()).add(r.player_id)
+  return out
+}
+
+// Aggregate tally across ALL users for this match: counts per (player_id,
+// category). Public read per RLS; anonymous — never returns who voted.
+// Returns { [category]: { [player_id]: count } } or null on the demo path.
+export async function matchRatings(matchId) {
+  if (!hasSupabase) return null
+  const { data } = await supabase.from('player_ratings')
+    .select('player_id, category').eq('match_id', matchId)
+  const out = {}
+  for (const r of data || []) {
+    const cat = (out[r.category] ||= {})
+    cat[r.player_id] = (cat[r.player_id] || 0) + 1
+  }
+  return out
 }

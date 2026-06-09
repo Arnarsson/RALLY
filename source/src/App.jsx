@@ -8,7 +8,9 @@ import {
   hasSupabase, ensureAuth, saveProfile, hydrateFromSupabase,
   loadPlans, subscribeRealtime, joinPlan, leavePlan, createPlanRow,
   loadTeamExtras,
+  ratePlayer, unratePlayer, matchRatings, myRatings, playerSlug,
 } from './data/mockData.js'
+import { activeCategories, MAX_PICKS_PER_CATEGORY } from './data/ratingConfig.js'
 import { OUTFIT_IMG } from './data/outfitImages.js'
 import { FLAG_PNG } from './data/flags.js'
 import { HERO_IMG, HERO_GENERIC } from './data/heroImages.js'
@@ -524,7 +526,7 @@ export default function App() {
   if (view.name === 'matches') {
     screen = <MatchesScreen plans={plans} flag={profile.flag} onOpenMatch={(m) => push({ name: 'match', matchId: m.id })} />
   } else if (view.name === 'match') {
-    screen = <MatchScreen match={matchById(view.matchId)} plans={plans} onBack={back}
+    screen = <MatchScreen match={matchById(view.matchId)} plans={plans} myId={myId} onBack={back}
       onOpenPlan={(p) => push({ name: 'plan', planId: p.id })} onCreate={() => push({ name: 'create', matchId: view.matchId })} />
   } else if (view.name === 'plan') {
     const plan = plans.find((p) => p.id === view.planId)
@@ -598,9 +600,17 @@ function SplashScreen({ onSkip }) {
 }
 
 // --- onboarding ------------------------------------------------------------
+// Optional gender self-select — used ONLY to segment aggregate match-rating
+// insights (never shown per-user). Default 'na'; fully skippable.
+const GENDERS = [
+  { id: 'f', label: '♀' },
+  { id: 'm', label: '♂' },
+  { id: 'x', label: '⚧' },
+]
 function ProfileSetup({ onDone }) {
   const [name, setName] = useState('')
   const [flag, setFlag] = useState('🇩🇰')
+  const [gender, setGender] = useState('na')
   return (
     <div className="flex flex-col h-full px-6 py-3">
       <div className="pt-2">
@@ -626,6 +636,22 @@ function ProfileSetup({ onDone }) {
             ))}
           </div>
         </div>
+        <div>
+          <label className="text-[11px] font-bold tracking-[0.18em] uppercase text-cream/40">
+            Gender <span className="text-cream/25 normal-case tracking-normal font-normal">· optional, for match insights</span>
+          </label>
+          <div className="grid grid-cols-4 gap-2 mt-2">
+            {GENDERS.map((g) => (
+              <button key={g.id} onClick={() => setGender((cur) => cur === g.id ? 'na' : g.id)}
+                className={'rounded-2xl py-2.5 text-xl flex items-center justify-center border-2 transition ' +
+                  (gender === g.id ? 'border-lime bg-lime/15' : 'border-line bg-panel')}>{g.label}</button>
+            ))}
+            <button onClick={() => setGender('na')}
+              className={'rounded-2xl py-2.5 text-[12px] font-bold uppercase flex items-center justify-center border-2 transition ' +
+                (gender === 'na' ? 'border-lime bg-lime/15 text-cream' : 'border-line bg-panel text-cream/45')}>Skip</button>
+          </div>
+        </div>
+
         <div className="flex items-center gap-3 rounded-2xl bg-panel border border-line p-3">
           <Avatar user={{ id: 'u_me', name: name || 'You', flag, color: '#8ACE00' }} size={44} />
           <div>
@@ -636,7 +662,7 @@ function ProfileSetup({ onDone }) {
       </div>
 
       <div className="mt-auto pt-4 space-y-1.5">
-        <Pill onClick={() => onDone({ name: name.trim() || 'You', flag })} className="w-full text-lg">Let’s go →</Pill>
+        <Pill onClick={() => onDone({ name: name.trim() || 'You', flag, gender })} className="w-full text-lg">Let’s go →</Pill>
         <button onClick={() => onDone(null)} className="w-full text-cream/40 text-sm py-1.5">Skip for now</button>
       </div>
     </div>
@@ -761,7 +787,7 @@ function MatchesScreen({ plans, onOpenMatch, flag }) {
 }
 
 // --- match (plans) ---------------------------------------------------------
-function MatchScreen({ match, plans, onBack, onOpenPlan, onCreate }) {
+function MatchScreen({ match, plans, myId, onBack, onOpenPlan, onCreate }) {
   const matchPlans = plans.filter((p) => p.match_id === match.id).sort((a, b) => b.participant_ids.length - a.participant_ids.length)
   const [extras, setExtras] = useState(null)
   const [showPoster, setShowPoster] = useState(false)
@@ -808,6 +834,8 @@ function MatchScreen({ match, plans, onBack, onOpenPlan, onCreate }) {
         <HeadToHead match={match} m={match} />
 
         <TeamExtras match={match} extras={extras} />
+
+        <RatePanel match={match} extras={extras} myId={myId} />
 
         <div className="flex items-end justify-between mb-3">
           <h2 className="font-display text-2xl uppercase leading-none">Spots</h2>
@@ -1022,6 +1050,108 @@ function TeamExtras({ match, extras }) {
       <h2 className="font-display text-2xl uppercase leading-none mb-3">Teams</h2>
       <TeamPanel team={match.team_a} flag={match.flag_a} squad={a?.squad} record={a?.record} />
       <TeamPanel team={match.team_b} flag={match.flag_b} squad={b?.squad} record={b?.record} />
+    </div>
+  )
+}
+
+// --- Rate the match (social §3) --------------------------------------------
+// Players come from BOTH squads (squad layer = adult pro players only — never
+// RALLY users). Tap to pick (max 3 per category, extra picks blocked in the UI
+// and refused by the loader), tap again to unpick. Once the user has voted in a
+// category, the live AGGREGATE tally per player is shown (matchRatings) — an
+// individual vote is never surfaced. Gated behind hasSupabase: hidden entirely
+// in the standalone demo. Categories (incl. the kill-switch) come from
+// ratingConfig.js via activeCategories().
+function RatePanel({ match, extras, myId }) {
+  const cats = activeCategories()
+  // Build the combined player list from both squads, keyed by a stable slug.
+  const players = []
+  if (extras) {
+    for (const [side, team] of [['a', match.team_a], ['b', match.team_b]]) {
+      const sq = extras[side]?.squad
+      for (const p of sq?.players || []) {
+        players.push({ id: playerSlug(p.name, team), name: p.name, no: p.no, pos: p.pos, team })
+      }
+    }
+  }
+
+  const [cat, setCat] = useState(cats[0]?.id)
+  const [mine, setMine] = useState({})       // { [cat]: Set(player_id) }
+  const [tally, setTally] = useState({})      // { [cat]: { [player_id]: count } }
+  const [busy, setBusy] = useState(false)
+
+  const refresh = () => {
+    myRatings(match.id).then((m) => m && setMine(m))
+    matchRatings(match.id).then((t) => t && setTally(t))
+  }
+  useEffect(() => { setMine({}); setTally({}); if (hasSupabase) refresh() }, [match.id])
+
+  // Demo build / kill-switched-to-empty / no squads → render nothing.
+  if (!hasSupabase || !cats.length || !players.length) return null
+
+  const myCat = mine[cat] || new Set()
+  const atMax = myCat.size >= MAX_PICKS_PER_CATEGORY
+  const hasVoted = myCat.size > 0
+  const catTally = tally[cat] || {}
+
+  const toggle = async (p) => {
+    if (busy) return
+    const picked = myCat.has(p.id)
+    if (!picked && atMax) return            // 4th pick blocked
+    setBusy(true)
+    if (picked) await unratePlayer(match.id, p.id, cat)
+    else await ratePlayer(match.id, p.team, p.id, cat)
+    refresh()
+    setBusy(false)
+  }
+
+  return (
+    <div className="mb-6">
+      <div className="flex items-end justify-between mb-1">
+        <h2 className="font-display text-2xl uppercase leading-none">Rate the match</h2>
+        <span className="text-[10px] uppercase tracking-wide text-cream/40">pick up to {MAX_PICKS_PER_CATEGORY}</span>
+      </div>
+      <p className="text-[11px] text-cream/40 mb-3">Anonymous · the players on the pitch tonight</p>
+
+      {/* category tabs */}
+      <div className="flex gap-2 mb-3">
+        {cats.map((c) => (
+          <button key={c.id} onClick={() => setCat(c.id)}
+            className={'flex-1 rounded-full px-3 py-2 text-[12px] font-bold uppercase tracking-wide border transition active:scale-[0.97] ' +
+              (cat === c.id ? 'bg-lime text-night border-lime' : 'bg-panel text-cream/70 border-line')}>
+            <span aria-hidden>{c.emoji}</span> {c.label}
+          </button>
+        ))}
+      </div>
+
+      <div className="rounded-2xl bg-panel border border-line p-3">
+        <div className="flex items-center justify-between text-[10px] uppercase tracking-[0.16em] text-cream/40 mb-2">
+          <span>{myCat.size} / {MAX_PICKS_PER_CATEGORY} picked</span>
+          {atMax && <span className="text-pink">max reached — tap a pick to swap</span>}
+        </div>
+        <div className="flex flex-wrap gap-2">
+          {players.map((p) => {
+            const picked = myCat.has(p.id)
+            const count = catTally[p.id] || 0
+            const blocked = !picked && atMax
+            return (
+              <button key={p.id} disabled={blocked || busy} onClick={() => toggle(p)}
+                title={p.team}
+                className={'inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[13px] border transition active:scale-[0.96] ' +
+                  (picked ? 'bg-lime text-night border-lime font-bold'
+                    : blocked ? 'bg-panel text-cream/25 border-line/60 cursor-not-allowed'
+                    : 'bg-night text-cream/80 border-line hover:border-cream/40')}>
+                {p.no ? <span className={picked ? 'text-night/55' : 'text-cream/35'}>{p.no}</span> : null}
+                {p.name}
+                {hasVoted && count > 0 && (
+                  <span className={'ml-0.5 rounded-full px-1.5 text-[10px] font-bold ' +
+                    (picked ? 'bg-night/15 text-night' : 'bg-lime/15 text-lime')}>{count}</span>
+                )}
+              </button>
+            )
+          })}
+        </div>
+      </div>
     </div>
   )
 }

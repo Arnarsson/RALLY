@@ -226,3 +226,243 @@ drop policy if exists squads_read on squads;
 create policy squads_read on squads for select using (true);
 drop policy if exists team_records_read on team_records;
 create policy team_records_read on team_records for select using (true);
+
+-- ===========================================================================
+-- SOCIAL LAYER (phase 1 foundation). All idempotent: `create table if not
+-- exists`, `drop policy if exists` before create, RLS enabled on every table,
+-- publication adds guarded in do-blocks. Only §3 (player_ratings) + §4 (gender
+-- + rating_insights) are wired into the app today; §1/§2/§5/§6/§7 are laid for
+-- the next phases.
+--
+-- GUARDRAILS (enforced by design, not just convention):
+--   * Ratings are of ADULT PRO PLAYERS from the squad layer only — never RALLY
+--     users, never minors. player_id is a stable slug of (player name + team).
+--   * Display is AGGREGATE / ANONYMOUS only — RLS lets anyone read the rows for
+--     tallying, but the UI never surfaces an individual's vote.
+--   * gender on profiles is OPT-IN (default 'na') and used solely to segment
+--     aggregates (rating_insights view).
+-- ===========================================================================
+
+-- ---------------------------------------------------------------------------
+-- §1 — (share/poster analytics live elsewhere; nothing to add here yet)
+-- ---------------------------------------------------------------------------
+
+-- ===========================================================================
+-- §2 — referrals + discount_codes (owner-scoped). Laid for a later phase.
+-- ===========================================================================
+create table if not exists referrals (
+  id          uuid primary key default gen_random_uuid(),
+  referrer_id uuid references profiles(id) on delete cascade,
+  invitee_id  uuid references profiles(id) on delete set null,
+  code        text unique not null,
+  status      text default 'pending',        -- pending | joined | rewarded
+  created_at  timestamptz default now()
+);
+create table if not exists discount_codes (
+  id         uuid primary key default gen_random_uuid(),
+  user_id    uuid references profiles(id) on delete cascade,
+  code       text unique not null,
+  partner    text,                            -- e.g. 'miinto'
+  pct        int,
+  redeemed   bool default false,
+  expires_at timestamptz,
+  created_at timestamptz default now()
+);
+alter table referrals      enable row level security;
+alter table discount_codes enable row level security;
+
+drop policy if exists referrals_select on referrals;
+create policy referrals_select on referrals
+  for select using (auth.uid() = referrer_id or auth.uid() = invitee_id);
+drop policy if exists referrals_insert on referrals;
+create policy referrals_insert on referrals
+  for insert with check (auth.uid() = referrer_id);
+drop policy if exists referrals_update on referrals;
+create policy referrals_update on referrals
+  for update using (auth.uid() = referrer_id) with check (auth.uid() = referrer_id);
+
+drop policy if exists discount_codes_select on discount_codes;
+create policy discount_codes_select on discount_codes
+  for select using (auth.uid() = user_id);
+drop policy if exists discount_codes_insert on discount_codes;
+create policy discount_codes_insert on discount_codes
+  for insert with check (auth.uid() = user_id);
+drop policy if exists discount_codes_update on discount_codes;
+create policy discount_codes_update on discount_codes
+  for update using (auth.uid() = user_id) with check (auth.uid() = user_id);
+
+-- ===========================================================================
+-- §3 — player_ratings (BUILT IN APP). Each row is one user's vote for one
+-- squad player in one match, in one category. Unique key prevents dup votes;
+-- the app caps it at 3 per (user, match, category). RLS: public read (for the
+-- aggregate tally), owner-scoped writes (auth.uid() = user_id).
+-- ===========================================================================
+create table if not exists player_ratings (
+  id         uuid primary key default gen_random_uuid(),
+  user_id    uuid references profiles(id) on delete cascade,
+  match_id   text references matches(id) on delete cascade,
+  team_id    text,                            -- the team name (squad anchor)
+  player_id  text not null,                   -- stable slug of (name + team)
+  category   text not null check (category in ('hot','best_dressed','coolness')),
+  created_at timestamptz default now(),
+  unique (user_id, match_id, category, player_id)
+);
+alter table player_ratings enable row level security;
+
+drop policy if exists player_ratings_select on player_ratings;
+create policy player_ratings_select on player_ratings
+  for select using (true);                    -- aggregate display only
+drop policy if exists player_ratings_insert on player_ratings;
+create policy player_ratings_insert on player_ratings
+  for insert with check (auth.uid() = user_id);
+drop policy if exists player_ratings_update on player_ratings;
+create policy player_ratings_update on player_ratings
+  for update using (auth.uid() = user_id) with check (auth.uid() = user_id);
+drop policy if exists player_ratings_delete on player_ratings;
+create policy player_ratings_delete on player_ratings
+  for delete using (auth.uid() = user_id);
+
+-- ===========================================================================
+-- §4 — gender on profiles (opt-in) + rating_insights view (anonymous).
+-- The view joins ratings to the voter's profile and groups by player +
+-- category + gender → COUNT. No user_id is exposed; only aggregate counts.
+-- ===========================================================================
+alter table profiles add column if not exists gender text;
+
+create or replace view rating_insights as
+  select
+    pr.player_id,
+    pr.team_id,
+    pr.category,
+    coalesce(p.gender, 'na') as voter_gender,
+    count(*)                 as votes
+  from player_ratings pr
+  left join profiles p on p.id = pr.user_id
+  group by pr.player_id, pr.team_id, pr.category, coalesce(p.gender, 'na');
+
+-- ===========================================================================
+-- §5 — epic_moments (BUILT LATER). User-flagged "epic moment" of a match.
+-- ===========================================================================
+create table if not exists epic_moments (
+  id         uuid primary key default gen_random_uuid(),
+  user_id    uuid references profiles(id) on delete cascade,
+  match_id   text references matches(id) on delete cascade,
+  minute     int,
+  kind       text,                            -- goal | save | skill | drama
+  note       text,
+  created_at timestamptz default now()
+);
+alter table epic_moments enable row level security;
+drop policy if exists epic_moments_select on epic_moments;
+create policy epic_moments_select on epic_moments
+  for select using (true);
+drop policy if exists epic_moments_insert on epic_moments;
+create policy epic_moments_insert on epic_moments
+  for insert with check (auth.uid() = user_id);
+drop policy if exists epic_moments_update on epic_moments;
+create policy epic_moments_update on epic_moments
+  for update using (auth.uid() = user_id) with check (auth.uid() = user_id);
+drop policy if exists epic_moments_delete on epic_moments;
+create policy epic_moments_delete on epic_moments
+  for delete using (auth.uid() = user_id);
+
+-- ===========================================================================
+-- §6 — wags + wag_ratings (BUILT LATER). Editorial roster (public read,
+-- service-role write); ratings owner-scoped, public-read for aggregate tally.
+-- ===========================================================================
+create table if not exists wags (
+  id        text primary key,                 -- stable slug
+  name      text not null,
+  partner   text,                             -- the player they're linked to
+  team      text,
+  photo     text,
+  created_at timestamptz default now()
+);
+create table if not exists wag_ratings (
+  id         uuid primary key default gen_random_uuid(),
+  user_id    uuid references profiles(id) on delete cascade,
+  wag_id     text references wags(id) on delete cascade,
+  match_id   text references matches(id) on delete set null,
+  category   text not null,                   -- e.g. best_dressed
+  created_at timestamptz default now(),
+  unique (user_id, wag_id, category)
+);
+alter table wags        enable row level security;
+alter table wag_ratings enable row level security;
+
+drop policy if exists wags_select on wags;
+create policy wags_select on wags
+  for select using (true);                    -- public read (service-role write)
+
+drop policy if exists wag_ratings_select on wag_ratings;
+create policy wag_ratings_select on wag_ratings
+  for select using (true);                    -- aggregate display only
+drop policy if exists wag_ratings_insert on wag_ratings;
+create policy wag_ratings_insert on wag_ratings
+  for insert with check (auth.uid() = user_id);
+drop policy if exists wag_ratings_delete on wag_ratings;
+create policy wag_ratings_delete on wag_ratings
+  for delete using (auth.uid() = user_id);
+
+-- ===========================================================================
+-- §7 — match_picks + venue_offers (BUILT LATER). User's pre-match pick;
+-- venue-published offers (public read, service-role write).
+-- ===========================================================================
+create table if not exists match_picks (
+  id         uuid primary key default gen_random_uuid(),
+  user_id    uuid references profiles(id) on delete cascade,
+  match_id   text references matches(id) on delete cascade,
+  pick       text not null,                   -- a | draw | b
+  created_at timestamptz default now(),
+  unique (user_id, match_id)
+);
+create table if not exists venue_offers (
+  id         uuid primary key default gen_random_uuid(),
+  venue_id   text references venues(id) on delete cascade,
+  match_id   text references matches(id) on delete set null,
+  title      text not null,
+  detail     text,
+  active     bool default true,
+  created_at timestamptz default now()
+);
+alter table match_picks  enable row level security;
+alter table venue_offers enable row level security;
+
+drop policy if exists match_picks_select on match_picks;
+create policy match_picks_select on match_picks
+  for select using (true);                    -- aggregate display only
+drop policy if exists match_picks_insert on match_picks;
+create policy match_picks_insert on match_picks
+  for insert with check (auth.uid() = user_id);
+drop policy if exists match_picks_update on match_picks;
+create policy match_picks_update on match_picks
+  for update using (auth.uid() = user_id) with check (auth.uid() = user_id);
+drop policy if exists match_picks_delete on match_picks;
+create policy match_picks_delete on match_picks
+  for delete using (auth.uid() = user_id);
+
+drop policy if exists venue_offers_select on venue_offers;
+create policy venue_offers_select on venue_offers
+  for select using (true);                    -- public read (service-role write)
+
+-- ===========================================================================
+-- Realtime — publish the live social tables (same guarded pattern as the
+-- matches / plan_participants additions above).
+-- ===========================================================================
+do $$
+begin
+  alter publication supabase_realtime add table player_ratings;
+exception when duplicate_object then null;
+end $$;
+
+do $$
+begin
+  alter publication supabase_realtime add table epic_moments;
+exception when duplicate_object then null;
+end $$;
+
+do $$
+begin
+  alter publication supabase_realtime add table match_picks;
+exception when duplicate_object then null;
+end $$;
