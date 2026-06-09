@@ -372,7 +372,7 @@ export default function App() {
 // --- phone frame -----------------------------------------------------------
 function PhoneFrame({ children, tab, onTab, hideNav = false, footer = null }) {
   return (
-    <div className="min-h-screen w-full flex items-center justify-center sm:py-6">
+    <div className="min-h-[100dvh] w-full flex items-center justify-center sm:py-6">
       <div className="relative w-full sm:max-w-[400px] h-[100dvh] sm:h-[860px] bg-night grain text-cream overflow-hidden sm:rounded-[42px] sm:border-[10px] sm:border-black sm:shadow-2xl flex flex-col">
         <div className="flex items-center justify-between px-6 pt-3 pb-1 text-[12px] text-cream/60 font-semibold shrink-0">
           <span>21:47</span><span className="tracking-widest">●●●●</span>
@@ -568,19 +568,14 @@ function MatchScreen({ match, plans, onBack, onOpenPlan, onCreate }) {
           </div>
           <div className="text-[11px] uppercase tracking-[0.18em] text-cream/80 mt-2"><MatchStatusLine m={match} /></div>
           {match.venue && <div className="text-[11px] text-cream/55 mt-1">📍 {match.venue}</div>}
-          {(match.form_a || match.form_b) && (
-            <div className="mt-3 inline-flex items-center gap-4 rounded-xl bg-white/[0.04] border border-white/[0.06] px-3 py-2 text-[10px] uppercase tracking-[0.16em] text-cream/55">
-              <span className="flex items-center gap-1.5">{match.team_a} <FormPips form={match.form_a} /></span>
-              <FormLegend />
-              <span className="flex items-center gap-1.5"><FormPips form={match.form_b} /> {match.team_b}</span>
-            </div>
-          )}
           <div className="mt-3"><TvChips tv={match.tv} /></div>
         </div>
       </div>
       <div className="px-5 pt-5">
 
         {match.commentary && <Rundown text={match.commentary} />}
+
+        <MatchAnalytics m={match} />
 
         {match.fun_fact && (
           <div className="mb-6 border-l-2 border-pink pl-4">
@@ -590,7 +585,6 @@ function MatchScreen({ match, plans, onBack, onOpenPlan, onCreate }) {
         )}
 
         <HeadToHead match={match} m={match} />
-        <WinProbBar m={match} />
 
         <div className="flex items-end justify-between mb-3">
           <h2 className="font-display text-2xl uppercase leading-none">Spots</h2>
@@ -623,27 +617,52 @@ function MatchScreen({ match, plans, onBack, onOpenPlan, onCreate }) {
   )
 }
 
-// Win-probability bar — model output (penaltyblog in production). Renders only
-// when probabilities exist, so it's dormant until the prediction worker fills them.
-function WinProbBar({ m }) {
-  if (m.prob_a == null || m.prob_b == null) return null
-  const pa = Math.round(m.prob_a * 100)
-  const pd = m.prob_draw != null ? Math.round(m.prob_draw * 100) : 0
-  const pb = Math.round(m.prob_b * 100)
+// Match analytics — "the numbers". Win probability + recent-form comparison.
+// Win-prob is a real model when the penaltyblog worker has run, otherwise a
+// form-based estimate. Deeper stats (xG, Elo, standings, live momentum) come
+// from the API-Football / penaltyblog backend (see docs/RALLY-10x-plan.md).
+const formPts = (f) => [...(f || '')].reduce((n, r) => n + (r === 'W' ? 3 : r === 'D' ? 1 : 0), 0)
+function MatchAnalytics({ m }) {
+  const hasProb = m.prob_a != null && m.prob_b != null
+  const hasForm = m.form_a || m.form_b
+  if (!hasProb && !hasForm) return null
+  const pa = Math.round((m.prob_a || 0) * 100), pd = Math.round((m.prob_draw || 0) * 100), pb = Math.round((m.prob_b || 0) * 100)
+  const src = m.prob_source === 'illustrative' ? 'model · demo' : m.prob_source === 'form' ? 'form model' : 'model'
+  const row = (flag, team, form) => (
+    <div className="flex items-center justify-between text-[11px]">
+      <span className="flex items-center gap-1.5"><FlagImg emoji={flag} team={team} size={13} /> {team}</span>
+      <span className="flex items-center gap-2"><FormPips form={form} /><span className="font-bold text-cream/55 w-12 text-right">{formPts(form)} pts</span></span>
+    </div>
+  )
   return (
-    <div className="mb-6">
-      <div className="flex items-center justify-between text-[9px] font-bold uppercase tracking-[0.2em] text-cream/40 mb-1.5">
-        <span>Win probability</span>
-        <span className="text-cream/30">{m.prob_source === 'illustrative' ? 'model · illustrative' : m.prob_source === 'form' ? 'based on form' : 'model'}</span>
+    <div className="rounded-2xl bg-panel border border-line p-4 mb-5">
+      <div className="flex items-center justify-between mb-3">
+        <div className="flourish text-xl leading-none text-lime">the numbers</div>
+        <div className="text-[10px] uppercase tracking-[0.18em] text-cream/40">{hasProb ? src : 'form'}</div>
       </div>
-      <div className="flex h-2.5 rounded-full overflow-hidden">
-        <div style={{ width: pa + '%', background: m.color_a || '#8ACE00' }} />
-        <div style={{ width: pd + '%', background: '#3a3a3a' }} />
-        <div style={{ width: pb + '%', background: m.color_b || '#2A5BFF' }} />
-      </div>
-      <div className="flex items-center justify-between text-[10px] font-bold mt-1.5 text-cream/70">
-        <span>{m.team_a} {pa}%</span><span className="text-cream/40">Draw {pd}%</span><span>{pb}% {m.team_b}</span>
-      </div>
+      {hasProb && (
+        <div className="mb-1">
+          <div className="text-[9px] font-bold uppercase tracking-[0.2em] text-cream/40 mb-1.5">Win probability</div>
+          <div className="flex h-3 rounded-full overflow-hidden">
+            <div style={{ width: pa + '%', background: m.color_a || '#8ACE00' }} />
+            <div style={{ width: pd + '%', background: '#3a3a3a' }} />
+            <div style={{ width: pb + '%', background: m.color_b || '#2A5BFF' }} />
+          </div>
+          <div className="flex items-center justify-between text-[11px] font-bold mt-1.5">
+            <span className="flex items-center gap-1.5"><FlagImg emoji={m.flag_a} team={m.team_a} size={13} /> {pa}%</span>
+            <span className="text-cream/40">Draw {pd}%</span>
+            <span className="flex items-center gap-1.5">{pb}% <FlagImg emoji={m.flag_b} team={m.team_b} size={13} /></span>
+          </div>
+        </div>
+      )}
+      {hasForm && (
+        <div className="mt-4 pt-4 border-t border-line">
+          <div className="flex items-center justify-between text-[9px] font-bold uppercase tracking-[0.2em] text-cream/40 mb-2">
+            <span>Recent form · last 5</span><FormLegend />
+          </div>
+          <div className="space-y-2">{row(m.flag_a, m.team_a, m.form_a)}{row(m.flag_b, m.team_b, m.form_b)}</div>
+        </div>
+      )}
     </div>
   )
 }
@@ -986,7 +1005,7 @@ function BuyBeerModal({ onClose }) {
 // --- bits ------------------------------------------------------------------
 function StickyBar({ children }) {
   return (
-    <div className="fixed sm:absolute bottom-[60px] left-0 right-0 px-5 pb-3 pt-8 bg-gradient-to-t from-night via-night to-transparent">{children}</div>
+    <div className="absolute bottom-[60px] left-0 right-0 px-5 pb-3 pt-8 bg-gradient-to-t from-night via-night to-transparent">{children}</div>
   )
 }
 
