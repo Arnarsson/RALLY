@@ -202,3 +202,27 @@ begin
   alter publication supabase_realtime add table plan_participants;
 exception when duplicate_object then null;  -- already in the publication
 end $$;
+
+-- ===========================================================================
+-- squads + team records (SG4). Squad list comes from a free public feed via
+-- the `squads` edge function (provider URL in the SQUAD_FEED_BASE secret).
+-- team_records is curated/editorial (all-time WC record — not a clean API
+-- field anywhere; seed it separately). Both public-read, service-role write.
+-- ===========================================================================
+create table if not exists squads (
+  team_key text primary key,        -- normalised team name; joins matches.team_a/b
+  team text not null, flag text,
+  players jsonb default '[]',       -- [{ name, pos, no }]
+  coach text, updated_at timestamptz default now()
+);
+create table if not exists team_records (
+  team_key text primary key, team text not null,
+  played int, wins int, draws int, losses int, gf int, ga int,
+  updated_at timestamptz default now()
+);
+alter table squads enable row level security;
+alter table team_records enable row level security;
+drop policy if exists squads_read on squads;
+create policy squads_read on squads for select using (true);
+drop policy if exists team_records_read on team_records;
+create policy team_records_read on team_records for select using (true);
