@@ -7,7 +7,7 @@
 
     <title>RALLY — the best seat isn't the stadium</title>
     <meta name="description" content="It's a packed bar with your lot. Find who's watching tonight's match in Copenhagen, grab a spot, get down there. We don't just watch the game — we rally for it." />
-    <link rel="canonical" href="https://www.rally.futbol/" />
+    <link rel="canonical" href="https://rally.futbol/" />
 
     <!-- Open Graph / social share — written in RALLY's voice (SOUL.md): a take, from
          the bar. Every shared link is the mate texting you off the sofa. -->
@@ -15,8 +15,8 @@
     <meta property="og:site_name" content="RALLY" />
     <meta property="og:title" content="RALLY — the best seat isn't the stadium" />
     <meta property="og:description" content="It's a packed bar with your lot. Find who's watching tonight's match in Copenhagen, grab a spot, get down there. We don't just watch the game — we rally for it." />
-    <meta property="og:url" content="https://www.rally.futbol/" />
-    <meta property="og:image" content="https://www.rally.futbol/og-image.png" />
+    <meta property="og:url" content="https://rally.futbol/" />
+    <meta property="og:image" content="https://rally.futbol/og-image.png" />
     <meta property="og:image:width" content="1200" />
     <meta property="og:image:height" content="630" />
     <meta property="og:image:alt" content="RALLY — find your game, find your people" />
@@ -24,7 +24,7 @@
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content="RALLY — the best seat isn't the stadium" />
     <meta name="twitter:description" content="It's a packed bar with your lot. Find tonight's match in Copenhagen, grab a spot, get down there. Don't watch it alone." />
-    <meta name="twitter:image" content="https://www.rally.futbol/og-image.png" />
+    <meta name="twitter:image" content="https://rally.futbol/og-image.png" />
 
     <link rel="icon" type="image/svg+xml" href="/icon.svg" />
     <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png" />
@@ -47,20 +47,90 @@
     <link rel="apple-touch-startup-image" media="screen and (device-width: 414px) and (device-height: 896px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)" href="/splash/iphone-828x1792.png" />
     <link rel="apple-touch-startup-image" media="screen and (device-width: 375px) and (device-height: 667px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)" href="/splash/iphone-750x1334.png" />
 
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Archivo:wght@500;600;700;800;900&family=Instrument+Serif:ital@0;1&family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
-    <style>html,body{margin:0;background:#0B0B0B}</style>
+    <!-- fonts:self-hosted:start -->
+    <!-- Self-hosted Google Fonts (latin subset, woff2) — kills the render-blocking
+         fonts.googleapis.com request (~1.3s on throttled mobile). Archivo and Inter
+         are variable fonts, so one file covers every weight we use. The standalone
+         build (file://) swaps this whole block back to the Google CDN via the
+         standaloneGoogleFonts plugin in vite.config.js. -->
+    <link rel="preload" as="font" type="font/woff2" href="/fonts/archivo-black-400.woff2" crossorigin />
+    <link rel="preload" as="font" type="font/woff2" href="/fonts/instrument-serif-italic.woff2" crossorigin />
+    <link rel="preload" as="font" type="font/woff2" href="/fonts/inter-400-900.woff2" crossorigin />
+    <style>
+      @font-face {
+        font-family: 'Archivo Black';
+        font-style: normal;
+        font-weight: 400;
+        font-display: swap;
+        src: url(/fonts/archivo-black-400.woff2) format('woff2');
+        unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+      }
+      @font-face {
+        font-family: 'Archivo';
+        font-style: normal;
+        font-weight: 500 900;
+        font-stretch: 100%;
+        font-display: swap;
+        src: url(/fonts/archivo-500-900.woff2) format('woff2');
+        unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+      }
+      @font-face {
+        font-family: 'Instrument Serif';
+        font-style: normal;
+        font-weight: 400;
+        font-display: swap;
+        src: url(/fonts/instrument-serif-400.woff2) format('woff2');
+        unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+      }
+      @font-face {
+        font-family: 'Instrument Serif';
+        font-style: italic;
+        font-weight: 400;
+        font-display: swap;
+        src: url(/fonts/instrument-serif-italic.woff2) format('woff2');
+        unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+      }
+      @font-face {
+        font-family: 'Inter';
+        font-style: normal;
+        font-weight: 400 900;
+        font-display: swap;
+        src: url(/fonts/inter-400-900.woff2) format('woff2');
+        unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+      }
+    </style>
+    <!-- fonts:self-hosted:end -->
+    <style>
+      html,body{margin:0;background:#0B0B0B}
+      /* Local fallback metric-matched to Archivo Black (which is ~28% wider than
+         Arial). Keeps the boot-splash headline painted at its FINAL size before
+         the webfont arrives, so the post-swap / React repaint is never a larger,
+         later LCP candidate. Present in both builds (outside the font markers). */
+      @font-face {
+        font-family: 'Archivo Black Fallback';
+        src: local('Arial Black'), local('Arial Bold'), local('Liberation Sans Bold'), local('Arial'), local('Liberation Sans');
+        font-weight: 400 900;
+        size-adjust: 128%;
+      }
+    </style>
   </head>
   <body>
     <!-- Boot splash painted from static HTML so first paint is instant (no wait
          for the inlined JS to parse + React to boot). createRoot().render()
          replaces #root on mount, swapping this for the real splash. Without it,
          #root is empty until ~3.9s on throttled mobile — FCP/LCP killer. -->
+    <!-- Sized to exactly match the React SplashScreen headline (text-7xl /
+         tracking-tight / -mt-6): if the React repaint were LARGER it would
+         register as a new, later LCP candidate and drag LCP to JS-boot time. -->
     <div id="root">
       <div style="position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;background:#0B0B0B;color:#F5F1E6;text-align:center;padding:0 24px">
-        <div style="font-family:'Archivo Black',system-ui,sans-serif;font-size:64px;letter-spacing:-0.02em;color:#A8FF00;line-height:1">RALLY</div>
-        <div style="font-family:'Instrument Serif',Georgia,serif;font-style:italic;font-size:22px;color:rgba(245,241,230,.9);margin-top:10px;line-height:1.25">Find your game.<br>Find your people.</div>
+        <div style="margin-top:-24px">
+          <!-- The drop-shadow is invisible on the ink background but inflates the
+               painted area to match the React headline's filter ink-overflow —
+               without it the React repaint is a 3x-larger LCP candidate. -->
+          <div style="font-family:'Archivo Black','Archivo Black Fallback',system-ui,sans-serif;font-size:72px;letter-spacing:-0.025em;color:#A8FF00;line-height:1;filter:drop-shadow(0 2px 24px rgba(0,0,0,0.8))">RALLY</div>
+          <div style="font-family:'Instrument Serif',Georgia,serif;font-style:italic;font-size:24px;color:rgba(245,241,230,.9);margin-top:12px;line-height:1.25">Find your game.<br>Find your people.</div>
+        </div>
       </div>
     </div>
     <script type="module" src="/src/main.jsx"></script>

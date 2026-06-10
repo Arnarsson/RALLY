@@ -1,6 +1,6 @@
 import React from 'react'
 import ReactDOM from 'react-dom/client'
-import App from './App.jsx'
+import App, { ErrorBoundary } from './App.jsx'
 import './index.css'
 import { registerSW } from '../public/registerSW.js'
 import { getActiveVars, getThemeName } from './theme.js'
@@ -18,7 +18,10 @@ import { getActiveVars, getThemeName } from './theme.js'
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
-    <App />
+    {/* Root boundary: anything App throws renders the branded retry, never a white screen. */}
+    <ErrorBoundary>
+      <App />
+    </ErrorBoundary>
   </React.StrictMode>,
 )
 

@@ -1,4 +1,4 @@
-import { useState, useEffect, createContext, useContext, lazy, Suspense } from 'react'
+import { Component, useState, useEffect, createContext, useContext, lazy, Suspense } from 'react'
 import {
   VIBES, USERS, ME, userById, FLAGS,
   venueById,
@@ -27,6 +27,35 @@ const PlanScreen = lazy(() => import('./screens/PlanScreen.jsx'))
 const CreateScreen = lazy(() => import('./screens/CreateScreen.jsx'))
 const OutfitScreen = lazy(() => import('./screens/OutfitScreen.jsx'))
 const LeadersScreen = lazy(() => import('./screens/LeadersScreen.jsx'))
+
+// A dropped chunk or a render error must never white-screen a guest arriving on
+// a shared link. Catch it, keep the lights on, offer the retry. A stale chunk
+// after a redeploy needs a full reload so the new chunk refetches.
+const isChunkError = (err) => err && (err.name === 'ChunkLoadError'
+  || /Loading chunk|Failed to fetch dynamically imported module/.test(err.message || ''))
+
+export class ErrorBoundary extends Component {
+  state = { error: null }
+  static getDerivedStateFromError(error) { return { error } }
+  componentDidCatch(error, info) { console.error('[rally] render error', error, info?.componentStack) }
+  retry = () => {
+    if (isChunkError(this.state.error)) { location.reload(); return }
+    this.setState({ error: null })
+  }
+  render() {
+    if (!this.state.error) return this.props.children
+    return (
+      <div className="min-h-[70vh] w-full flex flex-col items-center justify-center text-center px-8 bg-night text-cream">
+        <div className="font-display text-3xl uppercase tracking-tight text-lime leading-none">Lost the feed</div>
+        <p className="flourish text-xl text-cream/70 mt-3">even the best grounds drop the signal. run it back.</p>
+        <button onClick={this.retry}
+          className="mt-7 rounded-full bg-lime text-night font-bold uppercase tracking-widest px-8 py-3.5 active:scale-[0.98] transition">
+          Run it back
+        </button>
+      </div>
+    )
+  }
+}
 
 // ===========================================================================
 // RALLY — editorial football-culture design system, DARK (white on black).
@@ -723,7 +752,10 @@ export default function App() {
         {followNudge && !referralNudge && <FollowNudge kind={followNudge} onClose={() => setFollowNudge(null)} />}
         {installHint && !referralNudge && !followNudge && <InstallHint onClose={dismissInstallHint} />}
       </>}>
-        <Suspense fallback={<div className="min-h-[40vh]" />}>{screen}</Suspense>
+        {/* Keyed by view so navigating away from a broken screen retries cleanly. */}
+        <ErrorBoundary key={view.name + ':' + (view.matchId || view.planId || '')}>
+          <Suspense fallback={<div className="min-h-[40vh]" />}>{screen}</Suspense>
+        </ErrorBoundary>
       </PhoneFrame>
     </UserCtx.Provider>
   )
