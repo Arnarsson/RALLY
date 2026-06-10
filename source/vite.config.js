@@ -1,3 +1,4 @@
+import { readFileSync } from 'node:fs'
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import { viteSingleFile } from 'vite-plugin-singlefile'
@@ -34,6 +35,20 @@ const standaloneGoogleFonts = () => ({
   },
 })
 
+// The boot splash in index.html shows the same crowd photo as the React
+// SplashScreen so the first paint is visually complete (Speed Index doesn't
+// wait for React to boot). Single source of truth: the data URI is read out
+// of splashImage.js at build time and swapped in for the __SPLASH_IMG__ token.
+const inlineSplashBackdrop = () => ({
+  name: 'inline-splash-backdrop',
+  transformIndexHtml(html) {
+    const src = readFileSync(new URL('./src/data/splashImage.js', import.meta.url), 'utf8')
+    const uri = src.match(/"(data:image\/[^"]+)"/)?.[1]
+    if (!uri) throw new Error('inlineSplashBackdrop: no data URI found in splashImage.js')
+    return html.replace('__SPLASH_IMG__', uri)
+  },
+})
+
 export default defineConfig({
-  plugins: [react(), ...(STANDALONE ? [viteSingleFile(), standaloneGoogleFonts()] : [])],
+  plugins: [react(), inlineSplashBackdrop(), ...(STANDALONE ? [viteSingleFile(), standaloneGoogleFonts()] : [])],
 })
