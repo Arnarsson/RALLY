@@ -230,6 +230,39 @@ function RoomPulseStats({ match, plans = [] }) {
   )
 }
 
+function MatchBrief({ match, plans = [] }) {
+  const participantIds = [...new Set(plans.flatMap((p) => p.participant_ids || []))]
+  const topPlan = plans[0] || null
+  const live = match.status === 'in'
+  const now = live
+    ? (match.score_a != null && match.score_b != null ? `${match.score_a}–${match.score_b}` : (match.clock || 'LIVE'))
+    : (match.kickoff || 'soon')
+  const edge = scorelineWedge(match)
+  return (
+    <div className="rounded-2xl bg-panel border border-line p-4 mb-5">
+      <div className="flex items-start justify-between gap-3 mb-3">
+        <div>
+          <div className="flourish text-xl leading-none text-lime">match at a glance</div>
+          <div className="text-[10px] uppercase tracking-[0.18em] text-cream/40 mt-1">one glance, then dive if you care</div>
+        </div>
+        <div className={'inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.18em] border ' + (live ? 'bg-lime/15 text-lime border-lime/30' : 'bg-night text-cream/55 border-line')}>
+          <span className={'w-1.5 h-1.5 rounded-full ' + (live ? 'bg-lime animate-pulse' : 'bg-cream/30')} />
+          {live ? 'live' : 'preview'}
+        </div>
+      </div>
+      <div className="grid grid-cols-3 gap-2">
+        <StatTile label="now" value={now} note={live ? 'score or clock' : 'kickoff' } tone="pink" />
+        <StatTile label="room" value={`${participantIds.length}`} note={plans.length ? `${plans.length} spots` : 'no spots yet'} tone="blue" />
+        <StatTile label="call" value={edge.label} note={edge.note} tone="lime" />
+      </div>
+      <div className="mt-3 flex items-center justify-between gap-2 rounded-xl bg-night/60 border border-line px-3 py-2 text-[11px] text-cream/55 leading-snug">
+        <span>{topPlan ? `Busiest room: ${venueById(topPlan.venue_id)?.name}` : 'No rooms yet. Be first.'}</span>
+        <span className="text-cream/40 uppercase tracking-[0.18em]">match-night / social-first</span>
+      </div>
+    </div>
+  )
+}
+
 function TeamSheetStats({ extras }) {
   if (!extras) return null
   const rows = [
@@ -739,8 +772,8 @@ function PredictionBoard({ match, participantIds = [], myId }) {
 }
 
 // Stats are a drill-down, not the homepage: collapsed by default, one tap deep.
-function StatsDrawer({ children }) {
-  const [open, setOpen] = useState(false)
+function StatsDrawer({ children, defaultOpen = false }) {
+  const [open, setOpen] = useState(defaultOpen)
   return (
     <div className="mb-6">
       <button
@@ -748,8 +781,8 @@ function StatsDrawer({ children }) {
         aria-expanded={open}
         className="w-full flex items-center justify-between rounded-2xl bg-panel border border-line px-4 py-3 active:scale-[0.99] transition"
       >
-        <span className="font-display text-xl uppercase leading-none">the numbers</span>
-        <span className="text-[11px] uppercase tracking-[0.18em] text-cream/45">{open ? 'hide ↑' : 'stats on demand ↓'}</span>
+        <span className="font-display text-xl uppercase leading-none">deep dive</span>
+        <span className="text-[11px] uppercase tracking-[0.18em] text-cream/45">{open ? 'hide ↑' : 'show more ↓'}</span>
       </button>
       {open && <div className="pt-4">{children}</div>}
     </div>
@@ -803,6 +836,7 @@ export default function MatchScreen({ match, plans, myId, following, onToggleFol
         {match.commentary && <Rundown text={match.commentary} />}
 
         {/* SOCIAL FIRST (masterplan Rule 1): the play loop + the room come before the stats. */}
+        <MatchBrief match={match} plans={matchPlans} />
         <PredictionBoard match={match} participantIds={matchPlans.flatMap((p) => p.participant_ids)} myId={myId} />
 
         <div className="flex items-end justify-between mb-3">
@@ -831,7 +865,7 @@ export default function MatchScreen({ match, plans, myId, following, onToggleFol
         </div>
 
         {/* STATS ON DEMAND (masterplan Rule 2): the numbers drill down, they don't lead. */}
-        <StatsDrawer>
+        <StatsDrawer defaultOpen={match.status === 'in'}>
           <LiveApiStats m={match} />
           <MatchMetaStats m={match} />
           <RoomPulseStats match={match} plans={matchPlans} />
