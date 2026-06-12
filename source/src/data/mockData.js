@@ -276,6 +276,55 @@ export const PLANS = [
 ]
 
 // ---------------------------------------------------------------------------
+// MATCH-NIGHT PICKS — lightweight fantasy layer.
+// The demo uses a deterministic hash so every room has friends' picks without
+// needing live writes; the user's own pick is stored locally in the UI.
+// ---------------------------------------------------------------------------
+const PICK_CHOICES = ['team_a', 'draw', 'team_b']
+const TAUNTS = [
+  'Called it. Frame this.',
+  'I want a public apology, cheers.',
+  'That was never in doubt.',
+  'Screenshot this before they delete the chat.',
+  'Easy money. Emotional damage only.',
+]
+const hashPick = (seed) => [...String(seed)].reduce((acc, ch) => ((acc * 33) ^ ch.charCodeAt(0)) >>> 0, 5381)
+const scoreForPick = (pick, hash) => {
+  const n = (hash % 3) + 1
+  if (pick === 'draw') return `${n}–${n}`
+  if (pick === 'team_a') return `${n + 1}–${n}`
+  return `${n}–${n + 1}`
+}
+export const demoPrediction = (match, userId) => {
+  const h = hashPick(`${match.id}:${userId}`)
+  const pick = PICK_CHOICES[h % PICK_CHOICES.length]
+  const score = scoreForPick(pick, h)
+  const index = (h >> 3) % TAUNTS.length
+  return {
+    user_id: userId,
+    match_id: match.id,
+    pick,
+    score,
+    taunt: TAUNTS[index],
+  }
+}
+export const demoPredictionsForMatch = (match, participantIds = []) => {
+  const ids = [...new Set([ME.id, ...participantIds])]
+  return ids.map((userId) => ({ ...demoPrediction(match, userId), user: userById(userId) || { id: userId, name: userId, flag: '🏴', color: '#8a8a8a' } }))
+}
+export const predictionLabel = (match, pick) => (pick === 'draw' ? 'Draw' : pick === 'team_a' ? match.team_a : match.team_b)
+export const matchWinner = (match) => {
+  if (match?.score_a == null || match?.score_b == null) return null
+  if (Number(match.score_a) === Number(match.score_b)) return 'draw'
+  return Number(match.score_a) > Number(match.score_b) ? 'team_a' : 'team_b'
+}
+export const predictionOutcome = (match, pick) => {
+  const winner = matchWinner(match)
+  if (!winner) return 'pending'
+  return winner === pick ? 'right' : 'wrong'
+}
+
+// ---------------------------------------------------------------------------
 // SUPABASE DATA LAYER
 // Everything above is the mock/seed used by the standalone file:// demo and as
 // a fallback. When VITE_SUPABASE_* are set (`hasSupabase`), the loaders below

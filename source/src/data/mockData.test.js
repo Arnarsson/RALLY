@@ -9,6 +9,7 @@ import {
   MATCHES, VENUES, PLANS,
   playerSlug, ratePlayer, unratePlayer, matchRatings, myRatings,
   myReferralCode, ensureReferral, claimReferral, myDiscounts,
+  demoPrediction, demoPredictionsForMatch, predictionLabel, matchWinner, predictionOutcome,
 } from './mockData.js'
 import { activeCategories, isCategoryActive, RATING_CATEGORIES, MAX_PICKS_PER_CATEGORY } from './ratingConfig.js'
 
@@ -151,5 +152,39 @@ describe('rating kill-switch (ratingConfig)', () => {
     expect(isCategoryActive('hot')).toBe(false)
     expect(activeCategories().some((c) => c.id === 'hot')).toBe(false)
     hot.enabled = true   // restore for other tests
+  })
+})
+
+describe('match-night pick loop (data shape)', () => {
+  const pre = { id: 'm1', team_a: 'Brazil', team_b: 'Spain', score_a: null, score_b: null }
+  const aWin = { ...pre, score_a: 2, score_b: 1 }
+  const draw = { ...pre, score_a: 1, score_b: 1 }
+
+  it('demoPrediction is deterministic per (match, user)', () => {
+    expect(demoPrediction(pre, 'u-7')).toEqual(demoPrediction(pre, 'u-7'))
+  })
+  it('demoPrediction yields a valid outcome pick', () => {
+    expect(['team_a', 'draw', 'team_b']).toContain(demoPrediction(pre, 'u-7').pick)
+  })
+  it('matchWinner reads scores (and is null pre-match)', () => {
+    expect(matchWinner(pre)).toBeNull()
+    expect(matchWinner(aWin)).toBe('team_a')
+    expect(matchWinner(draw)).toBe('draw')
+  })
+  it('predictionOutcome is pending until the result lands, then right/wrong', () => {
+    expect(predictionOutcome(pre, 'team_a')).toBe('pending')
+    expect(predictionOutcome(aWin, 'team_a')).toBe('right')
+    expect(predictionOutcome(aWin, 'draw')).toBe('wrong')
+  })
+  it('predictionLabel maps a pick to a human label', () => {
+    expect(predictionLabel(pre, 'draw')).toBe('Draw')
+    expect(predictionLabel(pre, 'team_a')).toBe('Brazil')
+    expect(predictionLabel(pre, 'team_b')).toBe('Spain')
+  })
+  it('demoPredictionsForMatch always includes ME and dedupes participants', () => {
+    const rows = demoPredictionsForMatch(pre, ['u-1', 'u-1', 'u-2'])
+    const ids = rows.map((r) => r.user_id)
+    expect(new Set(ids).size).toBe(ids.length)          // no dupes
+    expect(rows.every((r) => r.user)).toBe(true)        // every row resolves a user for the tally
   })
 })
