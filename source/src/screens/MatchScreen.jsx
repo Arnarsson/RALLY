@@ -230,34 +230,59 @@ function RoomPulseStats({ match, plans = [] }) {
   )
 }
 
-function MatchBrief({ match, plans = [] }) {
+function FantasyBoard({ match, plans = [] }) {
   const participantIds = [...new Set(plans.flatMap((p) => p.participant_ids || []))]
-  const topPlan = plans[0] || null
-  const live = match.status === 'in'
-  const now = live
-    ? (match.score_a != null && match.score_b != null ? `${match.score_a}–${match.score_b}` : (match.clock || 'LIVE'))
-    : (match.kickoff || 'soon')
+  const predictions = demoPredictionsForMatch(match, participantIds)
+  const counts = predictions.reduce((acc, p) => {
+    acc[p.pick] = (acc[p.pick] || 0) + 1
+    return acc
+  }, { team_a: 0, draw: 0, team_b: 0 })
+  const pickRows = [
+    { key: 'team_a', label: match.team_a, count: counts.team_a, prob: pct(match.prob_a), tone: 'lime' },
+    { key: 'draw', label: 'Draw', count: counts.draw, prob: pct(match.prob_draw), tone: 'cream' },
+    { key: 'team_b', label: match.team_b, count: counts.team_b, prob: pct(match.prob_b), tone: 'blue' },
+  ]
+  const captain = [...pickRows].sort((a, b) => (b.count - a.count) || (b.prob - a.prob))[0]
   const edge = scorelineWedge(match)
+  const live = match.status === 'in'
+  const minute = minuteFromClock(match.clock)
+  const pulse = live && minute != null && minute >= 85 ? 'last 5' : live ? (match.clock || 'live') : 'pre'
+  const projected = Math.max(6, Math.round((Number(match.prob_a || 0) + Number(match.prob_b || 0)) * 10 + Number(match.prob_draw || 0) * 4))
+  const topPlan = plans[0] || null
   return (
     <div className="rounded-2xl bg-panel border border-line p-4 mb-5">
       <div className="flex items-start justify-between gap-3 mb-3">
         <div>
-          <div className="flourish text-xl leading-none text-lime">match at a glance</div>
-          <div className="text-[10px] uppercase tracking-[0.18em] text-cream/40 mt-1">one glance, then dive if you care</div>
+          <div className="flourish text-xl leading-none text-pink">fantasy board</div>
+          <div className="text-[10px] uppercase tracking-[0.18em] text-cream/40 mt-1">match-night points · captain · lean</div>
         </div>
         <div className={'inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.18em] border ' + (live ? 'bg-lime/15 text-lime border-lime/30' : 'bg-night text-cream/55 border-line')}>
           <span className={'w-1.5 h-1.5 rounded-full ' + (live ? 'bg-lime animate-pulse' : 'bg-cream/30')} />
-          {live ? 'live' : 'preview'}
+          {pulse}
         </div>
       </div>
-      <div className="grid grid-cols-3 gap-2">
-        <StatTile label="now" value={now} note={live ? 'score or clock' : 'kickoff' } tone="pink" />
-        <StatTile label="room" value={`${participantIds.length}`} note={plans.length ? `${plans.length} spots` : 'no spots yet'} tone="blue" />
-        <StatTile label="call" value={edge.label} note={edge.note} tone="lime" />
+
+      <div className="grid grid-cols-2 gap-2">
+        <StatTile label="points" value={`${projected}`} note="match-night fantasy projection" tone="pink" />
+        <StatTile label="captain" value={captain.label} note={`${captain.count} room picks`} tone="lime" />
+        <StatTile label="goal lean" value={edge.label} note={edge.note} tone="blue" />
+        <StatTile label="room pulse" value={`${participantIds.length}`} note={`${plans.length} watch spots`} tone="cream" />
       </div>
-      <div className="mt-3 flex items-center justify-between gap-2 rounded-xl bg-night/60 border border-line px-3 py-2 text-[11px] text-cream/55 leading-snug">
-        <span>{topPlan ? `Busiest room: ${venueById(topPlan.venue_id)?.name}` : 'No rooms yet. Be first.'}</span>
-        <span className="text-cream/40 uppercase tracking-[0.18em]">match-night / social-first</span>
+
+      <div className="mt-3 rounded-xl bg-night/60 border border-line px-3 py-2 text-[11px] text-cream/55 leading-snug">
+        <div className="flex items-center justify-between gap-2">
+          <span>{topPlan ? `Busiest room: ${venueById(topPlan.venue_id)?.emoji} ${venueById(topPlan.venue_id)?.name}` : 'No rooms yet. Be first.'}</span>
+          <span className="text-cream/40 uppercase tracking-[0.18em]">fantasy / social / live</span>
+        </div>
+        <div className="mt-2 grid grid-cols-3 gap-2">
+          {pickRows.map((item) => (
+            <div key={item.key} className="rounded-lg bg-night/75 border border-line px-2 py-2">
+              <div className="text-[9px] uppercase tracking-[0.2em] text-cream/40">{item.label}</div>
+              <div className={`mt-1 font-display text-lg leading-none uppercase ${item.tone === 'lime' ? 'text-lime' : item.tone === 'blue' ? 'text-[#6DA8FF]' : 'text-cream'}`}>{item.count}</div>
+              <div className="mt-1 text-[10px] text-cream/45">{item.prob}% model</div>
+            </div>
+          ))}
+        </div>
       </div>
     </div>
   )
@@ -693,8 +718,8 @@ function PredictionBoard({ match, participantIds = [], myId }) {
     <div className="rounded-2xl bg-panel border border-line p-4 mb-5">
       <div className="flex items-start justify-between gap-3 mb-3">
         <div>
-          <div className="flourish text-xl leading-none text-pink">make your call</div>
-          <div className="text-[10px] uppercase tracking-[0.18em] text-cream/40 mt-1">pick first, brag later</div>
+          <div className="flourish text-xl leading-none text-pink">fantasy picks</div>
+          <div className="text-[10px] uppercase tracking-[0.18em] text-cream/40 mt-1">captain first · brag later</div>
         </div>
         <div className="text-right text-[10px] uppercase tracking-[0.18em] text-cream/45">
           {leader.value} leaning {leader.label.toLowerCase()}
@@ -719,8 +744,8 @@ function PredictionBoard({ match, participantIds = [], myId }) {
           <div className="flex items-center gap-2 min-w-0">
             <Avatar user={me?.user || { name: 'You', flag: '🏴', color: '#8a8a8a' }} size={28} />
             <div className="min-w-0">
-              <div className="font-bold truncate">{me ? `You picked ${predictionLabel(match, me.pick)}` : 'Pick a winner, draw, or away'}</div>
-              <div className="text-[11px] text-cream/45 truncate">{me ? `${me.score} · ${me.taunt}` : 'One tap. That’s the whole interface.'}</div>
+              <div className="font-bold truncate">{me ? `Your fantasy pick: ${predictionLabel(match, me.pick)}` : 'Set a pick: home, draw, or away'}</div>
+              <div className="text-[11px] text-cream/45 truncate">{me ? `${me.score} · ${me.taunt}` : 'One tap. Then the room decides if you were smart.'}</div>
             </div>
           </div>
           {me && (
@@ -732,9 +757,9 @@ function PredictionBoard({ match, participantIds = [], myId }) {
         </div>
         {me && (
           <div className="mt-3 flex flex-wrap gap-2">
-            <ShareBtn onClick={() => fire('brag')}>{copiedKind === 'brag' ? 'copied' : 'copy brag'}</ShareBtn>
+            <ShareBtn onClick={() => fire('brag')}>{copiedKind === 'brag' ? 'copied' : 'copy lineup brag'}</ShareBtn>
             {result && myStatus === 'right' && (
-              <ShareBtn primary onClick={() => fire('taunt')}>{copiedKind === 'taunt' ? 'copied' : 'copy taunt'}</ShareBtn>
+              <ShareBtn primary onClick={() => fire('taunt')}>{copiedKind === 'taunt' ? 'copied' : 'copy captain taunt'}</ShareBtn>
             )}
             {result && (
               <ShareBtn onClick={() => fire('card')}>{copiedKind === 'card' ? 'copied' : 'copy result card'}</ShareBtn>
@@ -848,10 +873,28 @@ export default function MatchScreen({ match, plans, myId, following, onToggleFol
       </div>
       <div className="px-5 pt-5">
 
+        <FantasyBoard match={match} plans={matchPlans} />
         {match.commentary && <Rundown text={match.commentary} />}
+        <StatsDrawer>
+          <LiveApiStats m={match} />
+          <MatchMetaStats m={match} />
+          <RoomPulseStats match={match} plans={matchPlans} />
+          <ScorelineWedge match={match} participantIds={matchPlans.flatMap((p) => p.participant_ids)} />
+          <PressureStats m={match} />
+          <MatchAnalytics m={match} />
 
-        {/* SOCIAL FIRST (masterplan Rule 1): the play loop + the room come before the stats. */}
-        <MatchBrief match={match} plans={matchPlans} />
+          {match.fun_fact && (
+            <div className="mb-6 border-l-2 border-pink pl-4">
+              <div className="text-[10px] font-bold tracking-[0.2em] uppercase text-pink mb-1">did you know</div>
+              <p className="flourish text-xl leading-snug text-cream/80">{match.fun_fact}</p>
+            </div>
+          )}
+
+          <HeadToHead match={match} m={match} />
+
+          <TeamSheetStats extras={extras} />
+          <TeamExtras match={match} extras={extras} />
+        </StatsDrawer>
         <PredictionBoard match={match} participantIds={matchPlans.flatMap((p) => p.participant_ids)} myId={myId} />
 
         <div className="flex items-end justify-between mb-3">
@@ -879,27 +922,6 @@ export default function MatchScreen({ match, plans, myId, following, onToggleFol
           {matchPlans.length === 0 && <div className="text-center text-cream/40 py-10 text-sm">No spots yet. Start one and share it →</div>}
         </div>
 
-        {/* STATS ON DEMAND (masterplan Rule 2): the numbers drill down, they don't lead. */}
-        <StatsDrawer>
-          <LiveApiStats m={match} />
-          <MatchMetaStats m={match} />
-          <RoomPulseStats match={match} plans={matchPlans} />
-          <ScorelineWedge match={match} participantIds={matchPlans.flatMap((p) => p.participant_ids)} />
-          <PressureStats m={match} />
-          <MatchAnalytics m={match} />
-
-          {match.fun_fact && (
-            <div className="mb-6 border-l-2 border-pink pl-4">
-              <div className="text-[10px] font-bold tracking-[0.2em] uppercase text-pink mb-1">did you know</div>
-              <p className="flourish text-xl leading-snug text-cream/80">{match.fun_fact}</p>
-            </div>
-          )}
-
-          <HeadToHead match={match} m={match} />
-
-          <TeamSheetStats extras={extras} />
-          <TeamExtras match={match} extras={extras} />
-        </StatsDrawer>
       </div>
 
       <StickyBar><Pill onClick={onCreate} className="w-full">+ Start a watch plan</Pill></StickyBar>
