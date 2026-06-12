@@ -652,6 +652,7 @@ function useStoredPick(matchId, myId) {
 function PredictionBoard({ match, participantIds = [], myId }) {
   const [storedPick, savePick] = useStoredPick(match.id, myId)
   const [copiedKind, setCopiedKind] = useState(null)
+  const [showRoomCalls, setShowRoomCalls] = useState(false)
   const predictions = demoPredictionsForMatch(match, participantIds).map((p) =>
     p.user_id === myId && storedPick ? { ...p, pick: storedPick } : p,
   )
@@ -668,6 +669,11 @@ function PredictionBoard({ match, participantIds = [], myId }) {
     { id: 'team_b', label: match.team_b },
   ]
   const myLabel = me ? predictionLabel(match, me.pick) : ''
+  const leader = [
+    { key: 'team_a', value: counts.team_a || 0, label: match.team_a },
+    { key: 'draw', value: counts.draw || 0, label: 'Draw' },
+    { key: 'team_b', value: counts.team_b || 0, label: match.team_b },
+  ].sort((a, b) => b.value - a.value)[0]
   const textFor = (kind) => {
     if (kind === 'taunt') return tauntCopy({ match, myName: 'I', pickLabelText: myLabel })
     if (kind === 'brag') return bragCopy({ match, pickLabelText: myLabel, counts })
@@ -687,17 +693,15 @@ function PredictionBoard({ match, participantIds = [], myId }) {
     <div className="rounded-2xl bg-panel border border-line p-4 mb-5">
       <div className="flex items-start justify-between gap-3 mb-3">
         <div>
-          <div className="flourish text-xl leading-none text-pink">friends&apos; picks</div>
-          <div className="text-[10px] uppercase tracking-[0.18em] text-cream/40 mt-1">predict together · taunt later</div>
+          <div className="flourish text-xl leading-none text-pink">make your call</div>
+          <div className="text-[10px] uppercase tracking-[0.18em] text-cream/40 mt-1">pick first, brag later</div>
         </div>
         <div className="text-right text-[10px] uppercase tracking-[0.18em] text-cream/45">
-          {counts.team_a || 0} {match.team_a}<br />
-          {counts.draw || 0} draw<br />
-          {counts.team_b || 0} {match.team_b}
+          {leader.value} leaning {leader.label.toLowerCase()}
         </div>
       </div>
 
-      <div className="flex flex-wrap gap-2 mb-4">
+      <div className="flex flex-wrap gap-2 mb-3">
         {pickChoices.map((choice) => (
           <button
             key={choice.id}
@@ -710,21 +714,23 @@ function PredictionBoard({ match, participantIds = [], myId }) {
         ))}
       </div>
 
-      {me && (
-        <div className="rounded-xl bg-night/70 border border-line p-3 mb-4">
-          <div className="flex items-center justify-between gap-2">
-            <div className="flex items-center gap-2 min-w-0">
-              <Avatar user={me.user} size={28} />
-              <div className="min-w-0">
-                <div className="font-bold truncate">Your pick: {predictionLabel(match, me.pick)}</div>
-                <div className="text-[11px] text-cream/45 truncate">{me.score} · {me.taunt}</div>
-              </div>
+      <div className="rounded-xl bg-night/70 border border-line p-3 mb-3">
+        <div className="flex items-center justify-between gap-2">
+          <div className="flex items-center gap-2 min-w-0">
+            <Avatar user={me?.user || { name: 'You', flag: '🏴', color: '#8a8a8a' }} size={28} />
+            <div className="min-w-0">
+              <div className="font-bold truncate">{me ? `You picked ${predictionLabel(match, me.pick)}` : 'Pick a winner, draw, or away'}</div>
+              <div className="text-[11px] text-cream/45 truncate">{me ? `${me.score} · ${me.taunt}` : 'One tap. That’s the whole interface.'}</div>
             </div>
+          </div>
+          {me && (
             <span className={'rounded-full px-2 py-1 text-[10px] font-bold uppercase tracking-wide '
               + (myStatus === 'right' ? 'bg-lime text-night' : myStatus === 'wrong' ? 'bg-pink text-night' : 'bg-cream/10 text-cream/60')}>
               {myStatus === 'right' ? 'right' : myStatus === 'wrong' ? 'wrong' : 'pending'}
             </span>
-          </div>
+          )}
+        </div>
+        {me && (
           <div className="mt-3 flex flex-wrap gap-2">
             <ShareBtn onClick={() => fire('brag')}>{copiedKind === 'brag' ? 'copied' : 'copy brag'}</ShareBtn>
             {result && myStatus === 'right' && (
@@ -735,32 +741,41 @@ function PredictionBoard({ match, participantIds = [], myId }) {
             )}
             <ShareBtn onClick={shareNative}>{copiedKind === 'share' ? 'shared' : 'share'}</ShareBtn>
           </div>
+        )}
+      </div>
+
+      <button
+        onClick={() => setShowRoomCalls((v) => !v)}
+        className="mb-3 inline-flex items-center gap-1.5 rounded-full bg-night/80 border border-line px-3 py-1.5 text-[11px] font-bold uppercase tracking-wide text-cream/70"
+      >
+        {showRoomCalls ? 'Hide room calls' : 'View room calls'}
+      </button>
+
+      {showRoomCalls && (
+        <div className="space-y-2">
+          {predictions.map((p) => {
+            const status = predictionOutcome(match, p.pick)
+            const isMe = p.user_id === myId
+            return (
+              <div key={p.user_id} className={'flex items-center gap-3 rounded-xl border p-3 ' + (isMe ? 'bg-lime/10 border-lime/30' : 'bg-night/60 border-line')}>
+                <Avatar user={p.user} size={28} />
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <div className="font-bold truncate">{p.user.name}</div>
+                    <span className="text-[10px] uppercase tracking-wide text-cream/45">{predictionLabel(match, p.pick)}</span>
+                    <span className="text-[10px] text-cream/35">{p.score}</span>
+                  </div>
+                  <div className="text-[11px] text-cream/45 truncate">{p.taunt}</div>
+                </div>
+                <span className={'rounded-full px-2 py-1 text-[10px] font-bold uppercase tracking-wide '
+                  + (status === 'right' ? 'bg-lime text-night' : status === 'wrong' ? 'bg-cream/10 text-cream/50' : 'bg-cream/10 text-cream/50')}>
+                  {status === 'right' ? 'right' : status === 'wrong' ? 'off' : 'pending'}
+                </span>
+              </div>
+            )
+          })}
         </div>
       )}
-
-      <div className="space-y-2">
-        {predictions.map((p) => {
-          const status = predictionOutcome(match, p.pick)
-          const isMe = p.user_id === myId
-          return (
-            <div key={p.user_id} className={'flex items-center gap-3 rounded-xl border p-3 ' + (isMe ? 'bg-lime/10 border-lime/30' : 'bg-night/60 border-line')}>
-              <Avatar user={p.user} size={28} />
-              <div className="min-w-0 flex-1">
-                <div className="flex items-center gap-2 flex-wrap">
-                  <div className="font-bold truncate">{p.user.name}</div>
-                  <span className="text-[10px] uppercase tracking-wide text-cream/45">{predictionLabel(match, p.pick)}</span>
-                  <span className="text-[10px] text-cream/35">{p.score}</span>
-                </div>
-                <div className="text-[11px] text-cream/45 truncate">{p.taunt}</div>
-              </div>
-              <span className={'rounded-full px-2 py-1 text-[10px] font-bold uppercase tracking-wide '
-                + (status === 'right' ? 'bg-lime text-night' : status === 'wrong' ? 'bg-cream/10 text-cream/50' : 'bg-cream/10 text-cream/50')}>
-                {status === 'right' ? 'right' : status === 'wrong' ? 'off' : 'pending'}
-              </span>
-            </div>
-          )
-        })}
-      </div>
 
       {result ? (
         <div className="mt-4 text-[11px] text-cream/45">Result is in — the loudest room gets the last laugh.</div>
@@ -781,7 +796,7 @@ function StatsDrawer({ children, defaultOpen = false }) {
         aria-expanded={open}
         className="w-full flex items-center justify-between rounded-2xl bg-panel border border-line px-4 py-3 active:scale-[0.99] transition"
       >
-        <span className="font-display text-xl uppercase leading-none">deep dive</span>
+        <span className="font-display text-xl uppercase leading-none">more stats</span>
         <span className="text-[11px] uppercase tracking-[0.18em] text-cream/45">{open ? 'hide ↑' : 'show more ↓'}</span>
       </button>
       {open && <div className="pt-4">{children}</div>}
@@ -865,7 +880,7 @@ export default function MatchScreen({ match, plans, myId, following, onToggleFol
         </div>
 
         {/* STATS ON DEMAND (masterplan Rule 2): the numbers drill down, they don't lead. */}
-        <StatsDrawer defaultOpen={match.status === 'in'}>
+        <StatsDrawer>
           <LiveApiStats m={match} />
           <MatchMetaStats m={match} />
           <RoomPulseStats match={match} plans={matchPlans} />
