@@ -130,6 +130,134 @@ function ScorelineWedge({ match, participantIds = [] }) {
   )
 }
 
+function StatTile({ label, value, note, tone = 'cream' }) {
+  const toneClass = tone === 'lime' ? 'text-lime' : tone === 'pink' ? 'text-pink' : tone === 'blue' ? 'text-[#6DA8FF]' : 'text-cream'
+  return (
+    <div className="rounded-xl bg-night/70 border border-line p-3">
+      <div className="text-[9px] font-bold uppercase tracking-[0.2em] text-cream/40">{label}</div>
+      <div className={`mt-1 font-display text-lg leading-none uppercase ${toneClass}`}>{value}</div>
+      {note && <div className="mt-1 text-[10px] text-cream/45 leading-snug">{note}</div>}
+    </div>
+  )
+}
+
+function MatchMetaStats({ m }) {
+  const live = m.status === 'in'
+  const kickoff = m.kickoff || (m.kickoff_utc ? String(m.kickoff_utc).slice(11, 16) : '—')
+  return (
+    <div className="rounded-2xl bg-panel border border-line p-4 mb-5">
+      <div className="flex items-center justify-between mb-3">
+        <div>
+          <div className="flourish text-xl leading-none text-lime">match sheet</div>
+          <div className="text-[10px] uppercase tracking-[0.18em] text-cream/40 mt-1">fixture, venue, kick, feed</div>
+        </div>
+        <div className={'text-[10px] uppercase tracking-[0.18em] font-bold ' + (live ? 'text-lime' : 'text-cream/45')}>
+          {live ? 'in play' : m.status || 'pre'}
+        </div>
+      </div>
+      <div className="grid grid-cols-2 gap-2">
+        <StatTile label="kickoff" value={kickoff} note={m.day || 'matchday'} tone="pink" />
+        <StatTile label="tv" value={Array.isArray(m.tv) ? m.tv.join(' / ') : (m.tv || '—')} note="broadcast" tone="blue" />
+        <StatTile label="venue" value={m.venue || '—'} note={m.stage || 'stage'} tone="lime" />
+        <StatTile label="clock" value={m.clock || '—'} note={m.status_detail || m.status || '—'} tone="cream" />
+      </div>
+    </div>
+  )
+}
+
+function PressureStats({ m }) {
+  const total = [m.prob_a, m.prob_draw, m.prob_b].reduce((n, v) => n + (Number(v) || 0), 0)
+  const pa = pct(m.prob_a)
+  const pd = pct(m.prob_draw)
+  const pb = pct(m.prob_b)
+  const edge = Math.max(pa, pb) - Math.min(pa, pb)
+  return (
+    <div className="rounded-2xl bg-panel border border-line p-4 mb-5">
+      <div className="flex items-center justify-between mb-3">
+        <div>
+          <div className="flourish text-xl leading-none text-pink">pressure</div>
+          <div className="text-[10px] uppercase tracking-[0.18em] text-cream/40 mt-1">model vs draw vs edge</div>
+        </div>
+        <div className="text-[10px] uppercase tracking-[0.18em] text-cream/45">edge {edge}%</div>
+      </div>
+      <div className="space-y-2">
+        <div className="rounded-xl bg-night/70 border border-line p-2.5">
+          <div className="flex items-center justify-between text-[11px] font-bold uppercase tracking-wide"><span>{m.team_a}</span><span>{pa}%</span></div>
+          <div className="mt-2 h-2 rounded-full bg-cream/10 overflow-hidden"><div className="h-full rounded-full" style={{ width: `${pa}%`, background: m.color_a || '#8ACE00' }} /></div>
+        </div>
+        <div className="rounded-xl bg-night/70 border border-line p-2.5">
+          <div className="flex items-center justify-between text-[11px] font-bold uppercase tracking-wide"><span>draw</span><span>{pd}%</span></div>
+          <div className="mt-2 h-2 rounded-full bg-cream/10 overflow-hidden"><div className="h-full rounded-full" style={{ width: `${pd}%`, background: '#3A3A3A' }} /></div>
+        </div>
+        <div className="rounded-xl bg-night/70 border border-line p-2.5">
+          <div className="flex items-center justify-between text-[11px] font-bold uppercase tracking-wide"><span>{m.team_b}</span><span>{pb}%</span></div>
+          <div className="mt-2 h-2 rounded-full bg-cream/10 overflow-hidden"><div className="h-full rounded-full" style={{ width: `${pb}%`, background: m.color_b || '#2A5BFF' }} /></div>
+        </div>
+      </div>
+      <div className="mt-3 grid grid-cols-3 gap-2">
+        <StatTile label="total" value={`${pct(total / 3)}%`} note="roughly normalized" />
+        <StatTile label="top call" value={scorelineWedge(m).label} note={scorelineWedge(m).note} tone="lime" />
+        <StatTile label="model source" value={m.prob_source || '—'} note="feed type" tone="blue" />
+      </div>
+    </div>
+  )
+}
+
+function RoomPulseStats({ match, plans = [] }) {
+  const participantIds = [...new Set(plans.flatMap((p) => p.participant_ids || []))]
+  const topPlan = plans[0] || null
+  return (
+    <div className="rounded-2xl bg-panel border border-line p-4 mb-5">
+      <div className="flex items-center justify-between mb-3">
+        <div>
+          <div className="flourish text-xl leading-none text-lime">room pulse</div>
+          <div className="text-[10px] uppercase tracking-[0.18em] text-cream/40 mt-1">who is in, how many, how loud</div>
+        </div>
+        <div className="text-[10px] uppercase tracking-[0.18em] text-cream/45">{plans.length} plans</div>
+      </div>
+      <div className="grid grid-cols-2 gap-2">
+        <StatTile label="going" value={participantIds.length.toString()} note="unique people in the room" tone="pink" />
+        <StatTile label="spots" value={plans.length.toString()} note="watch plans on this match" tone="blue" />
+        <StatTile label="busiest venue" value={topPlan ? venueById(topPlan.venue_id)?.name : '—'} note={topPlan ? `${topPlan.participant_ids.length} going there` : 'no spots yet'} tone="lime" />
+        <StatTile label="avg room" value={plans.length ? Math.round(participantIds.length / plans.length).toString() : '0'} note="people per plan" tone="cream" />
+      </div>
+      {topPlan && (
+        <div className="mt-3 rounded-xl bg-night/60 border border-line px-3 py-2 text-[11px] text-cream/55 leading-snug">
+          Biggest room: <span className="text-cream font-bold">{venueById(topPlan.venue_id)?.emoji} {venueById(topPlan.venue_id)?.name}</span> · {topPlan.note}
+        </div>
+      )}
+    </div>
+  )
+}
+
+function TeamSheetStats({ extras }) {
+  if (!extras) return null
+  const rows = [
+    { side: 'a', label: 'squad', value: extras.a?.squad?.players?.length || 0, note: extras.a?.squad?.coach || '—', tone: 'lime' },
+    { side: 'a', label: 'record', value: extras.a?.record?.played || 0, note: extras.a?.record?.played ? `${extras.a.record.wins}W ${extras.a.record.draws}D ${extras.a.record.losses}L` : 'no record', tone: 'pink' },
+    { side: 'b', label: 'squad', value: extras.b?.squad?.players?.length || 0, note: extras.b?.squad?.coach || '—', tone: 'blue' },
+    { side: 'b', label: 'record', value: extras.b?.record?.played || 0, note: extras.b?.record?.played ? `${extras.b.record.wins}W ${extras.b.record.draws}D ${extras.b.record.losses}L` : 'no record', tone: 'cream' },
+  ]
+  return (
+    <div className="rounded-2xl bg-panel border border-line p-4 mb-5">
+      <div className="flex items-center justify-between mb-3">
+        <div>
+          <div className="flourish text-xl leading-none text-pink">team sheet</div>
+          <div className="text-[10px] uppercase tracking-[0.18em] text-cream/40 mt-1">squads, coaches, records</div>
+        </div>
+        <div className="text-[10px] uppercase tracking-[0.18em] text-cream/45">world cup history</div>
+      </div>
+      <div className="grid grid-cols-2 gap-2">
+        {rows.map((r, idx) => (
+          <StatTile key={idx} label={r.label} value={String(r.value)} note={r.note} tone={r.tone} />
+        ))}
+      </div>
+      {extras.a?.record?.played ? <WCRecord r={extras.a.record} /> : null}
+      {extras.b?.record?.played ? <WCRecord r={extras.b.record} /> : null}
+    </div>
+  )
+}
+
 function MatchAnalytics({ m }) {
   const hasProb = m.prob_a != null && m.prob_b != null
   const hasForm = m.form_a || m.form_b
@@ -705,7 +833,10 @@ export default function MatchScreen({ match, plans, myId, following, onToggleFol
         {/* STATS ON DEMAND (masterplan Rule 2): the numbers drill down, they don't lead. */}
         <StatsDrawer>
           <LiveApiStats m={match} />
+          <MatchMetaStats m={match} />
+          <RoomPulseStats match={match} plans={matchPlans} />
           <ScorelineWedge match={match} participantIds={matchPlans.flatMap((p) => p.participant_ids)} />
+          <PressureStats m={match} />
           <MatchAnalytics m={match} />
 
           {match.fun_fact && (
@@ -717,6 +848,7 @@ export default function MatchScreen({ match, plans, myId, following, onToggleFol
 
           <HeadToHead match={match} m={match} />
 
+          <TeamSheetStats extras={extras} />
           <TeamExtras match={match} extras={extras} />
         </StatsDrawer>
       </div>
