@@ -11,7 +11,8 @@ import {
 import { parseShareParams, planShareUrl, planCardUrl, shareText, referralLink } from './data/shareLinks.js'
 import { FLAG_PNG } from './data/flags.js'
 import { HERO_IMG, HERO_GENERIC } from './data/heroImages.js'
-import { rallyById } from './data/rallies.js'
+import { rallyById, RALLIES } from './data/rallies.js'
+import { makeRally, applyToggleJoin } from './lib/rallyState.js'
 import { SPLASH_IMG } from './data/splashImage.js'
 import { ACTIVE_THEME } from './theme.js'
 import PosterCard from './components/PosterCard'
@@ -30,6 +31,7 @@ const OutfitScreen = lazy(() => import('./screens/OutfitScreen.jsx'))
 const LeadersScreen = lazy(() => import('./screens/LeadersScreen.jsx'))
 const RalliesScreen = lazy(() => import('./screens/RalliesScreen.jsx'))
 const RallyScreen = lazy(() => import('./screens/RallyScreen.jsx'))
+const CreateRallyScreen = lazy(() => import('./screens/CreateRallyScreen.jsx'))
 
 // A dropped chunk or a render error must never white-screen a guest arriving on
 // a shared link. Catch it, keep the lights on, offer the retry. A stale chunk
@@ -507,6 +509,12 @@ export default function App() {
   const [profile, setProfile] = useState(ME)
   const [onboarded, setOnboarded] = useState(false)
   const [plans, setPlans] = useState(SEED_PLANS)
+  // The rally coordination loop (demo mode): the feed lives in state so created
+  // rallies + join/leave count changes show instantly. rallyStatus maps a rally
+  // id → 'in' | 'waitlist' for the current user. A real rallies table swaps in
+  // behind hasSupabase later (docs/RALLY-HEKLA-schema.md) — same shape.
+  const [rallies, setRallies] = useState(RALLIES)
+  const [rallyStatus, setRallyStatus] = useState({})
   const [stack, setStack] = useState([{ name: 'matches' }])
   const [tab, setTab] = useState('tonight')
   const [share, setShare] = useState(null)
@@ -720,6 +728,21 @@ export default function App() {
     return plan
   }
 
+  // Rally coordination loop (demo). Resolve from state first so created rallies
+  // and live counts win; fall back to the static data (covers PAST_RALLIES).
+  const findRally = (id) => rallies.find((r) => r.id === id) || rallyById(id)
+  const createRally = (draft) => {
+    const r = makeRally(draft)
+    setRallies((rs) => [r, ...rs])
+    setRallyStatus((s) => ({ ...s, [r.id]: 'in' }))   // the host is in by default
+    resetTo({ name: 'rallies' }); push({ name: 'rally', rallyId: r.id })
+    return r
+  }
+  const toggleJoinRally = (rallyId) => {
+    const { rallies: next, statusById } = applyToggleJoin(rallies, rallyStatus, rallyId)
+    setRallies(next); setRallyStatus(statusById)
+  }
+
   if (splash) return <PhoneFrame hideNav><SplashScreen onSkip={() => setSplash(false)} /></PhoneFrame>
   if (!onboarded) {
     return (
@@ -741,9 +764,17 @@ export default function App() {
   } else if (view.name === 'create') {
     screen = <CreateScreen match={matchById(view.matchId)} onBack={back} onCreate={createPlan} />
   } else if (view.name === 'rallies') {
-    screen = <RalliesScreen onOpenRally={(r) => push({ name: 'rally', rallyId: r.id })} />
+    screen = <RalliesScreen rallies={rallies} myStatusById={rallyStatus}
+      onOpenRally={(r) => push({ name: 'rally', rallyId: r.id })}
+      onCreateRally={() => push({ name: 'create-rally' })} />
   } else if (view.name === 'rally') {
-    screen = <RallyScreen rally={rallyById(view.rallyId)} onBack={back} />
+    const r = findRally(view.rallyId)
+    const st = r ? rallyStatus[r.id] : null
+    screen = <RallyScreen rally={r} onBack={back}
+      joined={st === 'in'} waitlisted={st === 'waitlist'} waiting={r?.waiting || 0}
+      onToggleJoin={r ? () => toggleJoinRally(r.id) : undefined} />
+  } else if (view.name === 'create-rally') {
+    screen = <CreateRallyScreen onBack={back} onCreate={createRally} />
   } else if (view.name === 'outfit') {
     screen = <OutfitScreen discounts={discounts} />
   } else if (view.name === 'leaders') {

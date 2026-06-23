@@ -45,7 +45,7 @@ function SectionLabel({ children }) {
   return <div className="text-[11px] uppercase tracking-[0.18em] text-cream/40 mb-2">{children}</div>
 }
 
-export default function RallyScreen({ rally, onBack } = {}) {
+export default function RallyScreen({ rally, onBack, joined = false, waitlisted = false, waiting = 0, onToggleJoin } = {}) {
   // Consent mirror — reflect the stored opt-in, re-render on toggle. Read once;
   // if the helper is missing or throws, we stay opted-out (off by default).
   const readConsent = () => {
@@ -129,6 +129,15 @@ export default function RallyScreen({ rally, onBack } = {}) {
     doShare()
   }
 
+  // The whole loop in one tap. Decide join-vs-leave from the CURRENT status:
+  // already in or waitlisted ⇒ this tap is a leave. Telemetry is best-effort.
+  const doToggleJoin = () => {
+    if (!onToggleJoin) return
+    const leaving = joined || waitlisted
+    track(leaving ? 'rally_leave' : 'rally_join', { rallyId: rally.id })
+    onToggleJoin()
+  }
+
   const onConsentChange = (next) => {
     setConsent(next)
     try { telemetry.setConsent?.(next) } catch { /* persist is best-effort */ }
@@ -180,12 +189,56 @@ export default function RallyScreen({ rally, onBack } = {}) {
       {/* 4 — The numbers */}
       <div className="rounded-2xl border border-line bg-panel p-4 mb-6">
         <div className="flex items-center justify-between">
-          <span className="font-display uppercase text-2xl leading-none">{rally.going} going</span>
+          <span className="font-display uppercase text-2xl leading-none">
+            {rally.going} going
+            {waiting > 0 && <span className="text-cream/40 text-base"> · {waiting} waiting</span>}
+          </span>
           <span className={`text-[11px] uppercase tracking-[0.16em] font-bold ${full ? 'text-pink' : a.text}`}>
             {rally.cap == null ? 'open' : full ? 'Full' : `${spotsLeft} ${spotsLeft === 1 ? 'spot' : 'spots'}`}
           </span>
         </div>
       </div>
+
+      {/* 4b — The CTA: the whole loop in one tap. This is the nudge made a button. */}
+      {(() => {
+        const inert = !onToggleJoin
+        // waitlisted → leave the list; joined → drop out; full → queue; else → in.
+        const label = waitlisted
+          ? 'On the waitlist ✓'
+          : joined
+            ? "You're in ✓"
+            : full
+              ? 'Join the waitlist'
+              : "I'm in"
+        const filled = joined && !waitlisted
+        const hint = waitlisted
+          ? (waiting > 0 ? `${waiting} waiting — we’ll wave you in the second a seat opens.` : 'We’ll wave you in the second a seat opens.')
+          : joined
+            ? 'Tap to drop out — no hard feelings, but you’ll be missed.'
+            : full
+              ? (waiting > 0 ? `Room’s full — ${waiting} already waiting. Get in line, we save seats.` : 'Room’s full, but we save seats. Get in line.')
+              : 'Say you’re coming. Then actually come — that’s the whole point.'
+        return (
+          <div className="mb-6">
+            <button
+              type="button"
+              onClick={doToggleJoin}
+              disabled={inert}
+              aria-pressed={joined || waitlisted}
+              className={
+                inert
+                  ? 'w-full rounded-full border border-line bg-panel px-4 py-4 text-base font-bold uppercase tracking-[0.12em] text-cream/30 cursor-default'
+                  : filled
+                    ? 'w-full rounded-full bg-lime px-4 py-4 text-base font-bold uppercase tracking-[0.12em] text-night active:scale-[0.98] transition'
+                    : 'w-full rounded-full border border-lime/50 bg-panel px-4 py-4 text-base font-bold uppercase tracking-[0.12em] text-lime active:scale-[0.98] transition'
+              }
+            >
+              {label}
+            </button>
+            <p className="text-[11px] text-cream/45 mt-2 leading-snug text-center">{hint}</p>
+          </div>
+        )
+      })()}
 
       {/* 5 — Accessibility: say it on the card so nobody has to ask at the door */}
       {rally.access?.length > 0 && (
