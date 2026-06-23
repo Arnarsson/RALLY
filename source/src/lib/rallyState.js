@@ -37,6 +37,7 @@ export const makeRally = (draft = {}) => {
     hostStats: { rate: 100, hosted: 1 },
     access: Array.isArray(draft.access) ? draft.access : [],
     code: draft.code || genCode(draft.title),
+    recurrence: draft.recurrence || 'none',
     mine: true,
   }
 }

@@ -5,6 +5,8 @@
 // block below the hero is optional and only paints when its data is present.
 import { useState, useEffect } from 'react'
 import { kindMeta, radiusByKey, accessMeta } from '../data/rallies.js'
+import { friendsGoing, friendsGoingLabel } from '../lib/social.js'
+import { isRecurring, recurrenceLabel, nextCapTier } from '../lib/creator.js'
 import * as telemetry from '../data/telemetry.js'
 
 // Radius accent → Tailwind classes. Same mapping the feed uses, rationed: one
@@ -45,7 +47,7 @@ function SectionLabel({ children }) {
   return <div className="text-[11px] uppercase tracking-[0.18em] text-cream/40 mb-2">{children}</div>
 }
 
-export default function RallyScreen({ rally, onBack, joined = false, waitlisted = false, waiting = 0, onToggleJoin } = {}) {
+export default function RallyScreen({ rally, onBack, joined = false, waitlisted = false, waiting = 0, onToggleJoin, onUnlockCap, onScheduleNext } = {}) {
   // Consent mirror — reflect the stored opt-in, re-render on toggle. Read once;
   // if the helper is missing or throws, we stay opted-out (off by default).
   const readConsent = () => {
@@ -90,6 +92,9 @@ export default function RallyScreen({ rally, onBack, joined = false, waitlisted 
   const spotsLeft = rally.cap != null ? rally.cap - rally.going : null
   const stats = rally.hostStats
   const recap = rally.past && rally.recap ? rally.recap : null
+  // Who you know is going — the people whose presence changes your mind.
+  const friends = friendsGoing(rally.id)
+  const friendsLabel = friendsGoingLabel(rally.id)
 
   // Build the share payload from what we have. Code-first so it works on a dead
   // phone at the door; link is the soft fallback.
@@ -167,6 +172,11 @@ export default function RallyScreen({ rally, onBack, joined = false, waitlisted 
           {rally.host && <span className="font-bold text-cream/70">{rally.host}</span>}
           {rally.area && <><span className="text-cream/25">·</span><span>{rally.area}</span></>}
           {rally.when && <><span className="text-cream/25">·</span><span>{rally.when}</span></>}
+          {isRecurring(rally) && (
+            <span className="inline-flex items-center gap-1 rounded-full border border-line bg-panel2 px-2 py-0.5 text-[10px] uppercase tracking-[0.16em] text-lime">
+              ↻ {recurrenceLabel(rally.recurrence)}
+            </span>
+          )}
         </div>
       </div>
 
@@ -182,6 +192,29 @@ export default function RallyScreen({ rally, onBack, joined = false, waitlisted 
           </div>
           <p className="text-[11px] text-cream/45 mt-2 leading-snug">
             People who say they’re coming, come. That’s what the number means.
+          </p>
+        </div>
+      )}
+
+      {/* 3b — Friends going: the people whose presence changes your mind.
+          Hidden entirely when none are going (created/past rallies). */}
+      {friendsLabel && (
+        <div className="rounded-2xl border border-lime/30 bg-panel p-4 mb-6">
+          <div className="flex items-center gap-3">
+            <div className="flex items-center">
+              {friends.slice(0, 3).map((f, i) => (
+                <span
+                  key={f.id}
+                  className={`inline-flex h-7 w-7 items-center justify-center rounded-full bg-panel2 border border-line text-sm ${i > 0 ? '-ml-1' : ''}`}
+                >
+                  {f.flag}
+                </span>
+              ))}
+            </div>
+            <span className="font-bold text-lime">{friendsLabel}</span>
+          </div>
+          <p className="text-[11px] text-cream/45 mt-2 leading-snug">
+            The people whose presence changes your mind.
           </p>
         </div>
       )}
@@ -303,6 +336,64 @@ export default function RallyScreen({ rally, onBack, joined = false, waitlisted 
           )}
         </div>
       )}
+
+      {/* 7b — Your rally: host tools. Only the host sees these. */}
+      {rally.mine && (() => {
+        const tier = nextCapTier(rally)
+        return (
+          <div className="mb-6">
+            <SectionLabel>Your rally</SectionLabel>
+            <div className="rounded-2xl border border-lime/30 bg-panel p-4">
+              {/* Capacity unlock — flat fee, never per-head. */}
+              {tier ? (
+                <>
+                  <div className="text-sm font-bold text-cream">Filling up?</div>
+                  <p className="text-[13px] text-cream/65 mt-1 leading-snug">
+                    Lift the cap to {tier.cap} — flat <span className="text-lime font-bold">{tier.price} kr</span>, never per-head.
+                  </p>
+                  <button
+                    type="button"
+                    onClick={() => onUnlockCap?.(tier.key)}
+                    disabled={!onUnlockCap}
+                    className={
+                      onUnlockCap
+                        ? 'w-full rounded-full bg-lime px-4 py-3 mt-3 text-sm font-bold uppercase tracking-[0.12em] text-night active:scale-[0.98] transition'
+                        : 'w-full rounded-full border border-line bg-panel px-4 py-3 mt-3 text-sm font-bold uppercase tracking-[0.12em] text-cream/30 cursor-default'
+                    }
+                  >
+                    Lift the cap
+                  </button>
+                </>
+              ) : (
+                <p className="text-[13px] text-cream/55 leading-snug">
+                  {rally.capTier ? `Cap lifted to ${rally.cap}. ` : ''}Open door — no cap.
+                </p>
+              )}
+
+              {/* Schedule next — only for recurring rallies. */}
+              {isRecurring(rally) && (
+                <div className="mt-4 pt-4 border-t border-line">
+                  <button
+                    type="button"
+                    onClick={() => onScheduleNext?.()}
+                    disabled={!onScheduleNext}
+                    className={
+                      onScheduleNext
+                        ? 'w-full rounded-full border border-lime/50 bg-panel px-4 py-3 text-sm font-bold uppercase tracking-[0.12em] text-lime active:scale-[0.98] transition'
+                        : 'w-full rounded-full border border-line bg-panel px-4 py-3 text-sm font-bold uppercase tracking-[0.12em] text-cream/30 cursor-default'
+                    }
+                  >
+                    Schedule the next one
+                  </button>
+                  <p className="text-[11px] text-cream/45 mt-2 leading-snug text-center">
+                    Keep the streak — spin up next week’s now.
+                  </p>
+                </div>
+              )}
+            </div>
+          </div>
+        )
+      })()}
 
       {/* 8 — Consent: opt in to the city's pulse, GDPR-clean */}
       <button
