@@ -43,7 +43,7 @@ function RadiusBadge({ radiusKey }) {
   )
 }
 
-function RallyCard({ rally, onOpen }) {
+function RallyCard({ rally, onOpen, myStatus }) {
   const k = kindMeta(rally.kind)
   const full = rally.cap != null && rally.going >= rally.cap
   const stats = rally.hostStats
@@ -58,7 +58,16 @@ function RallyCard({ rally, onOpen }) {
         <span className="text-2xl leading-none mt-0.5">{rally.emoji || k.emoji}</span>
         <div className="flex-1 min-w-0">
           <div className="flex items-center justify-between gap-2">
-            <div className="text-[10px] uppercase tracking-[0.16em] text-cream/40">{k.label}</div>
+            <div className="flex items-center gap-2 min-w-0">
+              <div className="text-[10px] uppercase tracking-[0.16em] text-cream/40">{k.label}</div>
+              {/* You're in / Waitlisted — your status, surfaced right on the card. */}
+              {myStatus === 'in' && (
+                <span className="inline-flex items-center rounded-full bg-lime px-2 py-0.5 text-[9px] font-bold uppercase tracking-[0.12em] text-night">You’re in</span>
+              )}
+              {myStatus === 'waitlist' && (
+                <span className="inline-flex items-center rounded-full border border-cream/30 px-2 py-0.5 text-[9px] font-bold uppercase tracking-[0.12em] text-cream/50">Waitlisted</span>
+              )}
+            </div>
             <RadiusBadge radiusKey={rally.radius} />
           </div>
           <div className="font-display uppercase text-lg leading-[1.05] mt-1">{rally.title}</div>
@@ -105,6 +114,7 @@ function RallyCard({ rally, onOpen }) {
             <span className="text-sm font-bold">
               {rally.going} going
               {rally.cap != null && <span className="text-cream/40 font-normal"> · {rally.cap - rally.going > 0 ? `${rally.cap - rally.going} spots` : 'full'}</span>}
+              {rally.waiting > 0 && <span className="text-cream/40 font-normal"> · {rally.waiting} waiting</span>}
             </span>
             <span className="text-cream/30 font-bold">→</span>
           </div>
@@ -180,17 +190,23 @@ function LatelyStrip({ rallies, onOpen }) {
   )
 }
 
-export default function RalliesScreen({ onOpenRally } = {}) {
+export default function RalliesScreen({ onOpenRally, rallies, onCreateRally, myStatusById = {} } = {}) {
   const [active, setActive] = useState('public')
   const [lonersOnly, setLonersOnly] = useState(false)
   const [accessibleOnly, setAccessibleOnly] = useState(false)
 
   const chips = [{ key: 'all', label: 'All', accent: 'cream' }, ...RADII]
 
+  // Live source — the prop wins (new rallies + updated going/waiting counts show),
+  // else the bundled seed. The radius/loners/accessible filters all run on this.
+  const source = Array.isArray(rallies) ? rallies : RALLIES
+
   // Loners mode overrides the radius view; otherwise the normal radius feed.
   let feed = lonersOnly
-    ? RALLIES.filter((r) => r.kind === 'loners')
-    : ralliesByRadius(active)
+    ? source.filter((r) => r.kind === 'loners')
+    : active === 'all'
+      ? source
+      : source.filter((r) => r.radius === active)
   if (accessibleOnly) feed = feed.filter((r) => r.access?.length > 0)
 
   const hint = lonersOnly
@@ -215,6 +231,18 @@ export default function RalliesScreen({ onOpenRally } = {}) {
           The match was always the excuse. Dinners, runs, swaps, a quiet table for the people who came alone — pick how far the invite travels, then go find the room.
         </p>
       </header>
+
+      {/* Start a rally — be the one who calls it. Only when the host can wire it. */}
+      {onCreateRally && (
+        <button
+          type="button"
+          onClick={() => onCreateRally()}
+          className="w-full rounded-2xl bg-lime px-4 py-4 text-night active:scale-[0.98] transition mb-4"
+        >
+          <div className="font-display uppercase text-lg leading-none">+ Start a rally</div>
+          <div className="text-[11px] font-bold mt-1 opacity-70">Call it, and your people will come. Be the first.</div>
+        </button>
+      )}
 
       {/* Loners Club — first-class on-ramp, sits right under the header. */}
       <div className="mb-4">
@@ -286,7 +314,7 @@ export default function RalliesScreen({ onOpenRally } = {}) {
                 : 'Nobody’s called it here yet. Be the one who starts the rally — the rest will follow.'}
           </div>
         ) : (
-          feed.map((r) => <RallyCard key={r.id} rally={r} onOpen={onOpenRally} />)
+          feed.map((r) => <RallyCard key={r.id} rally={r} onOpen={onOpenRally} myStatus={myStatusById[r.id]} />)
         )}
       </div>
 
