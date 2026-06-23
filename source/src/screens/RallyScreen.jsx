@@ -199,8 +199,9 @@ export default function RallyScreen({ rally, onBack, joined = false, waitlisted 
         </div>
       </div>
 
-      {/* 4b — The CTA: the whole loop in one tap. This is the nudge made a button. */}
-      {(() => {
+      {/* 4b — The CTA: the whole loop in one tap. This is the nudge made a button.
+          Past rallies are read-only — they already happened; the recap is the point. */}
+      {!rally.past && (() => {
         const inert = !onToggleJoin
         // waitlisted → leave the list; joined → drop out; full → queue; else → in.
         const label = waitlisted
