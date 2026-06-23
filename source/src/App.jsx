@@ -12,6 +12,7 @@ import { parseShareParams, planShareUrl, planCardUrl, shareText, referralLink } 
 import { FLAG_PNG } from './data/flags.js'
 import { HERO_IMG, HERO_GENERIC } from './data/heroImages.js'
 import { rallyById, RALLIES } from './data/rallies.js'
+import { communityById } from './data/communities.js'
 import { makeRally, applyToggleJoin } from './lib/rallyState.js'
 import { SPLASH_IMG } from './data/splashImage.js'
 import { ACTIVE_THEME } from './theme.js'
@@ -32,6 +33,7 @@ const LeadersScreen = lazy(() => import('./screens/LeadersScreen.jsx'))
 const RalliesScreen = lazy(() => import('./screens/RalliesScreen.jsx'))
 const RallyScreen = lazy(() => import('./screens/RallyScreen.jsx'))
 const CreateRallyScreen = lazy(() => import('./screens/CreateRallyScreen.jsx'))
+const CommunityScreen = lazy(() => import('./screens/CommunityScreen.jsx'))
 
 // A dropped chunk or a render error must never white-screen a guest arriving on
 // a shared link. Catch it, keep the lights on, offer the retry. A stale chunk
@@ -766,7 +768,8 @@ export default function App() {
   } else if (view.name === 'rallies') {
     screen = <RalliesScreen rallies={rallies} myStatusById={rallyStatus}
       onOpenRally={(r) => push({ name: 'rally', rallyId: r.id })}
-      onCreateRally={() => push({ name: 'create-rally' })} />
+      onCreateRally={() => push({ name: 'create-rally' })}
+      onOpenCommunity={(c) => push({ name: 'community', communityId: c.id })} />
   } else if (view.name === 'rally') {
     const r = findRally(view.rallyId)
     const st = r ? rallyStatus[r.id] : null
@@ -775,6 +778,12 @@ export default function App() {
       onToggleJoin={r ? () => toggleJoinRally(r.id) : undefined} />
   } else if (view.name === 'create-rally') {
     screen = <CreateRallyScreen onBack={back} onCreate={createRally} />
+  } else if (view.name === 'community') {
+    const c = communityById(view.communityId)
+    const members = c ? c.memberIds.map(userById).filter(Boolean) : []
+    const cRallies = c ? c.rallyIds.map(findRally).filter(Boolean) : []
+    screen = <CommunityScreen community={c} members={members} rallies={cRallies}
+      onOpenRally={(r) => push({ name: 'rally', rallyId: r.id })} onBack={back} />
   } else if (view.name === 'outfit') {
     screen = <OutfitScreen discounts={discounts} />
   } else if (view.name === 'leaders') {
@@ -791,7 +800,7 @@ export default function App() {
         {installHint && !referralNudge && !followNudge && <InstallHint onClose={dismissInstallHint} />}
       </>}>
         {/* Keyed by view so navigating away from a broken screen retries cleanly. */}
-        <ErrorBoundary key={view.name + ':' + (view.matchId || view.planId || view.rallyId || '')}>
+        <ErrorBoundary key={view.name + ':' + (view.matchId || view.planId || view.rallyId || view.communityId || '')}>
           <Suspense fallback={<div className="min-h-[40vh]" />}>{screen}</Suspense>
         </ErrorBoundary>
       </PhoneFrame>

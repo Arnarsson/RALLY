@@ -5,6 +5,7 @@
 // block below the hero is optional and only paints when its data is present.
 import { useState, useEffect } from 'react'
 import { kindMeta, radiusByKey, accessMeta } from '../data/rallies.js'
+import { friendsGoing, friendsGoingLabel } from '../lib/social.js'
 import * as telemetry from '../data/telemetry.js'
 
 // Radius accent → Tailwind classes. Same mapping the feed uses, rationed: one
@@ -90,6 +91,9 @@ export default function RallyScreen({ rally, onBack, joined = false, waitlisted 
   const spotsLeft = rally.cap != null ? rally.cap - rally.going : null
   const stats = rally.hostStats
   const recap = rally.past && rally.recap ? rally.recap : null
+  // Who you know is going — the people whose presence changes your mind.
+  const friends = friendsGoing(rally.id)
+  const friendsLabel = friendsGoingLabel(rally.id)
 
   // Build the share payload from what we have. Code-first so it works on a dead
   // phone at the door; link is the soft fallback.
@@ -182,6 +186,29 @@ export default function RallyScreen({ rally, onBack, joined = false, waitlisted 
           </div>
           <p className="text-[11px] text-cream/45 mt-2 leading-snug">
             People who say they’re coming, come. That’s what the number means.
+          </p>
+        </div>
+      )}
+
+      {/* 3b — Friends going: the people whose presence changes your mind.
+          Hidden entirely when none are going (created/past rallies). */}
+      {friendsLabel && (
+        <div className="rounded-2xl border border-lime/30 bg-panel p-4 mb-6">
+          <div className="flex items-center gap-3">
+            <div className="flex items-center">
+              {friends.slice(0, 3).map((f, i) => (
+                <span
+                  key={f.id}
+                  className={`inline-flex h-7 w-7 items-center justify-center rounded-full bg-panel2 border border-line text-sm ${i > 0 ? '-ml-1' : ''}`}
+                >
+                  {f.flag}
+                </span>
+              ))}
+            </div>
+            <span className="font-bold text-lime">{friendsLabel}</span>
+          </div>
+          <p className="text-[11px] text-cream/45 mt-2 leading-snug">
+            The people whose presence changes your mind.
           </p>
         </div>
       )}

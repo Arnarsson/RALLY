@@ -10,6 +10,17 @@ import {
   PAST_RALLIES,
   accessMeta,
 } from '../data/rallies.js'
+import { friendsGoing, friendsGoingLabel } from '../lib/social.js'
+import { myCommunities } from '../data/communities.js'
+
+// Community accent token → tint classes. Rationed: one accent per chip, mono otherwise.
+const COMMUNITY_ACCENT = {
+  cream:  { text: 'text-cream',  ring: 'border-cream/40' },
+  blue:   { text: 'text-blue',   ring: 'border-blue/50' },
+  purple: { text: 'text-purple', ring: 'border-purple/50' },
+  lime:   { text: 'text-lime',   ring: 'border-lime/50' },
+  pink:   { text: 'text-pink',   ring: 'border-pink/50' },
+}
 
 // New data is additive — guard everything. Older bundles won't export these.
 const PAST = Array.isArray(PAST_RALLIES) ? PAST_RALLIES : []
@@ -48,6 +59,9 @@ function RallyCard({ rally, onOpen, myStatus }) {
   const full = rally.cap != null && rally.going >= rally.cap
   const stats = rally.hostStats
   const access = Array.isArray(rally.access) ? rally.access : []
+  // Who you know is going — the line that turns a feed into a reason to show up.
+  const friends = friendsGoing(rally.id)
+  const friendsLabel = friendsGoingLabel(rally.id)
   return (
     <button
       type="button"
@@ -107,6 +121,23 @@ function RallyCard({ rally, onOpen, myStatus }) {
                   </span>
                 )
               })}
+            </div>
+          )}
+
+          {/* Friends going — your people in this room. Hidden when none (created/past). */}
+          {friendsLabel && (
+            <div className="flex items-center gap-2 mt-3">
+              <div className="flex items-center">
+                {friends.slice(0, 3).map((f, i) => (
+                  <span
+                    key={f.id}
+                    className={`inline-flex h-6 w-6 items-center justify-center rounded-full bg-panel2 border border-line text-[11px] ${i > 0 ? '-ml-1' : ''}`}
+                  >
+                    {f.flag}
+                  </span>
+                ))}
+              </div>
+              <span className="text-xs font-bold text-lime">{friendsLabel}</span>
             </div>
           )}
 
@@ -190,10 +221,13 @@ function LatelyStrip({ rallies, onOpen }) {
   )
 }
 
-export default function RalliesScreen({ onOpenRally, rallies, onCreateRally, myStatusById = {} } = {}) {
+export default function RalliesScreen({ onOpenRally, rallies, onCreateRally, onOpenCommunity, myStatusById = {} } = {}) {
   const [active, setActive] = useState('public')
   const [lonersOnly, setLonersOnly] = useState(false)
   const [accessibleOnly, setAccessibleOnly] = useState(false)
+
+  // Layer 3 of the Social Radius — the clubs you belong to. Only when wired.
+  const communities = myCommunities()
 
   const chips = [{ key: 'all', label: 'All', accent: 'cream' }, ...RADII]
 
@@ -248,6 +282,34 @@ export default function RalliesScreen({ onOpenRally, rallies, onCreateRally, myS
       <div className="mb-4">
         <LonersCard active={lonersOnly} onToggle={() => setLonersOnly((v) => !v)} />
       </div>
+
+      {/* Your communities — Layer 3 of the Social Radius. Only when wired + a member. */}
+      {onOpenCommunity && communities.length > 0 && (
+        <div className="mb-4">
+          <div className="text-[11px] uppercase tracking-[0.18em] text-cream/40 mb-2">
+            Your communities
+          </div>
+          <div className="-mx-5 px-5 overflow-x-auto no-scrollbar">
+            <div className="flex gap-3 w-max pb-1">
+              {communities.map((c) => {
+                const a = COMMUNITY_ACCENT[c.accent] || COMMUNITY_ACCENT.cream
+                return (
+                  <button
+                    key={c.id}
+                    type="button"
+                    onClick={() => onOpenCommunity?.(c)}
+                    className={`shrink-0 w-44 text-left rounded-2xl border ${a.ring} bg-panel p-3 active:scale-[0.98] transition`}
+                  >
+                    <span className="text-2xl leading-none">{c.emoji}</span>
+                    <div className={`font-display uppercase text-sm leading-[1.05] mt-2 ${a.text}`}>{c.name}</div>
+                    <div className="text-[11px] text-cream/45 mt-1">{c.memberCount} members</div>
+                  </button>
+                )
+              })}
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Radius filter — horizontally scrollable chips */}
       <div className="-mx-5 px-5 overflow-x-auto no-scrollbar">
