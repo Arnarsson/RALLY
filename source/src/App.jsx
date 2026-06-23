@@ -27,6 +27,7 @@ const PlanScreen = lazy(() => import('./screens/PlanScreen.jsx'))
 const CreateScreen = lazy(() => import('./screens/CreateScreen.jsx'))
 const OutfitScreen = lazy(() => import('./screens/OutfitScreen.jsx'))
 const LeadersScreen = lazy(() => import('./screens/LeadersScreen.jsx'))
+const RalliesScreen = lazy(() => import('./screens/RalliesScreen.jsx'))
 
 // A dropped chunk or a render error must never white-screen a guest arriving on
 // a shared link. Catch it, keep the lights on, offer the retry. A stale chunk
@@ -653,7 +654,7 @@ export default function App() {
   const push = (v) => setStack((s) => [...s, v])
   const back = () => setStack((s) => (s.length > 1 ? s.slice(0, -1) : s))
   const resetTo = (v) => setStack([v])
-  const goTab = (t) => { setTab(t); resetTo(t === 'tonight' ? { name: 'matches' } : t === 'outfit' ? { name: 'outfit' } : { name: 'leaders' }) }
+  const goTab = (t) => { setTab(t); resetTo(t === 'tonight' ? { name: 'matches' } : t === 'rallies' ? { name: 'rallies' } : t === 'outfit' ? { name: 'outfit' } : { name: 'leaders' }) }
 
   const isJoined = (plan) => plan.participant_ids.includes(myId)
   const toggleJoin = (planId) => {
@@ -737,6 +738,8 @@ export default function App() {
     screen = <PlanScreen plan={plan} joined={isJoined(plan)} onBack={back} onToggleJoin={() => toggleJoin(plan.id)} onShare={() => setShare(plan)} />
   } else if (view.name === 'create') {
     screen = <CreateScreen match={matchById(view.matchId)} onBack={back} onCreate={createPlan} />
+  } else if (view.name === 'rallies') {
+    screen = <RalliesScreen />
   } else if (view.name === 'outfit') {
     screen = <OutfitScreen discounts={discounts} />
   } else if (view.name === 'leaders') {
@@ -771,8 +774,9 @@ function PhoneFrame({ children, tab, onTab, hideNav = false, footer = null }) {
         </div>
         <div id="rally-scroll" className="flex-1 overflow-y-auto no-scrollbar">{children}</div>
         {!hideNav && (
-          <nav className="shrink-0 grid grid-cols-3 border-t border-line bg-panel">
+          <nav className="shrink-0 grid grid-cols-4 border-t border-line bg-panel">
             <TabButton active={tab === 'tonight'} onClick={() => onTab('tonight')} label="Tonight" />
+            <TabButton active={tab === 'rallies'} onClick={() => onTab('rallies')} label="Rallies" />
             <TabButton active={tab === 'outfit'} onClick={() => onTab('outfit')} label="Outfit" />
             <TabButton active={tab === 'leaders'} onClick={() => onTab('leaders')} label="Leaders" />
           </nav>
@@ -786,7 +790,7 @@ function PhoneFrame({ children, tab, onTab, hideNav = false, footer = null }) {
 function TabButton({ active, onClick, label }) {
   return (
     <button onClick={onClick} className="py-3.5 flex flex-col items-center gap-1">
-      <span className={'text-sm font-bold uppercase tracking-wide ' + (active ? 'text-cream' : 'text-cream/30')}>{label}</span>
+      <span className={'text-sm font-bold uppercase tracking-wide whitespace-nowrap ' + (active ? 'text-cream' : 'text-cream/30')}>{label}</span>
       <span className={'h-1 w-6 rounded-full ' + (active ? 'bg-lime' : 'bg-transparent')} />
     </button>
   )
