@@ -11,6 +11,7 @@ import {
   accessMeta,
 } from '../data/rallies.js'
 import { friendsGoing, friendsGoingLabel } from '../lib/social.js'
+import { isRecurring, recurrenceLabel } from '../lib/creator.js'
 import { myCommunities } from '../data/communities.js'
 
 // Community accent token → tint classes. Rationed: one accent per chip, mono otherwise.
@@ -80,6 +81,9 @@ function RallyCard({ rally, onOpen, myStatus }) {
               )}
               {myStatus === 'waitlist' && (
                 <span className="inline-flex items-center rounded-full border border-cream/30 px-2 py-0.5 text-[9px] font-bold uppercase tracking-[0.12em] text-cream/50">Waitlisted</span>
+              )}
+              {isRecurring(rally) && (
+                <span className="inline-flex items-center gap-0.5 rounded-full border border-line px-2 py-0.5 text-[9px] font-bold uppercase tracking-[0.12em] text-cream/40">↻ {recurrenceLabel(rally.recurrence)}</span>
               )}
             </div>
             <RadiusBadge radiusKey={rally.radius} />

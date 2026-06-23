@@ -5,6 +5,7 @@
 // language of RallyScreen / RalliesScreen. Voice per SOUL.md — warm, a take.
 import { useState } from 'react'
 import { KINDS, RADII, ACCESS_TAGS, accessMeta, kindMeta } from '../data/rallies.js'
+import { RECURRENCE } from '../lib/creator.js'
 
 // Radius accent token → Tailwind classes. Same rationed mapping the feed uses:
 // one accent per element, mono on ink otherwise.
@@ -34,6 +35,7 @@ export default function CreateRallyScreen({ onBack, onCreate } = {}) {
   const [when, setWhen] = useState('')
   const [cap, setCap] = useState('')
   const [access, setAccess] = useState([])
+  const [recurrence, setRecurrence] = useState('none')
 
   const r = RADII.find((x) => x.key === radius)
   const a = accentFor(radius)
@@ -54,6 +56,7 @@ export default function CreateRallyScreen({ onBack, onCreate } = {}) {
       cap,
       access,
       emoji: kindMeta(kind).emoji,
+      recurrence,
     })
   }
 
@@ -196,7 +199,33 @@ export default function CreateRallyScreen({ onBack, onCreate } = {}) {
           <p className="text-xs text-cream/45 mt-2 leading-snug">Leave blank for an open door.</p>
         </div>
 
-        {/* 8 — Access tags */}
+        {/* 8 — Repeats: turn a one-off into a standing thing */}
+        <div>
+          <SectionLabel>Repeats?</SectionLabel>
+          <p className="text-xs text-cream/45 mb-2 leading-snug">Make it a standing thing — same crew, every week.</p>
+          <div className="flex flex-wrap gap-2">
+            {RECURRENCE.map((option) => {
+              const on = recurrence === option.key
+              return (
+                <button
+                  key={option.key}
+                  type="button"
+                  onClick={() => setRecurrence(option.key)}
+                  aria-pressed={on}
+                  className={
+                    on
+                      ? 'inline-flex items-center gap-1.5 rounded-full bg-lime px-3.5 py-1.5 text-xs font-bold uppercase tracking-[0.12em] text-night'
+                      : 'inline-flex items-center gap-1.5 rounded-full border border-line bg-panel px-3.5 py-1.5 text-xs font-bold uppercase tracking-[0.12em] text-cream/55'
+                  }
+                >
+                  {option.label}
+                </button>
+              )
+            })}
+          </div>
+        </div>
+
+        {/* 9 — Access tags */}
         <div>
           <SectionLabel>Welcomes — say it out loud</SectionLabel>
           <div className="flex flex-wrap gap-2">
@@ -223,7 +252,7 @@ export default function CreateRallyScreen({ onBack, onCreate } = {}) {
           </div>
         </div>
 
-        {/* 9 — Submit */}
+        {/* 10 — Submit */}
         <button
           type="button"
           onClick={submit}

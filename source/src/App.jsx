@@ -14,6 +14,7 @@ import { HERO_IMG, HERO_GENERIC } from './data/heroImages.js'
 import { rallyById, RALLIES } from './data/rallies.js'
 import { communityById } from './data/communities.js'
 import { makeRally, applyToggleJoin } from './lib/rallyState.js'
+import { applyCapUnlock, spawnNextDraft } from './lib/creator.js'
 import { SPLASH_IMG } from './data/splashImage.js'
 import { ACTIVE_THEME } from './theme.js'
 import PosterCard from './components/PosterCard'
@@ -744,6 +745,11 @@ export default function App() {
     const { rallies: next, statusById } = applyToggleJoin(rallies, rallyStatus, rallyId)
     setRallies(next); setRallyStatus(statusById)
   }
+  // Host creator tools (S3.1/S3.2). Lift the cap (flat fee, never per-head) and
+  // spin up the next instance of a recurring rally.
+  const unlockCap = (rallyId, tierKey) =>
+    setRallies((rs) => rs.map((r) => (r.id === rallyId ? applyCapUnlock(r, tierKey) : r)))
+  const scheduleNext = (rally) => { if (rally) createRally(spawnNextDraft(rally)) }
 
   if (splash) return <PhoneFrame hideNav><SplashScreen onSkip={() => setSplash(false)} /></PhoneFrame>
   if (!onboarded) {
@@ -775,7 +781,9 @@ export default function App() {
     const st = r ? rallyStatus[r.id] : null
     screen = <RallyScreen rally={r} onBack={back}
       joined={st === 'in'} waitlisted={st === 'waitlist'} waiting={r?.waiting || 0}
-      onToggleJoin={r ? () => toggleJoinRally(r.id) : undefined} />
+      onToggleJoin={r ? () => toggleJoinRally(r.id) : undefined}
+      onUnlockCap={r ? (tierKey) => unlockCap(r.id, tierKey) : undefined}
+      onScheduleNext={r ? () => scheduleNext(r) : undefined} />
   } else if (view.name === 'create-rally') {
     screen = <CreateRallyScreen onBack={back} onCreate={createRally} />
   } else if (view.name === 'community') {
