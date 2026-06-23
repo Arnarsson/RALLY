@@ -58,6 +58,32 @@ describe('never location', () => {
   })
 })
 
+describe('never location — even nested', () => {
+  it('strips geo keys inside sub-objects and arrays of objects', () => {
+    setConsent(true)
+    logEvent('rally_join', {
+      rallyId: 'r_07',
+      meta: { lat: 55.6, lng: 12.5, note: 'keep me' },
+      points: [{ lat: 1, label: 'a' }, { gps: 'x', label: 'b' }],
+    })
+    const event = getLog()[0]
+    expect(event.rallyId).toBe('r_07')
+    expect(event.meta).toEqual({ note: 'keep me' })       // geo gone, rest kept
+    expect(event.points).toEqual([{ label: 'a' }, { label: 'b' }])
+  })
+  it('keeps innocent keys that merely contain a geo substring', () => {
+    setConsent(true)
+    logEvent('rally_view', {
+      rallyId: 'r_01', latency: 42, translation: 'da', relation: 'friend', category: 'gig',
+    })
+    const event = getLog()[0]
+    expect(event.latency).toBe(42)
+    expect(event.translation).toBe('da')
+    expect(event.relation).toBe('friend')
+    expect(event.category).toBe('gig')
+  })
+})
+
 describe('unknown kinds', () => {
   it('returns false and records nothing for an unrecognised kind', () => {
     setConsent(true)

@@ -29,9 +29,22 @@ export const EVENT_KINDS = [
   'arrive',
 ]
 
-// Substrings that mark a payload key as location-ish. Anything matching is
-// dropped — we never log where you are.
-const GEO_HINTS = ['lat', 'lng', 'lon', 'coord', 'gps', 'geo']
+// Whole-segment tokens that mark a key as location-ish. We match on segments
+// (camelCase + separators) rather than raw substrings, so 'userLat'/'gpsFix'
+// are dropped but innocent keys like 'latency'/'translation'/'relation' survive.
+const GEO_TOKENS = new Set([
+  'lat', 'latitude', 'lng', 'lon', 'longitude',
+  'coord', 'coords', 'coordinate', 'coordinates',
+  'gps', 'geo', 'geolocation', 'location',
+])
+
+// Split a key into lowercase segments: camelCase boundaries + non-alphanumerics.
+const isGeoKey = (key) =>
+  String(key)
+    .replace(/([a-z0-9])([A-Z])/g, '$1 $2')
+    .toLowerCase()
+    .split(/[^a-z0-9]+/)
+    .some((seg) => GEO_TOKENS.has(seg))
 
 let _consent = false
 let _log = []
@@ -43,15 +56,20 @@ export const setConsent = (on) => {
   return _consent
 }
 
-// Strip any location-shaped keys from a payload before it's ever stored.
-const sanitize = (payload) => {
-  const clean = {}
-  for (const [key, value] of Object.entries(payload || {})) {
-    const lower = key.toLowerCase()
-    if (GEO_HINTS.some((hint) => lower.includes(hint))) continue
-    clean[key] = value
+// Strip any location-shaped keys before storage — RECURSIVELY, through nested
+// objects and arrays, so a careless caller can't smuggle coordinates in a
+// sub-object. Primitives pass through untouched.
+const sanitize = (value) => {
+  if (Array.isArray(value)) return value.map(sanitize)
+  if (value && typeof value === 'object') {
+    const clean = {}
+    for (const [key, v] of Object.entries(value)) {
+      if (isGeoKey(key)) continue
+      clean[key] = sanitize(v)
+    }
+    return clean
   }
-  return clean
+  return value
 }
 
 // Record a deliberate event. Returns false (and stores nothing) without consent

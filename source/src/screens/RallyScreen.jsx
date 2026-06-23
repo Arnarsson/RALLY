@@ -3,7 +3,7 @@
 // data/telemetry.js, and takes one optional onBack callback so the orchestrator
 // wires it into the nav. Renders gracefully for a missing or sparse rally — every
 // block below the hero is optional and only paints when its data is present.
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { kindMeta, radiusByKey, accessMeta } from '../data/rallies.js'
 import * as telemetry from '../data/telemetry.js'
 
@@ -22,9 +22,11 @@ const accentFor = (radiusKey) => {
   return ACCENT[r?.accent] || ACCENT.cream
 }
 
-// Telemetry should never take the screen down — guard every call.
-const track = (name) => {
-  try { telemetry.logEvent?.(name) } catch { /* telemetry is best-effort */ }
+// Telemetry should never take the screen down — guard every call. Payload is
+// optional and stays light (a rallyId at most); telemetry.js strips anything
+// location-shaped and no-ops entirely without consent.
+const track = (name, payload = {}) => {
+  try { telemetry.logEvent?.(name, payload) } catch { /* telemetry is best-effort */ }
 }
 
 function RadiusBadge({ radiusKey }) {
@@ -51,6 +53,12 @@ export default function RallyScreen({ rally, onBack } = {}) {
   }
   const [consent, setConsent] = useState(readConsent)
   const [shareState, setShareState] = useState('') // '', 'shared', 'copied'
+
+  // A deliberate view is the first signal in the intent graph. No-ops without
+  // consent; carries only the rally id (telemetry strips anything else).
+  useEffect(() => {
+    if (rally?.id) track('rally_view', { rallyId: rally.id })
+  }, [rally?.id])
 
   // Graceful empty state — same warmth as the feed's "nobody's called it" line.
   if (!rally) {
@@ -89,7 +97,7 @@ export default function RallyScreen({ rally, onBack } = {}) {
   const shareText = `${rally.title} — ${rally.when}${rally.area ? ` · ${rally.area}` : ''}. Come find us.${rally.code ? ` Code: ${rally.code}` : ''}`
 
   const doShare = async () => {
-    track('rally_share')
+    track('rally_share', { rallyId: rally.id })
     // Native share first, clipboard second, then a silent no-op. Never throw.
     try {
       if (navigator.share) {
@@ -107,7 +115,7 @@ export default function RallyScreen({ rally, onBack } = {}) {
   }
 
   const doCopy = async () => {
-    track('rally_share')
+    track('rally_share', { rallyId: rally.id })
     try {
       await navigator.clipboard?.writeText?.(shareUrl)
       setShareState('copied')
@@ -117,7 +125,7 @@ export default function RallyScreen({ rally, onBack } = {}) {
 
   const doInvite = () => {
     // A mate joining through you is the referral loop. Log the intent, then share.
-    track('rally_invite')
+    track('rally_invite', { rallyId: rally.id })
     doShare()
   }
 
