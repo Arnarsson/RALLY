@@ -1,0 +1,269 @@
+// Rally detail — the single-rally screen for project HEKLA. Self-contained:
+// reads its own shape from data/rallies.js, fires light telemetry through
+// data/telemetry.js, and takes one optional onBack callback so the orchestrator
+// wires it into the nav. Renders gracefully for a missing or sparse rally — every
+// block below the hero is optional and only paints when its data is present.
+import { useState } from 'react'
+import { kindMeta, radiusByKey, accessMeta } from '../data/rallies.js'
+import * as telemetry from '../data/telemetry.js'
+
+// Radius accent → Tailwind classes. Same mapping the feed uses, rationed: one
+// accent per element, mostly mono on ink otherwise.
+const ACCENT = {
+  cream:  { text: 'text-cream',  ring: 'border-cream/40',  dot: 'bg-cream/70',  solid: 'bg-cream',  on: 'text-night' },
+  blue:   { text: 'text-blue',   ring: 'border-blue/50',   dot: 'bg-blue',      solid: 'bg-blue',   on: 'text-cream' },
+  purple: { text: 'text-purple', ring: 'border-purple/50', dot: 'bg-purple',    solid: 'bg-purple', on: 'text-cream' },
+  lime:   { text: 'text-lime',   ring: 'border-lime/50',   dot: 'bg-lime',      solid: 'bg-lime',   on: 'text-night' },
+  pink:   { text: 'text-pink',   ring: 'border-pink/50',   dot: 'bg-pink',      solid: 'bg-pink',   on: 'text-cream' },
+}
+
+const accentFor = (radiusKey) => {
+  const r = radiusByKey(radiusKey)
+  return ACCENT[r?.accent] || ACCENT.cream
+}
+
+// Telemetry should never take the screen down — guard every call.
+const track = (name) => {
+  try { telemetry.logEvent?.(name) } catch { /* telemetry is best-effort */ }
+}
+
+function RadiusBadge({ radiusKey }) {
+  const r = radiusByKey(radiusKey)
+  if (!r) return null
+  const a = accentFor(radiusKey)
+  return (
+    <span className={`inline-flex items-center gap-1.5 rounded-full border ${a.ring} px-2 py-0.5 text-[10px] uppercase tracking-[0.16em] ${a.text}`}>
+      <span className={`h-1.5 w-1.5 rounded-full ${a.dot}`} />
+      {r.label}
+    </span>
+  )
+}
+
+function SectionLabel({ children }) {
+  return <div className="text-[11px] uppercase tracking-[0.18em] text-cream/40 mb-2">{children}</div>
+}
+
+export default function RallyScreen({ rally, onBack } = {}) {
+  // Consent mirror — reflect the stored opt-in, re-render on toggle. Read once;
+  // if the helper is missing or throws, we stay opted-out (off by default).
+  const readConsent = () => {
+    try { return !!telemetry.hasConsent?.() } catch { return false }
+  }
+  const [consent, setConsent] = useState(readConsent)
+  const [shareState, setShareState] = useState('') // '', 'shared', 'copied'
+
+  // Graceful empty state — same warmth as the feed's "nobody's called it" line.
+  if (!rally) {
+    return (
+      <div className="px-5 pb-6">
+        <header className="pt-2 pb-4 flex items-center gap-3">
+          <button
+            type="button"
+            onClick={onBack}
+            className="inline-flex items-center gap-1.5 rounded-full border border-line bg-panel px-3 py-1.5 text-xs font-bold uppercase tracking-[0.12em] text-cream/70 active:scale-[0.98] transition"
+          >
+            ← Back
+          </button>
+        </header>
+        <div className="rounded-2xl border border-line bg-panel p-6 text-center">
+          <div className="text-3xl mb-3">🌫️</div>
+          <h1 className="font-display uppercase text-2xl leading-[0.95]">This rally drifted off</h1>
+          <p className="text-sm text-cream/55 mt-3 leading-snug">
+            Whatever was here has wandered into the night. Head back — there’s always another room filling up.
+          </p>
+        </div>
+      </div>
+    )
+  }
+
+  const k = kindMeta(rally.kind)
+  const a = accentFor(rally.radius)
+  const full = rally.cap != null && rally.going >= rally.cap
+  const spotsLeft = rally.cap != null ? rally.cap - rally.going : null
+  const stats = rally.hostStats
+  const recap = rally.past && rally.recap ? rally.recap : null
+
+  // Build the share payload from what we have. Code-first so it works on a dead
+  // phone at the door; link is the soft fallback.
+  const shareUrl = rally.code ? `https://rally.futbol/r/${rally.code}` : 'https://rally.futbol'
+  const shareText = `${rally.title} — ${rally.when}${rally.area ? ` · ${rally.area}` : ''}. Come find us.${rally.code ? ` Code: ${rally.code}` : ''}`
+
+  const doShare = async () => {
+    track('rally_share')
+    // Native share first, clipboard second, then a silent no-op. Never throw.
+    try {
+      if (navigator.share) {
+        await navigator.share({ title: rally.title, text: shareText, url: shareUrl })
+        setShareState('shared')
+        setTimeout(() => setShareState(''), 1400)
+        return
+      }
+    } catch { /* user cancelled or share unavailable */ }
+    try {
+      await navigator.clipboard?.writeText?.(shareUrl)
+      setShareState('copied')
+      setTimeout(() => setShareState(''), 1400)
+    } catch { /* file:// / no clipboard — fail quietly */ }
+  }
+
+  const doCopy = async () => {
+    track('rally_share')
+    try {
+      await navigator.clipboard?.writeText?.(shareUrl)
+      setShareState('copied')
+      setTimeout(() => setShareState(''), 1400)
+    } catch { /* no clipboard — fail quietly */ }
+  }
+
+  const doInvite = () => {
+    // A mate joining through you is the referral loop. Log the intent, then share.
+    track('rally_invite')
+    doShare()
+  }
+
+  const onConsentChange = (next) => {
+    setConsent(next)
+    try { telemetry.setConsent?.(next) } catch { /* persist is best-effort */ }
+  }
+
+  return (
+    <div className="px-5 pb-10">
+      {/* 1 — Header: back + radius badge */}
+      <header className="pt-2 pb-4 flex items-center justify-between gap-3">
+        <button
+          type="button"
+          onClick={onBack}
+          className="inline-flex items-center gap-1.5 rounded-full border border-line bg-panel px-3 py-1.5 text-xs font-bold uppercase tracking-[0.12em] text-cream/70 active:scale-[0.98] transition"
+        >
+          ← Back
+        </button>
+        <RadiusBadge radiusKey={rally.radius} />
+      </header>
+
+      {/* 2 — Hero */}
+      <div className="mb-6">
+        <div className="text-4xl leading-none">{rally.emoji || k.emoji}</div>
+        <div className="text-[10px] uppercase tracking-[0.16em] text-cream/40 mt-3">{k.label}</div>
+        <h1 className="font-display uppercase text-[34px] leading-[0.92] mt-1">{rally.title}</h1>
+        {rally.blurb && <p className="flourish text-xl leading-snug text-cream/80 mt-3">{rally.blurb}</p>}
+        <div className="flex items-center gap-2 mt-4 text-xs text-cream/45 flex-wrap">
+          {rally.host && <span className="font-bold text-cream/70">{rally.host}</span>}
+          {rally.area && <><span className="text-cream/25">·</span><span>{rally.area}</span></>}
+          {rally.when && <><span className="text-cream/25">·</span><span>{rally.when}</span></>}
+        </div>
+      </div>
+
+      {/* 3 — Trust badge: the thing that lets a stranger join an inner-ring rally */}
+      {stats && (
+        <div className="rounded-2xl border border-lime/30 bg-panel p-4 mb-6">
+          <div className="flex items-center gap-2 flex-wrap">
+            <span className="font-display uppercase text-lg leading-none text-lime">{rally.host}</span>
+            <span className="text-cream/25">·</span>
+            <span className="font-bold text-cream">{stats.rate}% show-up</span>
+            <span className="text-cream/25">·</span>
+            <span className="font-bold text-cream">{stats.hosted} hosted</span>
+          </div>
+          <p className="text-[11px] text-cream/45 mt-2 leading-snug">
+            People who say they’re coming, come. That’s what the number means.
+          </p>
+        </div>
+      )}
+
+      {/* 4 — The numbers */}
+      <div className="rounded-2xl border border-line bg-panel p-4 mb-6">
+        <div className="flex items-center justify-between">
+          <span className="font-display uppercase text-2xl leading-none">{rally.going} going</span>
+          <span className={`text-[11px] uppercase tracking-[0.16em] font-bold ${full ? 'text-pink' : a.text}`}>
+            {rally.cap == null ? 'open' : full ? 'Full' : `${spotsLeft} ${spotsLeft === 1 ? 'spot' : 'spots'}`}
+          </span>
+        </div>
+      </div>
+
+      {/* 5 — Accessibility: say it on the card so nobody has to ask at the door */}
+      {rally.access?.length > 0 && (
+        <div className="mb-6">
+          <SectionLabel>Welcomes</SectionLabel>
+          <div className="flex flex-wrap gap-2">
+            {rally.access.map((key) => {
+              const tag = accessMeta(key)
+              return (
+                <span key={key} className="inline-flex items-center gap-1.5 rounded-full border border-line bg-panel2 px-3 py-1.5 text-xs text-cream/80">
+                  <span aria-hidden>{tag.emoji}</span> {tag.label}
+                </span>
+              )
+            })}
+          </div>
+        </div>
+      )}
+
+      {/* 6 — Bring a friend / invite (offline-first, code at the door) */}
+      <div className="rounded-2xl border border-line bg-panel p-4 mb-6">
+        <SectionLabel>Bring a friend</SectionLabel>
+        {rally.code && (
+          <>
+            <div className="text-[10px] uppercase tracking-[0.18em] text-cream/40">Show at the door</div>
+            <div className="font-display uppercase text-3xl leading-none text-lime mt-1 break-words">{rally.code}</div>
+            <p className="text-[11px] text-cream/45 mt-2 leading-snug">
+              Works offline, works on a dead phone. Flash the code, you’re in.
+            </p>
+          </>
+        )}
+
+        <div className="flex gap-3 mt-4">
+          <button
+            type="button"
+            onClick={doCopy}
+            className="flex-1 rounded-full border border-line bg-night px-4 py-3 text-sm font-bold uppercase tracking-[0.12em] text-cream/80 active:scale-[0.98] transition"
+          >
+            {shareState === 'copied' ? 'Link copied' : 'Copy link'}
+          </button>
+          <button
+            type="button"
+            onClick={doInvite}
+            className="flex-1 rounded-full bg-lime px-4 py-3 text-sm font-bold uppercase tracking-[0.12em] text-night active:scale-[0.98] transition"
+          >
+            {shareState === 'shared' ? 'Shared' : 'Share'}
+          </button>
+        </div>
+
+        <p className="text-[11px] text-cream/55 mt-4 leading-snug">
+          A mate joins through you? You <span className="text-lime font-bold">both</span> get 15% at Miinto. Bring the one who never comes out — that’s the whole point.
+        </p>
+      </div>
+
+      {/* 7 — Recap: the memory that triggers the re-rally */}
+      {recap && (
+        <div className="rounded-2xl border border-line bg-panel2 p-5 mb-6 text-center">
+          <div className="text-4xl leading-none">{recap.photoEmoji}</div>
+          {recap.line && <p className="flourish text-xl leading-snug text-cream/85 mt-3">“{recap.line}”</p>}
+          {recap.showed != null && (
+            <div className="text-[11px] uppercase tracking-[0.18em] text-cream/45 mt-3">{recap.showed} showed up</div>
+          )}
+        </div>
+      )}
+
+      {/* 8 — Consent: opt in to the city's pulse, GDPR-clean */}
+      <button
+        type="button"
+        onClick={() => onConsentChange(!consent)}
+        aria-pressed={consent}
+        className="w-full text-left rounded-2xl border border-line bg-panel p-4 active:scale-[0.99] transition"
+      >
+        <div className="flex items-center gap-3">
+          <span
+            className={`shrink-0 inline-flex h-5 w-5 items-center justify-center rounded-md border ${consent ? 'bg-lime border-lime text-night' : 'border-cream/30 text-transparent'}`}
+            aria-hidden
+          >
+            ✓
+          </span>
+          <div className="min-w-0">
+            <div className="text-sm font-bold">Count me in the city’s pulse</div>
+            <div className="text-[11px] text-cream/45 mt-1 leading-snug">
+              Anonymous, no location, off by default. Change it anytime.
+            </div>
+          </div>
+        </div>
+      </button>
+    </div>
+  )
+}

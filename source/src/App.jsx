@@ -11,6 +11,7 @@ import {
 import { parseShareParams, planShareUrl, planCardUrl, shareText, referralLink } from './data/shareLinks.js'
 import { FLAG_PNG } from './data/flags.js'
 import { HERO_IMG, HERO_GENERIC } from './data/heroImages.js'
+import { rallyById } from './data/rallies.js'
 import { SPLASH_IMG } from './data/splashImage.js'
 import { ACTIVE_THEME } from './theme.js'
 import PosterCard from './components/PosterCard'
@@ -28,6 +29,7 @@ const CreateScreen = lazy(() => import('./screens/CreateScreen.jsx'))
 const OutfitScreen = lazy(() => import('./screens/OutfitScreen.jsx'))
 const LeadersScreen = lazy(() => import('./screens/LeadersScreen.jsx'))
 const RalliesScreen = lazy(() => import('./screens/RalliesScreen.jsx'))
+const RallyScreen = lazy(() => import('./screens/RallyScreen.jsx'))
 
 // A dropped chunk or a render error must never white-screen a guest arriving on
 // a shared link. Catch it, keep the lights on, offer the retry. A stale chunk
@@ -739,7 +741,9 @@ export default function App() {
   } else if (view.name === 'create') {
     screen = <CreateScreen match={matchById(view.matchId)} onBack={back} onCreate={createPlan} />
   } else if (view.name === 'rallies') {
-    screen = <RalliesScreen />
+    screen = <RalliesScreen onOpenRally={(r) => push({ name: 'rally', rallyId: r.id })} />
+  } else if (view.name === 'rally') {
+    screen = <RallyScreen rally={rallyById(view.rallyId)} onBack={back} />
   } else if (view.name === 'outfit') {
     screen = <OutfitScreen discounts={discounts} />
   } else if (view.name === 'leaders') {
@@ -756,7 +760,7 @@ export default function App() {
         {installHint && !referralNudge && !followNudge && <InstallHint onClose={dismissInstallHint} />}
       </>}>
         {/* Keyed by view so navigating away from a broken screen retries cleanly. */}
-        <ErrorBoundary key={view.name + ':' + (view.matchId || view.planId || '')}>
+        <ErrorBoundary key={view.name + ':' + (view.matchId || view.planId || view.rallyId || '')}>
           <Suspense fallback={<div className="min-h-[40vh]" />}>{screen}</Suspense>
         </ErrorBoundary>
       </PhoneFrame>
