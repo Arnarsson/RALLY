@@ -756,7 +756,7 @@ export default function App() {
   // server-side. Demo: mint a visible 15% code once per rally + nudge the host.
   const rewardForInvite = (rally) => {
     if (!rally) return
-    if (hasSupabase) { ensureReferral(myId); return }
+    if (hasSupabase) { ensureReferral(myId).catch(() => {}); return }
     if (hasRewardFor(discounts, rally.code)) return
     setDiscounts((ds) => [makeRallyReward(rally.code, Date.now()), ...ds])
     setReferralNudge('rewarded')
