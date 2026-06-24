@@ -915,7 +915,36 @@ function MyCallCard({ match, myCall, onCall, callRecord, streak = 0 }) {
   )
 }
 
-export default function MatchScreen({ match, plans, myId, following, onToggleFollow, onBack, onOpenPlan, onCreate, myCall = null, onCall, callRecord, callStreak = 0 }) {
+// The match's group table — built from real finished results (see standings.js).
+// Renders nothing until at least one game in the group is played.
+function GroupTable({ rows = [], match }) {
+  if (!rows.length) return null
+  const here = new Set([match?.team_a, match?.team_b])
+  return (
+    <div className="mb-6">
+      <div className="text-[10px] font-bold tracking-[0.2em] uppercase text-cream/40 mb-2">the table · so far</div>
+      <div className="rounded-2xl border border-line bg-panel overflow-hidden">
+        <div className="grid grid-cols-[1.4rem_1fr_1.6rem_1.8rem_1.8rem] gap-2 px-3.5 py-2 text-[10px] uppercase tracking-[0.14em] text-cream/35 border-b border-line">
+          <span>#</span><span>Team</span><span className="text-right">P</span><span className="text-right">GD</span><span className="text-right">Pts</span>
+        </div>
+        {rows.map((r, i) => {
+          const mine = here.has(r.team)
+          return (
+            <div key={r.team} className={'grid grid-cols-[1.4rem_1fr_1.6rem_1.8rem_1.8rem] gap-2 px-3.5 py-2 text-sm items-center ' + (mine ? 'bg-lime/10' : '')}>
+              <span className={'font-display ' + (i === 0 ? 'text-lime' : 'text-cream/40')}>{i + 1}</span>
+              <span className="truncate font-bold">{r.flag} {r.team}</span>
+              <span className="text-right text-cream/55">{r.P}</span>
+              <span className="text-right text-cream/55">{r.GD > 0 ? '+' : ''}{r.GD}</span>
+              <span className="text-right font-display">{r.Pts}</span>
+            </div>
+          )
+        })}
+      </div>
+    </div>
+  )
+}
+
+export default function MatchScreen({ match, plans, myId, following, onToggleFollow, onBack, onOpenPlan, onCreate, myCall = null, onCall, callRecord, callStreak = 0, standings = [] }) {
   const matchPlans = plans.filter((p) => p.match_id === match.id).sort((a, b) => b.participant_ids.length - a.participant_ids.length)
   const [extras, setExtras] = useState(null)
   const [showPoster, setShowPoster] = useState(false)
@@ -978,6 +1007,8 @@ export default function MatchScreen({ match, plans, myId, following, onToggleFol
           )}
 
           <HeadToHead match={match} m={match} />
+
+          <GroupTable rows={standings} match={match} />
 
           <TeamSheetStats extras={extras} />
           <TeamExtras match={match} extras={extras} />
