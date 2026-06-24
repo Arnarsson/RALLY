@@ -1,17 +1,24 @@
 // Leaders — lazy-loaded. Shared primitives come back from App.jsx.
 import { Avatar, useResolve, NIGHT } from '../App.jsx'
 
-export default function LeadersScreen({ plans, onBuyBeer }) {
+export default function LeadersScreen({ plans, onBuyBeer, callerBoard = [] }) {
   const resolve = useResolve()
   const reach = {}; plans.forEach((p) => { reach[p.host_id] = (reach[p.host_id] || 0) + p.participant_ids.length })
   const builder = Object.entries(reach).sort((a, b) => b[1] - a[1])[0]
   const counts = {}; plans.forEach((p) => { counts[p.host_id] = (counts[p.host_id] || 0) + 1 })
   const host = Object.entries(counts).sort((a, b) => b[1] - a[1])[0]
+  // Super Predictor is now real: the top of the caller board (falls back to a
+  // seeded name before anyone's calls have settled).
+  const topCaller = callerBoard[0]
+  const predictorCard = topCaller
+    ? { title: 'Super Predictor', sub: 'Best match calls', color: '#2A5BFF', user: topCaller.user, metric: `${topCaller.record.hits} / ${topCaller.record.settled} called` }
+    : { title: 'Super Predictor', sub: 'Best match calls', color: '#2A5BFF', user: resolve('u_005'), metric: 'no calls settled yet' }
   const cards = [
     { title: 'Community Builder', sub: 'Brings the most people together', color: '#8ACE00', user: resolve(builder[0]), metric: builder[1] + ' people gathered' },
     { title: 'Social Host', sub: 'Hosts the most watch plans', color: '#FF3E9A', user: resolve(host[0]), metric: host[1] + ' plans hosted' },
-    { title: 'Super Predictor', sub: 'Best match predictions', color: '#2A5BFF', user: resolve('u_005'), metric: '7 / 9 correct' },
+    predictorCard,
   ]
+  const callers = callerBoard.slice(0, 8)
   return (
     <div className="px-5 pb-6">
       <header className="pt-2 pb-4">
@@ -37,6 +44,32 @@ export default function LeadersScreen({ plans, onBuyBeer }) {
           )
         })}
       </div>
+
+      {callers.length > 0 && (
+        <div className="mt-6">
+          <div className="flex items-baseline justify-between">
+            <div className="flourish text-xl text-lime">the callers</div>
+            <div className="text-[10px] uppercase tracking-[0.18em] text-cream/40">3 pts a hit</div>
+          </div>
+          <div className="text-[11px] uppercase tracking-[0.18em] text-cream/40 mt-0.5 mb-2">who reads the game best</div>
+          <div className="rounded-2xl border border-line bg-panel divide-y divide-line/70 overflow-hidden">
+            {callers.map((c, i) => {
+              const me = c.user.id === 'u_me'
+              return (
+                <div key={c.user.id} className={'flex items-center gap-3 px-3.5 py-2.5 ' + (me ? 'bg-lime/10' : '')}>
+                  <span className={'w-5 text-center font-display text-sm ' + (i === 0 ? 'text-lime' : 'text-cream/40')}>{i + 1}</span>
+                  <Avatar user={c.user} size={32} />
+                  <div className="flex-1 min-w-0">
+                    <div className="font-bold text-sm truncate">{me ? 'You' : c.user.name} {c.user.flag}{c.streak >= 2 ? <span className="ml-1 text-lime">🔥{c.streak}</span> : ''}</div>
+                    <div className="text-[11px] text-cream/45">{c.record.hits}/{c.record.settled} called{c.record.accuracy != null ? ` · ${c.record.accuracy}%` : ''}</div>
+                  </div>
+                  <div className="text-right"><span className="font-display text-lg leading-none">{c.record.points}</span><span className="text-[10px] text-cream/40 ml-1">pts</span></div>
+                </div>
+              )
+            })}
+          </div>
+        </div>
+      )}
 
       <div className="rounded-2xl border-2 border-line p-4 mt-5 text-center">
         <div className="text-[11px] uppercase tracking-[0.18em] text-cream/50">Prizes powered by</div>

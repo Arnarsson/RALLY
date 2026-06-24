@@ -108,7 +108,8 @@ export const OUTFITS = {
 const EDITORIAL = [
   {
     id: 'm_01', team_a: 'Mexico', flag_a: '🇲🇽', team_b: 'South Africa', flag_b: '🇿🇦',
-    kickoff: '2026-06-11T21:00', stage: 'Group A · Opening match', day: 'OPENING NIGHT · THU 11 JUN', featured: true,
+    kickoff: '2026-06-11T21:00',
+    status: 'post', completed: true, clock: 'FT', score_a: 2, score_b: 1, stage: 'Group A · Opening match', day: 'OPENING NIGHT · THU 11 JUN', featured: true,
     tv: [{ name: 'TV 2', free: false }],
     h2h: { last: '2010 World Cup', score: '1–1', note: 'the opening match in Johannesburg' },
     // Illustrative until the penaltyblog worker fills real model output.
@@ -123,35 +124,40 @@ const EDITORIAL = [
   },
   {
     id: 'm_05', team_a: 'South Korea', flag_a: '🇰🇷', team_b: 'Czechia', flag_b: '🇨🇿',
-    kickoff: '2026-06-12T04:00', stage: 'Group F', day: 'OPENING NIGHT · THU 11 JUN',
+    kickoff: '2026-06-12T04:00',
+    status: 'post', completed: true, clock: 'FT', score_a: 2, score_b: 2, stage: 'Group F', day: 'OPENING NIGHT · THU 11 JUN',
     tv: [{ name: 'TV 2 Sport X', free: false }],
     fun_fact: 'A proper night-owl kickoff. The “Mexican wave” went global at Mexico ’86 — South Korea co-hosted in 2002 and stunned everyone by reaching the semi-finals.',
     commentary: "Four in the morning Copenhagen time? You absolute legend for being awake. South Korea — the 2002 fairytale! Co-hosts who marched all the way to the semis and broke Italian and Spanish hearts, hahaha, they STILL talk about it. Son Heung-min now, pure lightning in boots. Czechia — back in the Czechoslovakia days they reached two World Cup finals, so close yet so far. And Patrik Schick once scored from the halfway line, genuinely! Grab a coffee — this one's for the diehards.",
   },
   {
     id: 'm_02', team_a: 'Canada', flag_a: '🇨🇦', team_b: 'Bosnia & Herz.', flag_b: '🇧🇦',
-    kickoff: '2026-06-12T21:00', stage: 'Group B', day: 'FRI 12 JUN',
+    kickoff: '2026-06-12T21:00',
+    status: 'post', completed: true, clock: 'FT', score_a: 1, score_b: 0, stage: 'Group B', day: 'FRI 12 JUN',
     tv: [{ name: 'DR1', free: true }],
     fun_fact: 'This is the first 48-team World Cup — 104 matches in all. Canada are co-hosts and playing their first ever home World Cup.',
     commentary: "Canada! Co-hosts, and let's be honest, for the longest time their World Cup story was one trip in 1986 and a WHOLE lot of ice hockey, ha! But now? Alphonso Davies, the man has actual rockets strapped to his legs. Bosnia and Herzegovina — one World Cup, 2014, led by Edin Džeko, a proper old-school number nine who simply refuses to retire. Neither's ever lifted the trophy, but both turn up swinging. Lovely stuff.",
   },
   {
     id: 'm_06', team_a: 'USA', flag_a: '🇺🇸', team_b: 'Paraguay', flag_b: '🇵🇾',
-    kickoff: '2026-06-13T03:00', stage: 'Group D', day: 'FRI 12 JUN',
+    kickoff: '2026-06-13T03:00',
+    status: 'post', completed: true, clock: 'FT', score_a: 0, score_b: 0, stage: 'Group D', day: 'FRI 12 JUN',
     tv: [{ name: 'TV 2 Sport X', free: false }],
     fun_fact: 'USA, Canada and Mexico are co-hosting — the first three-country World Cup. The 1994 USA edition still holds the record for highest average attendance.',
     commentary: "Team USA! Hosts back in '94, when they sold out every stadium and the world finally went, oh — they DO like soccer! Christian Pulisic carries the badge now. Paraguay — World Cup regulars, quarter-finalists in 2010, and home to football's wildest goalkeeper ever, Chilavert, who used to score free kicks AND penalties, hahaha, a keeper with a striker's ego! Three a.m. kickoff, so this one is purely for the obsessed. Respect.",
   },
   {
     id: 'm_03', team_a: 'Qatar', flag_a: '🇶🇦', team_b: 'Switzerland', flag_b: '🇨🇭',
-    kickoff: '2026-06-13T21:00', stage: 'Group E', day: 'SAT 13 JUN',
+    kickoff: '2026-06-13T21:00',
+    status: 'post', completed: true, clock: 'FT', score_a: 1, score_b: 3, stage: 'Group E', day: 'SAT 13 JUN',
     tv: [{ name: 'DR1', free: true }],
     fun_fact: 'The trophy is 18-carat solid gold and weighs about 6.1 kg. Switzerland is where it all gets organised — FIFA’s HQ sits in Zürich.',
     commentary: "Qatar — threw the most expensive World Cup in history in 2022, and then, awkwardly, became the first hosts to lose all three group games, ooof, ha! Akram Afif is the local hero though. Switzerland — punching way above a country famous for chocolate, watches, and being suspiciously neutral. Granit Xhaka, all elbows and leadership. And fun fact: FIFA itself lives in Zürich, so technically this is a home game for the paperwork. Cheers!",
   },
   {
     id: 'm_04', team_a: 'Brazil', flag_a: '🇧🇷', team_b: 'Morocco', flag_b: '🇲🇦',
-    kickoff: '2026-06-14T00:00', stage: 'Group G', day: 'SAT 13 JUN', marquee: true,
+    kickoff: '2026-06-14T00:00',
+    status: 'post', completed: true, clock: 'FT', score_a: 2, score_b: 1, stage: 'Group G', day: 'SAT 13 JUN', marquee: true,
     tv: [{ name: 'TV 2 Sport X', free: false }],
     fun_fact: 'Brazil are the only nation to appear at every World Cup since 1930. Morocco made history in 2022 as the first African and Arab team to reach a World Cup semi-final.',
     commentary: "NOW we're talking! Brazil — FIVE World Cups, the only nation on earth to show up to every single one since 1930, the gold standard, samba in their boots. From Pelé to Ronaldo to the new kids, they just keep printing magicians. And Morocco?! 2022 — the first African AND first Arab team to ever reach a semi-final, the whole continent lost its mind, hahaha, what a story! Hakimi flying down that wing. Midnight kickoff, worth every yawn. Let's go!",
@@ -173,12 +179,22 @@ export function _formProb(fa, fb) {
 
 function _enrich(m) {
   const f = _liveByKey[_key(m.team_a, m.team_b)]
-  if (!f) return { ...m, status: 'pre' }
+  // An editorial card can carry its own final result (in the demo, the past
+  // group-stage matches are already played). Live data ALWAYS wins when it has a
+  // score; only when the live feed has none does the editorial result stand — so
+  // production behaviour is unchanged, while the file:// demo shows real finals.
+  const liveDone = !!f && f.score_a != null && f.score_b != null
+  const useEd = !liveDone && m.completed
+  if (!f) return { ...m, status: useEd ? (m.status || 'post') : 'pre' }
   const fp = _formProb(f.form_a, f.form_b)
   return {
     ...m,
-    status: f.status, status_detail: f.status_detail, clock: f.clock,
-    completed: f.completed, score_a: f.score_a, score_b: f.score_b,
+    status: useEd ? (m.status || 'post') : f.status,
+    status_detail: useEd ? (m.status_detail || 'Full time') : f.status_detail,
+    clock: useEd ? (m.clock || 'FT') : f.clock,
+    completed: useEd ? true : f.completed,
+    score_a: useEd ? m.score_a : f.score_a,
+    score_b: useEd ? m.score_b : f.score_b,
     form_a: f.form_a, form_b: f.form_b, venue: f.venue,
     color_a: f.color_a, color_b: f.color_b,
     archive: m.archive || f.archive,

@@ -16,6 +16,8 @@ import { communityById } from './data/communities.js'
 import { makeRally, applyToggleJoin } from './lib/rallyState.js'
 import { applyCapUnlock, spawnNextDraft } from './lib/creator.js'
 import { makeRallyReward, hasRewardFor } from './lib/rewards.js'
+import { callRecord, callerBoard, callStreak } from './data/calls.js'
+import { groupTable } from './data/standings.js'
 import { SPLASH_IMG } from './data/splashImage.js'
 import { ACTIVE_THEME } from './theme.js'
 import PosterCard from './components/PosterCard'
@@ -519,6 +521,13 @@ export default function App() {
   // behind hasSupabase later (docs/RALLY-HEKLA-schema.md) — same shape.
   const [rallies, setRallies] = useState(RALLIES)
   const [rallyStatus, setRallyStatus] = useState({})
+  // "Call it" — your committed result picks, scored at full time. { [matchId]: pick }
+  const [calls, setCalls] = useState({})
+  const setCall = (matchId, pick) => setCalls((c) => {
+    const next = { ...c }
+    if (next[matchId] === pick) delete next[matchId]; else next[matchId] = pick
+    return next
+  })
   const [stack, setStack] = useState([{ name: 'matches' }])
   const [tab, setTab] = useState('tonight')
   const [share, setShare] = useState(null)
@@ -776,7 +785,9 @@ export default function App() {
     screen = <MatchesScreen plans={plans} flag={profile.flag} myId={myId} follows={follows} onToggleFollow={toggleFollow} onOpenMatch={(m) => push({ name: 'match', matchId: m.id })} />
   } else if (view.name === 'match') {
     screen = <MatchScreen match={matchById(view.matchId)} plans={plans} myId={myId} following={follows.has(view.matchId)} onToggleFollow={toggleFollow} onBack={back}
-      onOpenPlan={(p) => push({ name: 'plan', planId: p.id })} onCreate={() => push({ name: 'create', matchId: view.matchId })} />
+      onOpenPlan={(p) => push({ name: 'plan', planId: p.id })} onCreate={() => push({ name: 'create', matchId: view.matchId })}
+      myCall={calls[view.matchId]} onCall={(pick) => setCall(view.matchId, pick)} callRecord={callRecord(calls, MATCHES)} callStreak={callStreak(calls, MATCHES)}
+      standings={groupTable(MATCHES, matchById(view.matchId)?.stage)} />
   } else if (view.name === 'plan') {
     const plan = plans.find((p) => p.id === view.planId)
     screen = <PlanScreen plan={plan} joined={isJoined(plan)} onBack={back} onToggleJoin={() => toggleJoin(plan.id)} onShare={() => setShare(plan)} />
@@ -797,17 +808,18 @@ export default function App() {
       onScheduleNext={r ? () => scheduleNext(r) : undefined}
       onInviteReward={r ? () => rewardForInvite(r) : undefined} />
   } else if (view.name === 'create-rally') {
-    screen = <CreateRallyScreen onBack={back} onCreate={createRally} />
+    screen = <CreateRallyScreen seed={view.seed} onBack={back} onCreate={createRally} />
   } else if (view.name === 'community') {
     const c = communityById(view.communityId)
     const members = c ? c.memberIds.map(userById).filter(Boolean) : []
     const cRallies = c ? c.rallyIds.map(findRally).filter(Boolean) : []
     screen = <CommunityScreen community={c} members={members} rallies={cRallies}
-      onOpenRally={(r) => push({ name: 'rally', rallyId: r.id })} onBack={back} />
+      onOpenRally={(r) => push({ name: 'rally', rallyId: r.id })}
+      onSpinUp={(draft) => push({ name: 'create-rally', seed: draft })} onBack={back} />
   } else if (view.name === 'outfit') {
     screen = <OutfitScreen discounts={discounts} />
   } else if (view.name === 'leaders') {
-    screen = <LeadersScreen plans={plans} onBuyBeer={() => setBeer(true)} />
+    screen = <LeadersScreen plans={plans} onBuyBeer={() => setBeer(true)} callerBoard={callerBoard(MATCHES, USERS, calls, myId)} />
   }
 
   return (
