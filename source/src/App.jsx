@@ -16,6 +16,7 @@ import { communityById } from './data/communities.js'
 import { makeRally, applyToggleJoin } from './lib/rallyState.js'
 import { applyCapUnlock, spawnNextDraft } from './lib/creator.js'
 import { makeRallyReward, hasRewardFor } from './lib/rewards.js'
+import { callRecord } from './data/calls.js'
 import { SPLASH_IMG } from './data/splashImage.js'
 import { ACTIVE_THEME } from './theme.js'
 import PosterCard from './components/PosterCard'
@@ -519,6 +520,13 @@ export default function App() {
   // behind hasSupabase later (docs/RALLY-HEKLA-schema.md) — same shape.
   const [rallies, setRallies] = useState(RALLIES)
   const [rallyStatus, setRallyStatus] = useState({})
+  // "Call it" — your committed result picks, scored at full time. { [matchId]: pick }
+  const [calls, setCalls] = useState({})
+  const setCall = (matchId, pick) => setCalls((c) => {
+    const next = { ...c }
+    if (next[matchId] === pick) delete next[matchId]; else next[matchId] = pick
+    return next
+  })
   const [stack, setStack] = useState([{ name: 'matches' }])
   const [tab, setTab] = useState('tonight')
   const [share, setShare] = useState(null)
@@ -776,7 +784,8 @@ export default function App() {
     screen = <MatchesScreen plans={plans} flag={profile.flag} myId={myId} follows={follows} onToggleFollow={toggleFollow} onOpenMatch={(m) => push({ name: 'match', matchId: m.id })} />
   } else if (view.name === 'match') {
     screen = <MatchScreen match={matchById(view.matchId)} plans={plans} myId={myId} following={follows.has(view.matchId)} onToggleFollow={toggleFollow} onBack={back}
-      onOpenPlan={(p) => push({ name: 'plan', planId: p.id })} onCreate={() => push({ name: 'create', matchId: view.matchId })} />
+      onOpenPlan={(p) => push({ name: 'plan', planId: p.id })} onCreate={() => push({ name: 'create', matchId: view.matchId })}
+      myCall={calls[view.matchId]} onCall={(pick) => setCall(view.matchId, pick)} callRecord={callRecord(calls, MATCHES)} />
   } else if (view.name === 'plan') {
     const plan = plans.find((p) => p.id === view.planId)
     screen = <PlanScreen plan={plan} joined={isJoined(plan)} onBack={back} onToggleJoin={() => toggleJoin(plan.id)} onShare={() => setShare(plan)} />

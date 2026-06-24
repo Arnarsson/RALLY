@@ -829,7 +829,88 @@ function StatsDrawer({ children, defaultOpen = false }) {
   )
 }
 
-export default function MatchScreen({ match, plans, myId, following, onToggleFollow, onBack, onOpenPlan, onCreate }) {
+// MAKE YOUR CALL — the user's own committed result pick, distinct from the room's
+// "the call" wedge and the fantasy board. RALLY has a take; here you prove yours.
+// Scored at full time via predictionOutcome. Guards every prop being absent/null.
+function MyCallCard({ match, myCall, onCall, callRecord }) {
+  const decided = myCall ? predictionOutcome(match, myCall) : 'pending'
+  const settled = decided !== 'pending'
+  const hit = decided === 'right'
+  const choices = [
+    { id: 'team_a', label: `${match.flag_a || ''} ${predictionLabel(match, 'team_a')}`.trim() },
+    { id: 'draw', label: predictionLabel(match, 'draw') },
+    { id: 'team_b', label: `${match.flag_b || ''} ${predictionLabel(match, 'team_b')}`.trim() },
+  ]
+  const inert = typeof onCall !== 'function'
+  const score = match.score_a != null && match.score_b != null ? `${match.score_a}–${match.score_b}` : null
+  const myLabel = myCall ? predictionLabel(match, myCall) : ''
+  const rec = callRecord && callRecord.made > 0 ? callRecord : null
+  const recSettled = rec ? Number(rec.settled || 0) : 0
+  return (
+    <div className="rounded-2xl bg-panel border border-line p-4 mb-5">
+      <div className="flex items-start justify-between gap-3 mb-3">
+        <div>
+          <div className="flourish text-xl leading-none text-lime">your call</div>
+          <div className="text-[10px] uppercase tracking-[0.18em] text-cream/40 mt-1">commit to a result · get scored at full time</div>
+        </div>
+        {rec && (
+          <span className="shrink-0 rounded-full bg-night/80 border border-line px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.16em] text-cream/70">
+            {rec.hits}/{recSettled} · {rec.points} pts{recSettled > 0 ? ` · ${rec.accuracy}%` : ''}
+          </span>
+        )}
+      </div>
+
+      <div className="grid grid-cols-3 gap-2 mb-3">
+        {choices.map((choice) => {
+          const picked = myCall === choice.id
+          return (
+            <button
+              key={choice.id}
+              disabled={inert}
+              onClick={() => onCall?.(choice.id)}
+              className={'rounded-xl border px-2 py-3 text-[12px] font-bold uppercase tracking-wide leading-tight transition active:scale-[0.96] '
+                + (picked ? 'bg-lime text-night border-lime' : 'bg-night/70 text-cream/80 border-line')
+                + (inert ? ' opacity-60 cursor-not-allowed' : '')}>
+              {choice.label}
+            </button>
+          )
+        })}
+      </div>
+
+      {!myCall ? (
+        <div className="rounded-xl bg-night/60 border border-line px-3 py-2.5 text-[11px] text-cream/55 leading-snug">
+          RALLY's got a take. Now prove yours — one tap, locked till full time.
+        </div>
+      ) : settled ? (
+        <div className={'rounded-xl border px-3 py-2.5 ' + (hit ? 'bg-lime/12 border-lime/30' : 'bg-pink/10 border-pink/30')}>
+          <div className="flex items-center justify-between gap-2">
+            <div className={'flourish text-lg leading-none ' + (hit ? 'text-lime' : 'text-pink')}>
+              {hit ? 'called it' : 'missed it'}
+            </div>
+            <span className={'rounded-full px-2 py-1 text-[10px] font-bold uppercase tracking-wide ' + (hit ? 'bg-lime text-night' : 'bg-pink text-night')}>
+              {hit ? 'hit' : 'miss'}
+            </span>
+          </div>
+          <div className="mt-1.5 text-[11px] text-cream/60 leading-snug">
+            {hit
+              ? `You said ${myLabel}${score ? ` and it finished ${score}` : ''}. Told you so — screenshot it.`
+              : `You backed ${myLabel}${score ? ` and it finished ${score}` : ''}. Bottled it, mate. There's always the next one.`}
+          </div>
+        </div>
+      ) : (
+        <div className="rounded-xl bg-night/60 border border-line px-3 py-2.5 flex items-center justify-between gap-2">
+          <div className="min-w-0">
+            <div className="text-[9px] font-bold uppercase tracking-[0.2em] text-cream/40">locked in</div>
+            <div className="font-display text-lg leading-none uppercase text-lime mt-1 truncate">{myLabel}</div>
+          </div>
+          <span className="shrink-0 rounded-full bg-cream/10 text-cream/60 px-2 py-1 text-[10px] font-bold uppercase tracking-wide">pending</span>
+        </div>
+      )}
+    </div>
+  )
+}
+
+export default function MatchScreen({ match, plans, myId, following, onToggleFollow, onBack, onOpenPlan, onCreate, myCall = null, onCall, callRecord }) {
   const matchPlans = plans.filter((p) => p.match_id === match.id).sort((a, b) => b.participant_ids.length - a.participant_ids.length)
   const [extras, setExtras] = useState(null)
   const [showPoster, setShowPoster] = useState(false)
@@ -873,6 +954,7 @@ export default function MatchScreen({ match, plans, myId, following, onToggleFol
       </div>
       <div className="px-5 pt-5">
 
+        <MyCallCard match={match} myCall={myCall} onCall={onCall} callRecord={callRecord} />
         <FantasyBoard match={match} plans={matchPlans} />
         {match.commentary && <Rundown text={match.commentary} />}
         <StatsDrawer>
