@@ -16,7 +16,7 @@ import { communityById } from './data/communities.js'
 import { makeRally, applyToggleJoin } from './lib/rallyState.js'
 import { applyCapUnlock, spawnNextDraft } from './lib/creator.js'
 import { makeRallyReward, hasRewardFor } from './lib/rewards.js'
-import { callRecord, callerBoard } from './data/calls.js'
+import { callRecord, callerBoard, callStreak } from './data/calls.js'
 import { SPLASH_IMG } from './data/splashImage.js'
 import { ACTIVE_THEME } from './theme.js'
 import PosterCard from './components/PosterCard'
@@ -785,7 +785,7 @@ export default function App() {
   } else if (view.name === 'match') {
     screen = <MatchScreen match={matchById(view.matchId)} plans={plans} myId={myId} following={follows.has(view.matchId)} onToggleFollow={toggleFollow} onBack={back}
       onOpenPlan={(p) => push({ name: 'plan', planId: p.id })} onCreate={() => push({ name: 'create', matchId: view.matchId })}
-      myCall={calls[view.matchId]} onCall={(pick) => setCall(view.matchId, pick)} callRecord={callRecord(calls, MATCHES)} />
+      myCall={calls[view.matchId]} onCall={(pick) => setCall(view.matchId, pick)} callRecord={callRecord(calls, MATCHES)} callStreak={callStreak(calls, MATCHES)} />
   } else if (view.name === 'plan') {
     const plan = plans.find((p) => p.id === view.planId)
     screen = <PlanScreen plan={plan} joined={isJoined(plan)} onBack={back} onToggleJoin={() => toggleJoin(plan.id)} onShare={() => setShare(plan)} />

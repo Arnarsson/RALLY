@@ -74,6 +74,7 @@ describe('callerBoard', () => {
     // You are present with a real record (1 call made)
     const me = board.find((b) => b.user.id === 'u_me')
     expect(me.record.made).toBe(1)
+    expect(typeof me.streak).toBe('number')   // each entry carries its hit streak
   })
   it('drops users with no calls and is deterministic', () => {
     const a = callerBoard(M, users, {}, 'u_me')

@@ -74,7 +74,7 @@ export const callerBoard = (matches, users, myCalls = {}, myId = 'u_me') => {
       const calls = u.id === myId
         ? myCalls
         : Object.fromEntries(decided.map((m) => [m.id, demoPrediction(m, u.id).pick]))
-      return { user: u, record: callRecord(calls, matches) }
+      return { user: u, record: callRecord(calls, matches), streak: callStreak(calls, matches) }
     })
     .filter((x) => x.record.made > 0)
     .sort((a, b) =>

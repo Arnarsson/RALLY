@@ -60,7 +60,7 @@ export default function LeadersScreen({ plans, onBuyBeer, callerBoard = [] }) {
                   <span className={'w-5 text-center font-display text-sm ' + (i === 0 ? 'text-lime' : 'text-cream/40')}>{i + 1}</span>
                   <Avatar user={c.user} size={32} />
                   <div className="flex-1 min-w-0">
-                    <div className="font-bold text-sm truncate">{me ? 'You' : c.user.name} {c.user.flag}</div>
+                    <div className="font-bold text-sm truncate">{me ? 'You' : c.user.name} {c.user.flag}{c.streak >= 2 ? <span className="ml-1 text-lime">🔥{c.streak}</span> : ''}</div>
                     <div className="text-[11px] text-cream/45">{c.record.hits}/{c.record.settled} called{c.record.accuracy != null ? ` · ${c.record.accuracy}%` : ''}</div>
                   </div>
                   <div className="text-right"><span className="font-display text-lg leading-none">{c.record.points}</span><span className="text-[10px] text-cream/40 ml-1">pts</span></div>

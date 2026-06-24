@@ -832,7 +832,7 @@ function StatsDrawer({ children, defaultOpen = false }) {
 // MAKE YOUR CALL — the user's own committed result pick, distinct from the room's
 // "the call" wedge and the fantasy board. RALLY has a take; here you prove yours.
 // Scored at full time via predictionOutcome. Guards every prop being absent/null.
-function MyCallCard({ match, myCall, onCall, callRecord }) {
+function MyCallCard({ match, myCall, onCall, callRecord, streak = 0 }) {
   const decided = myCall ? predictionOutcome(match, myCall) : 'pending'
   const settled = decided !== 'pending'
   const hit = decided === 'right'
@@ -853,7 +853,12 @@ function MyCallCard({ match, myCall, onCall, callRecord }) {
           <div className="flourish text-xl leading-none text-lime">your call</div>
           <div className="text-[10px] uppercase tracking-[0.18em] text-cream/40 mt-1">commit to a result · get scored at full time</div>
         </div>
-        {rec && (
+        {streak >= 2 && (
+          <span className="shrink-0 rounded-full bg-lime/15 border border-lime/40 px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.16em] text-lime">
+            🔥 {streak} in a row
+          </span>
+        )}
+        {rec && streak < 2 && (
           <span className="shrink-0 rounded-full bg-night/80 border border-line px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.16em] text-cream/70">
             {rec.hits}/{recSettled} · {rec.points} pts{recSettled > 0 ? ` · ${rec.accuracy}%` : ''}
           </span>
@@ -910,7 +915,7 @@ function MyCallCard({ match, myCall, onCall, callRecord }) {
   )
 }
 
-export default function MatchScreen({ match, plans, myId, following, onToggleFollow, onBack, onOpenPlan, onCreate, myCall = null, onCall, callRecord }) {
+export default function MatchScreen({ match, plans, myId, following, onToggleFollow, onBack, onOpenPlan, onCreate, myCall = null, onCall, callRecord, callStreak = 0 }) {
   const matchPlans = plans.filter((p) => p.match_id === match.id).sort((a, b) => b.participant_ids.length - a.participant_ids.length)
   const [extras, setExtras] = useState(null)
   const [showPoster, setShowPoster] = useState(false)
@@ -954,7 +959,7 @@ export default function MatchScreen({ match, plans, myId, following, onToggleFol
       </div>
       <div className="px-5 pt-5">
 
-        <MyCallCard match={match} myCall={myCall} onCall={onCall} callRecord={callRecord} />
+        <MyCallCard match={match} myCall={myCall} onCall={onCall} callRecord={callRecord} streak={callStreak} />
         <FantasyBoard match={match} plans={matchPlans} />
         {match.commentary && <Rundown text={match.commentary} />}
         <StatsDrawer>
