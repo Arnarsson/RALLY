@@ -47,7 +47,7 @@ function SectionLabel({ children }) {
   return <div className="text-[11px] uppercase tracking-[0.18em] text-cream/40 mb-2">{children}</div>
 }
 
-export default function RallyScreen({ rally, onBack, joined = false, waitlisted = false, waiting = 0, onToggleJoin, onUnlockCap, onScheduleNext } = {}) {
+export default function RallyScreen({ rally, onBack, joined = false, waitlisted = false, waiting = 0, onToggleJoin, onUnlockCap, onScheduleNext, onInviteReward } = {}) {
   // Consent mirror — reflect the stored opt-in, re-render on toggle. Read once;
   // if the helper is missing or throws, we stay opted-out (off by default).
   const readConsent = () => {
@@ -129,8 +129,10 @@ export default function RallyScreen({ rally, onBack, joined = false, waitlisted 
   }
 
   const doInvite = () => {
-    // A mate joining through you is the referral loop. Log the intent, then share.
+    // A mate joining through you is the referral loop. Log the intent, mint the
+    // reward (15% Miinto — same loop the football share fires), then share.
     track('rally_invite', { rallyId: rally.id })
+    try { onInviteReward?.(rally) } catch { /* reward mint is best-effort */ }
     doShare()
   }
 

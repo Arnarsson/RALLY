@@ -15,6 +15,7 @@ import { rallyById, RALLIES } from './data/rallies.js'
 import { communityById } from './data/communities.js'
 import { makeRally, applyToggleJoin } from './lib/rallyState.js'
 import { applyCapUnlock, spawnNextDraft } from './lib/creator.js'
+import { makeRallyReward, hasRewardFor } from './lib/rewards.js'
 import { SPLASH_IMG } from './data/splashImage.js'
 import { ACTIVE_THEME } from './theme.js'
 import PosterCard from './components/PosterCard'
@@ -750,6 +751,16 @@ export default function App() {
   const unlockCap = (rallyId, tierKey) =>
     setRallies((rs) => rs.map((r) => (r.id === rallyId ? applyCapUnlock(r, tierKey) : r)))
   const scheduleNext = (rally) => { if (rally) createRally(spawnNextDraft(rally)) }
+  // S3.3 — bringing a friend to a rally fires the SAME Miinto loop as the
+  // football share. Live: ensure the pending referral so a real claim mints
+  // server-side. Demo: mint a visible 15% code once per rally + nudge the host.
+  const rewardForInvite = (rally) => {
+    if (!rally) return
+    if (hasSupabase) { ensureReferral(myId).catch(() => {}); return }
+    if (hasRewardFor(discounts, rally.code)) return
+    setDiscounts((ds) => [makeRallyReward(rally.code, Date.now()), ...ds])
+    setReferralNudge('rewarded')
+  }
 
   if (splash) return <PhoneFrame hideNav><SplashScreen onSkip={() => setSplash(false)} /></PhoneFrame>
   if (!onboarded) {
@@ -783,7 +794,8 @@ export default function App() {
       joined={st === 'in'} waitlisted={st === 'waitlist'} waiting={r?.waiting || 0}
       onToggleJoin={r ? () => toggleJoinRally(r.id) : undefined}
       onUnlockCap={r ? (tierKey) => unlockCap(r.id, tierKey) : undefined}
-      onScheduleNext={r ? () => scheduleNext(r) : undefined} />
+      onScheduleNext={r ? () => scheduleNext(r) : undefined}
+      onInviteReward={r ? () => rewardForInvite(r) : undefined} />
   } else if (view.name === 'create-rally') {
     screen = <CreateRallyScreen onBack={back} onCreate={createRally} />
   } else if (view.name === 'community') {
