@@ -16,7 +16,7 @@ import { communityById } from './data/communities.js'
 import { makeRally, applyToggleJoin } from './lib/rallyState.js'
 import { applyCapUnlock, spawnNextDraft } from './lib/creator.js'
 import { makeRallyReward, hasRewardFor } from './lib/rewards.js'
-import { callRecord } from './data/calls.js'
+import { callRecord, callerBoard } from './data/calls.js'
 import { SPLASH_IMG } from './data/splashImage.js'
 import { ACTIVE_THEME } from './theme.js'
 import PosterCard from './components/PosterCard'
@@ -817,7 +817,7 @@ export default function App() {
   } else if (view.name === 'outfit') {
     screen = <OutfitScreen discounts={discounts} />
   } else if (view.name === 'leaders') {
-    screen = <LeadersScreen plans={plans} onBuyBeer={() => setBeer(true)} />
+    screen = <LeadersScreen plans={plans} onBuyBeer={() => setBeer(true)} callerBoard={callerBoard(MATCHES, USERS, calls, myId)} />
   }
 
   return (

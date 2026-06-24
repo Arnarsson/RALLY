@@ -7,7 +7,7 @@
 // yours. Pure logic; reuses the existing result helpers in mockData.js so a pick
 // is scored exactly like the room's. A real `predictions` table swaps in later.
 // ---------------------------------------------------------------------------
-import { predictionOutcome, predictionLabel } from './mockData.js'
+import { predictionOutcome, predictionLabel, matchWinner, demoPrediction } from './mockData.js'
 
 export const POINTS_PER_HIT = 3
 // pick encoding matches mockData: 'team_a' | 'draw' | 'team_b'
@@ -61,4 +61,24 @@ export const callBlurb = (match, pick) => {
   if (o === 'pending') return `You called it: ${who}.`
   if (o === 'right') return `You called it — ${who}. Take the bow.`
   return `You said ${who}. The pitch disagreed.`
+}
+
+// The caller leaderboard: rank everyone by their record. "You" uses your real
+// calls; everyone else gets a deterministic demo slate (demoPrediction over the
+// decided matches) so the board has a field to climb. Pure. Sorted points →
+// accuracy → hits; only people who've actually called show up.
+export const callerBoard = (matches, users, myCalls = {}, myId = 'u_me') => {
+  const decided = (matches || []).filter((m) => matchWinner(m))
+  return (users || [])
+    .map((u) => {
+      const calls = u.id === myId
+        ? myCalls
+        : Object.fromEntries(decided.map((m) => [m.id, demoPrediction(m, u.id).pick]))
+      return { user: u, record: callRecord(calls, matches) }
+    })
+    .filter((x) => x.record.made > 0)
+    .sort((a, b) =>
+      (b.record.points - a.record.points) ||
+      ((b.record.accuracy ?? -1) - (a.record.accuracy ?? -1)) ||
+      (b.record.hits - a.record.hits))
 }

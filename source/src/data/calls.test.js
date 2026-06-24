@@ -1,6 +1,6 @@
 // Tests for the personal "call it" record. Pure; reuses mockData result helpers.
 import { describe, it, expect } from 'vitest'
-import { callRecord, callStreak, callBlurb, POINTS_PER_HIT, CALL_CHOICES } from './calls.js'
+import { callRecord, callStreak, callBlurb, callerBoard, POINTS_PER_HIT, CALL_CHOICES } from './calls.js'
 
 // Minimal match fixtures: a completed A-win, a completed draw, a pending one.
 const M = [
@@ -55,6 +55,31 @@ describe('callBlurb', () => {
     expect(callBlurb(M[2], 'team_a')).toMatch(/called it: Brazil/)        // pending
     expect(callBlurb(M[0], 'team_a')).toMatch(/Take the bow/)             // right
     expect(callBlurb(M[0], 'team_b')).toMatch(/pitch disagreed/)          // wrong
+  })
+})
+
+describe('callerBoard', () => {
+  const users = [
+    { id: 'u_me', name: 'You', flag: '🇩🇰' },
+    { id: 'u_001', name: 'Sofie', flag: '🇩🇰' },
+    { id: 'u_002', name: 'Mathias', flag: '🇩🇰' },
+  ]
+  it('ranks callers by points (desc), only those who have called', () => {
+    const board = callerBoard(M, users, { m1: 'team_a' }, 'u_me')   // You: 1 hit
+    expect(board.length).toBeGreaterThan(0)
+    // sorted by points descending
+    for (let i = 1; i < board.length; i++) {
+      expect(board[i - 1].record.points).toBeGreaterThanOrEqual(board[i].record.points)
+    }
+    // You are present with a real record (1 call made)
+    const me = board.find((b) => b.user.id === 'u_me')
+    expect(me.record.made).toBe(1)
+  })
+  it('drops users with no calls and is deterministic', () => {
+    const a = callerBoard(M, users, {}, 'u_me')
+    const b = callerBoard(M, users, {}, 'u_me')
+    expect(a.map((x) => x.user.id)).toEqual(b.map((x) => x.user.id))   // stable order
+    expect(a.find((x) => x.user.id === 'u_me')).toBeUndefined()        // You made no calls → absent
   })
 })
 
