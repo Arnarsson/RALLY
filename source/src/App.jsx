@@ -797,13 +797,14 @@ export default function App() {
       onScheduleNext={r ? () => scheduleNext(r) : undefined}
       onInviteReward={r ? () => rewardForInvite(r) : undefined} />
   } else if (view.name === 'create-rally') {
-    screen = <CreateRallyScreen onBack={back} onCreate={createRally} />
+    screen = <CreateRallyScreen seed={view.seed} onBack={back} onCreate={createRally} />
   } else if (view.name === 'community') {
     const c = communityById(view.communityId)
     const members = c ? c.memberIds.map(userById).filter(Boolean) : []
     const cRallies = c ? c.rallyIds.map(findRally).filter(Boolean) : []
     screen = <CommunityScreen community={c} members={members} rallies={cRallies}
-      onOpenRally={(r) => push({ name: 'rally', rallyId: r.id })} onBack={back} />
+      onOpenRally={(r) => push({ name: 'rally', rallyId: r.id })}
+      onSpinUp={(draft) => push({ name: 'create-rally', seed: draft })} onBack={back} />
   } else if (view.name === 'outfit') {
     screen = <OutfitScreen discounts={discounts} />
   } else if (view.name === 'leaders') {

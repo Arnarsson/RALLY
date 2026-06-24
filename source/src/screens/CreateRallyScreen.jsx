@@ -26,16 +26,16 @@ function SectionLabel({ children }) {
   return <div className="text-[11px] font-bold uppercase tracking-[0.18em] text-cream/40 mb-2">{children}</div>
 }
 
-export default function CreateRallyScreen({ onBack, onCreate } = {}) {
-  const [kind, setKind] = useState('social')
-  const [radius, setRadius] = useState('public')
-  const [title, setTitle] = useState('')
-  const [blurb, setBlurb] = useState('')
-  const [area, setArea] = useState('')
-  const [when, setWhen] = useState('')
-  const [cap, setCap] = useState('')
-  const [access, setAccess] = useState([])
-  const [recurrence, setRecurrence] = useState('none')
+export default function CreateRallyScreen({ onBack, onCreate, seed } = {}) {
+  const [kind, setKind] = useState(() => seed?.kind ?? 'social')
+  const [radius, setRadius] = useState(() => seed?.radius ?? 'public')
+  const [title, setTitle] = useState(() => seed?.title ?? '')
+  const [blurb, setBlurb] = useState(() => seed?.blurb ?? '')
+  const [area, setArea] = useState(() => seed?.area ?? '')
+  const [when, setWhen] = useState(() => seed?.when ?? '')
+  const [cap, setCap] = useState(() => seed?.cap ?? '')
+  const [access, setAccess] = useState(() => Array.isArray(seed?.access) ? seed.access : [])
+  const [recurrence, setRecurrence] = useState(() => seed?.recurrence ?? 'none')
 
   const r = RADII.find((x) => x.key === radius)
   const a = accentFor(radius)

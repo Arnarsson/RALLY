@@ -4,6 +4,7 @@
 // wires onOpenRally/onBack. Renders gracefully for a missing community and an
 // empty calendar. No-semicolon style, mobile-first px-5, parent owns scroll.
 import { useMemo } from 'react'
+import { suggestNextRally } from '../lib/suggest.js'
 
 // Community accent token → Tailwind classes. Same rationed mapping the feed and
 // rally screen use: one accent per element, mono on ink otherwise. Only real
@@ -60,7 +61,7 @@ function RallyCard({ rally, onOpen }) {
   )
 }
 
-export default function CommunityScreen({ community, rallies = [], members = [], onOpenRally, onBack } = {}) {
+export default function CommunityScreen({ community, rallies = [], members = [], onOpenRally, onSpinUp, onBack } = {}) {
   // Guard the arrays — older bundles or a sparse orchestrator might pass nothing.
   const memberList = Array.isArray(members) ? members : []
   const rallyList = Array.isArray(rallies) ? rallies : []
@@ -71,6 +72,11 @@ export default function CommunityScreen({ community, rallies = [], members = [],
     const total = community?.memberCount ?? memberList.length
     return Math.max(0, total - memberList.length)
   }, [community?.memberCount, memberList.length])
+
+  // The AI "next up" — read the crew's history, propose the next rally (S4.1).
+  // suggestNextRally guards a falsy community itself, so this stays a top-level
+  // hook above the empty-state return (order never changes between renders).
+  const suggestion = useMemo(() => suggestNextRally(community, rallyList), [community, rallyList])
 
   // Graceful empty state — same warmth as the feed's "nobody's called it" line.
   if (!community) {
@@ -128,6 +134,37 @@ export default function CommunityScreen({ community, rallies = [], members = [],
       {/* 3 — The blurb: the crew's take, in the serif flourish */}
       {community.blurb && (
         <p className="flourish font-serif italic text-xl leading-snug text-cream/80 mb-6">{community.blurb}</p>
+      )}
+
+      {/* 3.5 — The nudge: AI "next up" suggestion, only when there's one. A quiet
+          card in the lowdown's voice — accent rationed to the label + button. */}
+      {suggestion && (
+        <div className="rounded-2xl border border-line bg-panel p-4 mb-6">
+          <div className={`flex items-center gap-1.5 text-[10px] uppercase tracking-[0.18em] ${a.text} mb-2`}>
+            <span aria-hidden="true">↗</span>
+            <span>Next up</span>
+          </div>
+          <div className="font-display uppercase text-lg leading-[1.05]">{suggestion.draft.title}</div>
+          <p className="font-serif italic text-base leading-snug text-cream/75 mt-1.5">{suggestion.reason}</p>
+          <div className="flex items-center gap-2 mt-3 text-xs text-cream/45 flex-wrap">
+            <span aria-hidden="true">{suggestion.draft.emoji}</span>
+            <span className="uppercase tracking-[0.12em] text-cream/55">{(suggestion.draft.kind || 'rally').replace(/[_-]/g, ' ')}</span>
+            {suggestion.draft.area && <><span className="text-cream/25">·</span><span>{suggestion.draft.area}</span></>}
+            {suggestion.draft.when && <><span className="text-cream/25">·</span><span>{suggestion.draft.when}</span></>}
+          </div>
+          <button
+            type="button"
+            onClick={onSpinUp ? () => onSpinUp(suggestion.draft) : undefined}
+            disabled={!onSpinUp}
+            className={
+              onSpinUp
+                ? `mt-4 inline-flex items-center gap-1.5 rounded-full ${a.solid} ${a.on} px-4 py-1.5 text-xs font-bold uppercase tracking-[0.12em] active:scale-[0.98] transition`
+                : 'mt-4 inline-flex items-center gap-1.5 rounded-full border border-line bg-panel2 px-4 py-1.5 text-xs font-bold uppercase tracking-[0.12em] text-cream/30'
+            }
+          >
+            Spin it up →
+          </button>
+        </div>
       )}
 
       {/* 4 — Who's in: a row of flag chips + the overflow tail */}
